@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login de Usuário</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            justify-content: center;
+        }
+
+        h1, h2 {
+            color: #333;
+        }
+
+        form {
+            background-color: #fff;
+            padding: 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+        }
+
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        p {
+            margin-top: 10px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        #listar-usuarios {
+            margin-top: 20px;
+            background-color: #007bff;
+        }
+
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        li {
+            background: #fff;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 4px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <h1>Login de Usuário</h1>
+    <form id="form-login">
+        <label for="email-login">E-mail:</label>
+        <input type="email" id="email-login" required>
+
+        <label for="senha-login">Senha:</label>
+        <input type="password" id="senha-login" required>
+
+        <button type="submit">Login</button>
+    </form>
+
+    <p>Não tem uma conta? <a href="CRUD_Usuario.html">Registre-se</a></p>
+
+    <h2>Listar Usuários</h2>
+    <button id="listar-usuarios">Listar Usuários</button>
+    <ul id="usuarios-lista"></ul>
+
+    <script>
+        document.getElementById('form-login').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const email = document.getElementById('email-login').value;
+            const senha = document.getElementById('senha-login').value;
+
+            fetch('/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, senha })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.mensagem || data.erro);
+            })
+            .catch(error => {
+                console.error('Erro:', error);
+            });
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Gerenciamento de Usuários</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      padding: 20px;
+      display: flex;
+      gap: 20px;
+    }
+
+    .coluna {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    section {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease;
+    }
+
+    section:hover {
+      transform: translateY(-2px);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #333;
+    }
+
+    input, select, button {
+      display: block;
+      width: 100%;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    button {
+      background-color: #4CAF50;
+      color: white;
+      cursor: pointer;
+      border: none;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    #usuarios-lista {
+      max-height: 500px;
+      overflow-y: auto;
+    }
+
+    #usuarios-lista div {
+      border-bottom: 1px solid #ddd;
+      padding: 10px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Coluna 1: Registrar, Atualizar e Deletar -->
+  <div class="coluna">
+    <!-- Registrar -->
+    <section>
+      <h2>Registrar</h2>
+      <form id="form-registrar">
+        <input type="text" id="nome" placeholder="Nome" required>
+        <input type="email" id="email" placeholder="Email" required>
+        <input type="text" id="estado" placeholder="Estado" required>
+        <input type="password" id="senha" placeholder="Senha" required>
+        <select id="esporteSelect" required>
+          <option value="">Selecione um esporte</option>
+        </select>
+        <button type="submit">Registrar</button>
+      </form>
+    </section>
+
+    <!-- Atualizar -->
+    <section>
+      <h2>Atualizar</h2>
+      <form id="form-update">
+        <input type="text" id="id-update" placeholder="ID do usuário" required>
+        <input type="text" id="nome-update" placeholder="Novo nome">
+        <input type="email" id="email-update" placeholder="Novo email">
+        <button type="submit">Atualizar</button>
+      </form>
+    </section>
+
+    <!-- Deletar -->
+    <section>
+      <h2>Deletar</h2>
+      <form id="form-delete">
+        <input type="text" id="id-delete" placeholder="ID do usuário" required>
+        <button type="submit">Deletar</button>
+      </form>
+    </section>
+  </div>
+
+  <!-- Coluna 2: Listar -->
+  <div class="coluna">
+    <section>
+      <h2>Listar Usuários</h2>
+      <button id="btn-listar">Listar</button>
+      <div id="usuarios-lista"></div>
+    </section>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      const select = document.getElementById('esporteSelect');
+      try {
+        const response = await fetch('http://127.0.0.1:5000/esportes');
+        const esportes = await response.json();
+        esportes.forEach(esporte => {
+          const option = document.createElement('option');
+          option.value = esporte.id;
+          option.textContent = esporte.nome;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar esportes:', error);
+      }
+    });
+
+    // Registrar usuário
+    document.getElementById('form-registrar').addEventListener('submit', function(event) {
+      event.preventDefault();
+      const nome = document.getElementById('nome').value;
+      const email = document.getElementById('email').value;
+      const estado = document.getElementById('estado').value;
+      const senha = document.getElementById('senha').value;
+      const esporte_id = document.getElementById('esporteSelect').value;
+
+      fetch('http://127.0.0.1:5000/registrar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, estado, senha, esporte_id })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.mensagem || 'Usuário registrado com sucesso!'))
+      .catch(err => alert('Erro ao registrar.'));
+    });
+
+    // Listar usuários
+    document.getElementById('btn-listar').addEventListener('click', async () => {
+      const container = document.getElementById('usuarios-lista');
+      container.innerHTML = ''; // limpar antes
+      try {
+        const response = await fetch('http://127.0.0.1:5000/usuarios/todos');
+        const data = await response.json();
+
+        data.forEach(usuario => {
+          const div = document.createElement('div');
+          div.innerHTML = `
+            <strong>ID:</strong> ${usuario.id}<br>
+            <strong>Nome:</strong> ${usuario.nome || 'Sem nome'}<br>
+            <strong>Email:</strong> ${usuario.email || 'Sem email'}<br>
+            <strong>Esporte_id:</strong> ${usuario.esporte_id || 'Sem dado'}<br>
+            <strong>Estado:</strong> ${usuario.estado || 'Sem dado'}<br>
+            <strong>Eventos_craidos:</strong> ${usuario.eventos_craidos || 'Sem dado'}<br>
+            <strong>Eventos_participando:</strong> ${usuario.eventos_participando || 'Sem dado'}<br>
+            <strong>Foto_perfil:</strong> ${usuario.foto_perfil || 'Sem dado'}<br>
+            <strong>Status_usuario:</strong> ${usuario.status_usuario || 'Sem dado'}<br>
+            <strong>Tipo_usuario:</strong> ${usuario.tipo_usuario || 'Sem dado'}<br><br>
+          `;
+          container.appendChild(div);
+        });
+
+      } catch (error) {
+        alert('Erro ao listar usuários.');
+        console.error(error);
+      }
+    });
+
+    // Atualizar usuário
+    document.getElementById('form-update').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('id-update').value;
+      const nome = document.getElementById('nome-update').value;
+      const email = document.getElementById('email-update').value;
+
+      fetch(`http://127.0.0.1:5000/usuarios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email })
+      })
+      .then(res => res.json())
+      .then(data => alert(data.mensagem || 'Atualizado com sucesso!'))
+      .catch(err => alert('Erro ao atualizar.'));
+    });
+
+    // Deletar usuário
+    document.getElementById('form-delete').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const id = document.getElementById('id-delete').value;
+
+      fetch(`http://127.0.0.1:5000/usuarios/${id}`, {
+        method: 'DELETE'
+      })
+      .then(res => res.json())
+      .then(data => alert(data.mensagem || 'Deletado com sucesso!'))
+      .catch(err => alert('Erro ao deletar.'));
+    });
+  </script>
+</body>
+</html>
