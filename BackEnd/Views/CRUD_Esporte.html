@@ -116,7 +116,8 @@
   </div>
 
   <script>
-    const apiUrl = 'http://127.0.0.1:5000/esportes'; 
+    const baseUrl = 'http://127.0.0.1:5000'; 
+    const esportesApiUrl = `${baseUrl}/esportes`;
 
     // Registrar esporte
     document.getElementById('form-adicionar').addEventListener('submit', async function(event) {
@@ -124,7 +125,7 @@
       const nome = document.getElementById('nome').value;
       const descricao = document.getElementById('descricao').value;
 
-      fetch(apiUrl, {
+      fetch(esportesApiUrl + "/AdicionarEsporte", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, descricao })
@@ -134,12 +135,14 @@
       .catch(err => alert('Erro ao adicionar esporte.'));
     });
 
+
+
     // Listar esportes
     document.getElementById('btn-listar').addEventListener('click', async () => {
       const container = document.getElementById('esportes-lista');
-      container.innerHTML = ''; // limpar antes
+      container.innerHTML = ''; 
       try {
-        const response = await fetch(apiUrl);
+        const response = await fetch(esportesApiUrl + "/ListarEsportes");
         const esportes = await response.json();
 
         esportes.forEach(esporte => {
@@ -157,6 +160,8 @@
       }
     });
 
+
+
     // Atualizar esporte
     document.getElementById('form-update').addEventListener('submit', async function(e) {
       e.preventDefault();
@@ -164,7 +169,7 @@
       const nome = document.getElementById('nome-update').value;
       const descricao = document.getElementById('descricao-update').value;
 
-      fetch(`${apiUrl}/${id}`, {
+      fetch(`${esportesApiUrl}/AtualizarEsporte/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, descricao })
@@ -179,7 +184,7 @@
       e.preventDefault();
       const id = document.getElementById('id-delete').value;
 
-      fetch(`${apiUrl}/${id}`, {
+      fetch(`${esportesApiUrl}/ExcluirEsporte/${id}`, {
         method: 'DELETE'
       })
       .then(res => res.json())

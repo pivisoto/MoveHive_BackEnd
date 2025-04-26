@@ -80,7 +80,23 @@
       <form id="form-registrar">
         <input type="text" id="nome" placeholder="Nome" required>
         <input type="email" id="email" placeholder="Email" required>
-        <input type="text" id="estado" placeholder="Estado" required>
+        
+        <!-- Dropdown para Estados -->
+        <select id="estado" required>
+          <option value="">Selecione um estado</option>
+          <option value="SP">São Paulo</option>
+          <option value="RJ">Rio de Janeiro</option>
+          <option value="MG">Minas Gerais</option>
+          <option value="ES">Espírito Santo</option>
+          <option value="BA">Bahia</option>
+          <option value="RS">Rio Grande do Sul</option>
+          <option value="SC">Santa Catarina</option>
+          <option value="PR">Paraná</option>
+          <option value="PE">Pernambuco</option>
+          <option value="CE">Ceará</option>
+          <!-- Adicione mais estados conforme necessário -->
+        </select>
+
         <input type="password" id="senha" placeholder="Senha" required>
         <select id="esporteSelect" required>
           <option value="">Selecione um esporte</option>
@@ -120,10 +136,17 @@
   </div>
 
   <script>
+
+    const baseUrl = 'http://127.0.0.1:5000'; 
+    const usuarioApiUrl = `${baseUrl}/usuario`;
+    const esportesApiUrl = `${baseUrl}/esportes`;
+    
+
+
     document.addEventListener('DOMContentLoaded', async () => {
       const select = document.getElementById('esporteSelect');
       try {
-        const response = await fetch('http://127.0.0.1:5000/esportes');
+        const response = await fetch(esportesApiUrl + '/ListarEsportes');
         const esportes = await response.json();
         esportes.forEach(esporte => {
           const option = document.createElement('option');
@@ -145,22 +168,22 @@
       const senha = document.getElementById('senha').value;
       const esporte_id = document.getElementById('esporteSelect').value;
 
-      fetch('http://127.0.0.1:5000/registrar', {
+      fetch(usuarioApiUrl + '/RegistrarUsuario', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ nome, email, estado, senha, esporte_id })
       })
       .then(res => res.json())
       .then(data => alert(data.mensagem || 'Usuário registrado com sucesso!'))
-      .catch(err => alert('Erro ao registrar.'));
+      .catch(err => alert('Erro ao registrar.'))
     });
 
     // Listar usuários
     document.getElementById('btn-listar').addEventListener('click', async () => {
       const container = document.getElementById('usuarios-lista');
-      container.innerHTML = ''; // limpar antes
+      container.innerHTML = ''; 
       try {
-        const response = await fetch('http://127.0.0.1:5000/usuarios/todos');
+        const response = await fetch(usuarioApiUrl + '/ListarUsuarios');
         const data = await response.json();
 
         data.forEach(usuario => {
@@ -186,29 +209,28 @@
       }
     });
 
-    // Atualizar usuário
     document.getElementById('form-update').addEventListener('submit', function(e) {
       e.preventDefault();
       const id = document.getElementById('id-update').value;
       const nome = document.getElementById('nome-update').value;
       const email = document.getElementById('email-update').value;
 
-      fetch(`http://127.0.0.1:5000/usuarios/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nome, email })
-      })
-      .then(res => res.json())
-      .then(data => alert(data.mensagem || 'Atualizado com sucesso!'))
-      .catch(err => alert('Erro ao atualizar.'));
-    });
+    fetch(`${usuarioApiUrl}/EditarUsuario/${id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nome, email })
+    })
+    .then(res => res.json())
+    .then(data => alert(data.mensagem || 'Atualizado com sucesso!'))
+    .catch(err => alert('Erro ao atualizar.'));
+  });
 
     // Deletar usuário
     document.getElementById('form-delete').addEventListener('submit', function(e) {
       e.preventDefault();
       const id = document.getElementById('id-delete').value;
 
-      fetch(`http://127.0.0.1:5000/usuarios/${id}`, {
+      fetch(`${usuarioApiUrl}/ExcluirUsuario/${id}`, {
         method: 'DELETE'
       })
       .then(res => res.json())

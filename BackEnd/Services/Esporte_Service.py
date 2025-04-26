@@ -3,34 +3,45 @@ from Models.Esporte_Model import Esporte
 import firebase_admin
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
-    firebase_admin.initialize_app(cred)
+    try:
+        cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
+        firebase_admin.initialize_app(cred)
+        print("Firebase Admin SDK inicializado com sucesso.")
+    except:
+        print(f"Erro ao inicializar Firebase Admin SDK: {e}")
+
 
 db = firestore.client()
 
 
-# Adicionar esporte
+# Função para Adicionar um Esporte
 def adicionar_esporte(nome, descricao):
-    esportes_ref = db.collection('Esportes')
 
-    esporte = Esporte(nome=nome, descricao=descricao)
+     try:
+        esportes_ref = db.collection('Esportes')
 
-    doc_ref = esportes_ref.document(esporte.id)
+        esporte = Esporte(nome=nome, descricao=descricao)
 
-    doc_ref.set(esporte.to_dict())
-    
-    return {"status": "sucesso", "id": esporte.id}, 201
+        doc_ref = esportes_ref.document(esporte.id)
+
+        doc_ref.set(esporte.to_dict())
+        
+        return {"status": "sucesso", "id": esporte.id}, 201
+     
+     except Exception as e:
+        print(f"Erro ao adicionar evento: {e}")
+        return {"status": "erro", "mensagem": f"Não foi possível adicionar o evento: {e}"}, 500
 
 
-# Listar todos os esportes
+# Função para Listar todos os esportes
 def listar_esportes():
     esportes_ref = db.collection('Esportes').stream()
     return [doc.to_dict() for doc in esportes_ref]
 
 
 
-# Atualizar esporte
-def atualizar_esporte(id, nome=None, descricao=None):
+# Função para Atualizar esporte por ID
+def atualizar_esporte_por_ID(id, nome=None, descricao=None):
     doc_ref = db.collection('Esportes').document(id)
     doc = doc_ref.get()
 
@@ -50,8 +61,8 @@ def atualizar_esporte(id, nome=None, descricao=None):
 
 
 
-# Excluir esporte
-def excluir_esporte(id):
+# Função para Excluir esporte por ID
+def excluir_esporte_por_ID(id):
     doc_ref = db.collection('Esportes').document(id)
     if not doc_ref.get().exists:
         return {"erro": "Esporte não encontrado"}, 404

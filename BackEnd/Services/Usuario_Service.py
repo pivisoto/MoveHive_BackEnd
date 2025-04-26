@@ -12,7 +12,7 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 
-
+# Função para Registar Usuario
 def registrar_usuario(nome, email, senha, esporte_id, estado):
     usuarios_ref = db.collection('Usuarios')
     query = usuarios_ref.where('email', '==', email).limit(1)
@@ -32,7 +32,7 @@ def registrar_usuario(nome, email, senha, esporte_id, estado):
 
 
 
-
+# Função para Logar Usuario
 def login_usuario(email, senha):
     usuarios_ref = db.collection('Usuarios')
     query = usuarios_ref.where('email', '==', email).limit(1)
@@ -50,13 +50,8 @@ def login_usuario(email, senha):
 
 
 
+# Função para Listar Usuarios
 def listar_usuarios():
-    usuarios_ref = db.collection('Usuarios').stream()
-    return [{doc.id: doc.to_dict()} for doc in usuarios_ref]
-
-
-
-def listar_todos():
     usuarios = db.collection('Usuarios').stream()
     lista = []
     for doc in usuarios:
@@ -66,9 +61,8 @@ def listar_todos():
     return lista
 
 
-
-def deletar_usuario(usuario_id):
-    """Deleta um usuário pelo ID."""
+# Função para Deletar Usuario por ID
+def deletar_usuario_por_id(usuario_id):
     doc_ref = db.collection('Usuarios').document(usuario_id)
     if not doc_ref.get().exists:
         return {"erro": "Usuário não encontrado"}, 404
@@ -77,9 +71,8 @@ def deletar_usuario(usuario_id):
     return {"status": "sucesso", "mensagem": "Usuário deletado com sucesso"}, 200
 
 
-
-def editar_usuario(usuario_id, novos_dados):
-    """Edita dados do usuário. A senha será re-hashada se fornecida."""
+# Função para Editar Usuario por ID
+def editar_usuario_por_id(usuario_id, novos_dados):
     doc_ref = db.collection('Usuarios').document(usuario_id)
     snapshot = doc_ref.get()
 

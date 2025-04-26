@@ -2,11 +2,12 @@ from flask import Flask,  render_template
 from firebase_admin import credentials, initialize_app, get_app
 from Controllers.Usuario_Controller import usuario_bp
 from Controllers.Esporte_Controller import esporte_bp
+from Controllers.Eventos_Controller import evento_bp
 from flask_cors import CORS  
 
 
 app = Flask(__name__, template_folder='Views')
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
 
 
 try:
@@ -18,6 +19,7 @@ except ValueError:
 
 app.register_blueprint(usuario_bp)
 app.register_blueprint(esporte_bp)
+app.register_blueprint(evento_bp)
 
 
 @app.route('/')
