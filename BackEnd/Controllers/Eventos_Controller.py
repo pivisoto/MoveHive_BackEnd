@@ -61,7 +61,6 @@ def adicionar_evento_route():
         'max_participantes': max_participantes,
         'nivel_esporte': nivel_esporte,
         'tipo_evento' : tipo_evento,
-        'link_oficial' : link_oficial
     }
 
     
@@ -111,7 +110,7 @@ def listarEventos():
 
 
 
-@evento_bp.route('/evento/BuscarEventoID/<evento_id>', methods=['GET'])
+@evento_bp.route('/BuscarEventoID/<evento_id>', methods=['GET'])
 def buscarEventoID(evento_id):
     resposta, status = buscar_evento_por_id(evento_id)
     return jsonify(resposta), status

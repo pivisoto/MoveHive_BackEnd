@@ -1,0 +1,368 @@
+openapi: 3.0.0
+info:
+  title: MoveHive - API
+  version: 1.0.0
+  description: API para gerenciar usuários e esportes na aplicação MoveHive.
+tags:
+  - name: Usuário
+    description: Operações relacionadas a usuários
+  - name: Esporte
+    description: Operações relacionadas a esportes
+  - name: Eventos
+    description: Operações relacionadas a eventos
+
+# USUARIOS
+paths:
+  /usuario/RegistrarUsuario:
+    post:
+      tags:
+        - Usuário
+      summary: Registrar novo usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                senha:
+                  type: string
+                esporte_id:
+                  type: string
+                estado:
+                  type: string
+              required:
+                - nome
+                - email
+                - senha
+                - esporte_id
+                - estado
+      responses:
+        '200':
+          description: Usuário registrado com sucesso
+        '400':
+          description: Dados obrigatórios não fornecidos ou requisição inválida
+
+  /usuario/LoginUsuario:
+    post:
+      tags:
+        - Usuário
+      summary: Login de usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                senha:
+                  type: string
+              required:
+                - email
+                - senha
+      responses:
+        '200':
+          description: Login realizado com sucesso
+        '400':
+          description: Dados obrigatórios não fornecidos ou inválidos
+
+  /usuario/ListarUsuarios:
+    get:
+      tags:
+        - Usuário
+      summary: Listar todos os usuários
+      responses:
+        '200':
+          description: Lista de usuários retornada com sucesso
+        '500':
+          description: Erro interno ao listar usuários
+
+  /usuario/ExcluirUsuario/{usuario_id}:
+    delete:
+      tags:
+        - Usuário
+      summary: Excluir usuário por ID
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Usuário excluído com sucesso
+        '404':
+          description: Usuário não encontrado
+
+  /usuario/EditarUsuario/{usuario_id}:
+    put:
+      tags:
+        - Usuário
+      summary: Editar dados do usuário
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                email:
+                  type: string
+                senha:
+                  type: string
+                esporte_id:
+                  type: string
+                estado:
+                  type: string
+      responses:
+        '200':
+          description: Usuário editado com sucesso
+        '400':
+          description: Nenhum dado fornecido para atualização
+
+
+
+# Esporte
+  /esportes/AdicionarEsporte:
+    post:
+      tags:
+        - Esporte
+      summary: Adicionar novo esporte
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+              required:
+                - nome
+                - descricao
+      responses:
+        '200':
+          description: Esporte adicionado com sucesso
+        '400':
+          description: Campos obrigatórios não fornecidos ou erro na requisição
+
+  /esportes/ListarEsportes:
+    get:
+      tags:
+        - Esporte
+      summary: Listar todos os esportes
+      responses:
+        '200':
+          description: Lista de esportes retornada com sucesso
+        '500':
+          description: Erro interno ao listar esportes
+
+  /esportes/AtualizarEsporte/{esporte_id}:
+    put:
+      tags:
+        - Esporte
+      summary: Atualizar informações de um esporte
+      parameters:
+        - name: esporte_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome:
+                  type: string
+                descricao:
+                  type: string
+      responses:
+        '200':
+          description: Esporte atualizado com sucesso
+        '400':
+          description: Nenhum dado fornecido para atualização
+
+  /esportes/ExcluirEsporte/{esporte_id}:
+    delete:
+      tags:
+        - Esporte
+      summary: Excluir esporte por ID
+      parameters:
+        - name: esporte_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Esporte excluído com sucesso
+        '404':
+          description: Esporte não encontrado
+
+
+
+# Eventos
+  /eventos/AdicionarEvento:
+    post:
+      tags:
+        - Eventos
+      summary: Adicionar um novo evento
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - esporte_id
+                - nome
+                - localizacao
+                - data_hora
+                - descricao
+                - max_participantes
+                - nivel_esporte
+                - tipo_evento
+              properties:
+                usuario_id:
+                  type: string
+                esporte_id:
+                  type: string
+                nome:
+                  type: string
+                localizacao:
+                  type: string
+                data_hora:
+                  type: string
+                  format: date-time
+                descricao:
+                  type: string
+                max_participantes:
+                  type: integer
+                nivel_esporte:
+                  type: string
+                tipo_evento:
+                  type: string
+                link_oficial:
+                  type: string
+      responses:
+        '200':
+          description: Evento adicionado com sucesso
+        '400':
+          description: Erro na requisição
+          
+
+
+  /eventos/ListarEvento:
+    get:
+      tags:
+        - Eventos
+      summary: Listar todos os eventos
+      responses:
+        '200':
+          description: Lista de eventos
+        '500':
+          description: Erro interno ao listar eventos
+
+  /eventos/BuscarEventoID/{evento_id}:
+    get:
+      tags:
+        - Eventos
+      summary: Buscar evento por ID
+      parameters:
+        - name: evento_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evento encontrado
+        '404':
+          description: Evento não encontrado
+
+  /eventos/AtualizarEvento/{evento_id}:
+    put:
+      tags:
+        - Eventos
+      summary: Atualizar um evento existente
+      parameters:
+        - name: evento_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                esporte_id:
+                  type: string
+                nome:
+                  type: string
+                localizacao:
+                  type: string
+                data_hora:
+                  type: string
+                  format: date-time
+                descricao:
+                  type: string
+                max_participantes:
+                  type: integer
+                status_evento:
+                  type: string
+                nivel_esporte:
+                  type: string
+                link_oficial:
+                  type: string
+                tipo_evento:
+                  type: string
+                inscricoes_ativas:
+                  type: boolean
+                participantes:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Evento atualizado com sucesso
+        '400':
+          description: Erro na atualização do evento
+
+  /eventos/ExcluirEventoID/{evento_id}:
+    delete:
+      tags:
+        - Eventos
+      summary: Excluir um evento por ID
+      parameters:
+        - name: evento_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Evento excluído com sucesso
+        '404':
+          description: Evento não encontrado

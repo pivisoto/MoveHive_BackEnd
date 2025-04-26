@@ -56,8 +56,8 @@ def listar_usuarios():
     lista = []
     for doc in usuarios:
         dados = doc.to_dict()
-        dados['id'] = doc.id  # garante que o ID esteja no objeto
-        lista.append(dados)   # adiciona como item direto da lista
+        dados['id'] = doc.id  
+        lista.append(dados)   
     return lista
 
 

@@ -3,11 +3,28 @@ from firebase_admin import credentials, initialize_app, get_app
 from Controllers.Usuario_Controller import usuario_bp
 from Controllers.Esporte_Controller import esporte_bp
 from Controllers.Eventos_Controller import evento_bp
+from flask_swagger_ui import get_swaggerui_blueprint
+
 from flask_cors import CORS  
 
 
 app = Flask(__name__, template_folder='Views')
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
+CORS(app)
+
+SWAGGER_URL = '/swagger'  
+API_URL = '/static/swagger.yaml' 
+
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={ 'app_name': "MoveHive APIs" }
+)
+
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+app.register_blueprint(usuario_bp)
+app.register_blueprint(esporte_bp)
+app.register_blueprint(evento_bp)
 
 
 try:
@@ -16,10 +33,6 @@ except ValueError:
     cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
     firebase_app = initialize_app(cred)
 
-
-app.register_blueprint(usuario_bp)
-app.register_blueprint(esporte_bp)
-app.register_blueprint(evento_bp)
 
 
 @app.route('/')
