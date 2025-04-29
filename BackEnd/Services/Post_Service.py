@@ -1,12 +1,11 @@
-from firebase_admin import firestore
-from httplib2 import Credentials
+from firebase_admin import firestore, credentials
 from Models.Post_Model import Postagem
 import firebase_admin
 import uuid
 from datetime import datetime
 
 if not firebase_admin._apps:
-    cred = Credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
+    cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
     firebase_admin.initialize_app(cred)
 
 db = firestore.client()

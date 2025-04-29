@@ -4,6 +4,7 @@ from Controllers.Usuario_Controller import usuario_bp
 from Controllers.Esporte_Controller import esporte_bp
 from Controllers.Eventos_Controller import evento_bp
 from Controllers.Post_Controller import postagem_bp
+from Controllers.Comentario_Controller import comentario_bp
 from flask_swagger_ui import get_swaggerui_blueprint
 
 from flask_cors import CORS  
@@ -27,7 +28,7 @@ app.register_blueprint(usuario_bp)
 app.register_blueprint(esporte_bp)
 app.register_blueprint(evento_bp)
 app.register_blueprint(postagem_bp)
-
+app.register_blueprint(comentario_bp)
 
 try:
     firebase_app = get_app()  
