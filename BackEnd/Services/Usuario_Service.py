@@ -1,7 +1,11 @@
 import bcrypt
 from firebase_admin import firestore, credentials
+from flask import jsonify
 from Models.Usuario_Model import Usuario
+from middlewares.token_required import generate_token
+from middlewares.auth_token import token_required
 import firebase_admin
+
 
 if not firebase_admin._apps:
     cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
@@ -45,8 +49,16 @@ def login_usuario(email, senha):
     dados = usuario_doc.to_dict()
     if not bcrypt.checkpw(senha.encode('utf-8'), dados['senha'].encode('utf-8')):
         return {"erro": "Senha incorreta"}, 400
+    
+    token = generate_token(usuario_doc.id)
 
-    return {"status": "sucesso", "mensagem": "Login bem-sucedido"}, 200
+    resposta = {
+        "status": "sucesso",
+        "mensagem": "Login bem-sucedido",
+        "token": token,
+    }
+
+    return resposta, 200
 
 
 
@@ -86,3 +98,23 @@ def editar_usuario_por_id(usuario_id, novos_dados):
 
     doc_ref.update(dados_atualizados)
     return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
+
+
+
+@token_required  # A verificação do token vai ser feita aqui no Service
+def meu_perfil(request):
+    user_id = request.user_id  # Obtém o user_id do token decodificado
+
+    # Acessa o banco para buscar as informações do usuário
+    usuario_ref = db.collection('Usuarios').document(user_id)
+    usuario = usuario_ref.get()
+
+    if not usuario.exists:
+        return jsonify({'erro': 'Usuário não encontrado!'}), 404
+
+    dados_usuario = usuario.to_dict()
+
+    return jsonify({
+        'status': 'sucesso',
+        'usuario': dados_usuario  # Retorna as informações do usuário
+    }), 200

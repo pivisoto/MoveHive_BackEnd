@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Perfil</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .message {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: 500;
+    }
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+    .profile-header {
+      display: flex;
+      flex-wrap: wrap;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+    .profile-cover {
+      height: 200px;
+      width: 100%;
+      background: linear-gradient(135deg, #6e8efb, #a777e3);
+    }
+    .profile-info {
+      display: flex;
+      width: 100%;
+      padding: 20px;
+      align-items: flex-start;
+    }
+    .profile-picture {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 5px solid white;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      margin-top: -75px;
+      background-color: #e9ecef;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      color: #6c757d;
+    }
+    .profile-details {
+      flex: 1;
+      padding: 0 30px;
+    }
+    .profile-name {
+      font-size: 28px;
+      margin: 0 0 5px 0;
+      color: #212529;
+    }
+    .profile-email {
+      color: #6c757d;
+      margin-bottom: 15px;
+    }
+    .profile-stats {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
+    }
+    .stat-item {
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 24px;
+      font-weight: bold;
+      color: #495057;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #6c757d;
+    }
+    .profile-bio {
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+    .profile-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    .meta-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #495057;
+    }
+    .meta-icon {
+      color: #6c757d;
+    }
+    .profile-sections {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    .section {
+      flex: 1;
+      min-width: 300px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      padding: 20px;
+    }
+    .section-title {
+      font-size: 20px;
+      margin-top: 0;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #e9ecef;
+      color: #212529;
+    }
+    .event-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .event-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #e9ecef;
+    }
+    .event-item:last-child {
+      border-bottom: none;
+    }
+    .empty-state {
+      color: #6c757d;
+      text-align: center;
+      padding: 20px;
+    }
+    .btn {
+      padding: 10px 20px;
+      border-radius: 6px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-primary {
+      background-color: #4267B2;
+      color: white;
+    }
+    .btn-primary:hover {
+      background-color: #365899;
+    }
+    .status-active {
+      color: #28a745;
+      font-weight: 500;
+    }
+    .status-inactive {
+      color: #dc3545;
+      font-weight: 500;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Meu Perfil</h1>
+    
+    <!-- Div para mostrar mensagens de sucesso ou erro -->
+    <div id="mensagemDiv" class="message"></div>
+
+    <!-- Div para mostrar as informações do perfil -->
+    <div id="perfilDiv" style="display: none;">
+      <div class="profile-header">
+        <div class="profile-cover"></div>
+        <div class="profile-info">
+          <div id="profilePicture" class="profile-picture"></div>
+          <div class="profile-details">
+            <h2 id="nome" class="profile-name"></h2>
+            <p id="email" class="profile-email"></p>
+            
+            <div class="profile-stats">
+              <div class="stat-item">
+                <div id="eventosCriadosCount" class="stat-number">0</div>
+                <div class="stat-label">Eventos Criados</div>
+              </div>
+              <div class="stat-item">
+                <div id="eventosParticipandoCount" class="stat-number">0</div>
+                <div class="stat-label">Participando</div>
+              </div>
+            </div>
+            
+            <div class="profile-meta">
+              <div class="meta-item">
+                <span class="meta-icon">📍</span>
+                <span id="estado"></span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">📅</span>
+                <span id="dataCriacao"></span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">🔰</span>
+                <span id="tipoUsuario"></span>
+              </div>
+              <div class="meta-item">
+                <span class="meta-icon">●</span>
+                <span id="statusUsuario"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="profile-sections">
+        <div class="section">
+          <h3 class="section-title">Eventos Criados</h3>
+          <ul id="eventosCriados" class="event-list">
+            <li class="empty-state">Nenhum evento criado ainda</li>
+          </ul>
+        </div>
+        
+        <div class="section">
+          <h3 class="section-title">Participando</h3>
+          <ul id="eventosParticipando" class="event-list">
+            <li class="empty-state">Não está participando de nenhum evento</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>  
+    const baseUrl = 'http://127.0.0.1:5000'; 
+    const usuarioApiUrl = `${baseUrl}/usuario`;
+
+    document.addEventListener("DOMContentLoaded", function () {
+  const token = localStorage.getItem('token');
+  const mensagemDiv = document.getElementById('mensagemDiv');
+  const perfilDiv = document.getElementById('perfilDiv');
+  
+  if (!token) {
+    mensagemDiv.className = 'message error';
+    mensagemDiv.textContent = 'Você precisa estar logado para acessar essa página.';
+    window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html'; 
+    return;
+  }
+
+  fetch(usuarioApiUrl + "/MeuPerfil", {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.status === 'sucesso') {
+      mensagemDiv.className = 'message success';
+      mensagemDiv.textContent = 'Perfil carregado com sucesso!';
+      
+      const usuario = data.usuario;
+      
+      document.getElementById('nome').textContent = usuario.nome;
+      document.getElementById('email').textContent = usuario.email;
+      
+      // Foto de perfil
+      const profilePicture = document.getElementById('profilePicture');
+      if (usuario.foto_perfil) {
+        profilePicture.innerHTML = `<img src="${usuario.foto_perfil}" alt="Foto de perfil" style="width:100%;height:100%;border-radius:50%;">`;
+      } else {
+        // Mostra iniciais se não tiver foto
+        const initials = usuario.nome.split(' ').map(n => n[0]).join('').toUpperCase();
+        profilePicture.textContent = initials.substring(0, 2);
+      }
+      
+      // Estado
+      document.getElementById('estado').textContent = usuario.estado || 'Não informado';
+      
+      // Data de criação formatada
+      const dataCriacao = new Date(usuario.data_criacao);
+      document.getElementById('dataCriacao').textContent = 
+        `Membro desde ${dataCriacao.toLocaleDateString('pt-BR')}`;
+      
+      // Tipo de usuário
+      document.getElementById('tipoUsuario').textContent = 
+        usuario.tipo_usuario === 'admin' ? 'Administrador' : 'Usuário Comum';
+      
+      // Status do usuário
+      const statusElement = document.getElementById('statusUsuario');
+      statusElement.textContent = usuario.status_usuario === 'ativo' ? 'Ativo' : 'Inativo';
+      statusElement.className = usuario.status_usuario === 'ativo' ? 'status-active' : 'status-inactive';
+      
+      // Eventos criados
+      const eventosCriadosList = document.getElementById('eventosCriados');
+      if (usuario.eventos_criados && usuario.eventos_criados.length > 0) {
+        document.getElementById('eventosCriadosCount').textContent = usuario.eventos_criados.length;
+        eventosCriadosList.innerHTML = '';
+        usuario.eventos_criados.forEach(evento => {
+          const li = document.createElement('li');
+          li.className = 'event-item';
+          li.textContent = evento.nome || 'Evento sem nome';
+          eventosCriadosList.appendChild(li);
+        });
+      }
+      
+      // Eventos participando
+      const eventosParticipandoList = document.getElementById('eventosParticipando');
+      if (usuario.eventos_participando && usuario.eventos_participando.length > 0) {
+        document.getElementById('eventosParticipandoCount').textContent = usuario.eventos_participando.length;
+        eventosParticipandoList.innerHTML = '';
+        usuario.eventos_participando.forEach(evento => {
+          const li = document.createElement('li');
+          li.className = 'event-item';
+          li.textContent = evento.nome || 'Evento sem nome';
+          eventosParticipandoList.appendChild(li);
+        });
+      }
+      
+      perfilDiv.style.display = 'block';
+    } else {
+      mensagemDiv.className = 'message error';
+      mensagemDiv.textContent = data.erro || 'Erro ao carregar perfil. Tente novamente.';
+    }
+  })
+  .catch(error => {
+    mensagemDiv.className = 'message error';
+    mensagemDiv.textContent = 'Erro de conexão com o servidor.';
+    console.error('Erro:', error);
+  });
+});
+  </script>
+</body>
+</html>

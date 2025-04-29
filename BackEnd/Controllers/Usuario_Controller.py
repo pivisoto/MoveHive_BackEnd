@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
+from middlewares.token_required import generate_token
 from Services.Usuario_Service import (
     registrar_usuario,
     login_usuario,
     listar_usuarios,
     deletar_usuario_por_id,
-    editar_usuario_por_id
+    editar_usuario_por_id,
+    meu_perfil
 )
 
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix="/usuario" )
@@ -45,6 +47,7 @@ def loginUsuario():
         return jsonify({"erro": "Campos 'email' e 'senha' são obrigatórios"}), 400
 
     resposta, status = login_usuario(email, senha)
+
     return jsonify(resposta), status
 
 
@@ -80,3 +83,9 @@ def editar(usuario_id):
 
     resposta, status = editar_usuario_por_id(usuario_id, novos_dados)
     return jsonify(resposta), status
+
+
+
+@usuario_bp.route('/MeuPerfil', methods=['GET'])
+def meu_perfil_route():
+    return meu_perfil(request)  
