@@ -3,6 +3,7 @@ from firebase_admin import credentials, initialize_app, get_app
 from Controllers.Usuario_Controller import usuario_bp
 from Controllers.Esporte_Controller import esporte_bp
 from Controllers.Eventos_Controller import evento_bp
+from Controllers.Post_Controller import postagem_bp
 from flask_swagger_ui import get_swaggerui_blueprint
 
 from flask_cors import CORS  
@@ -25,6 +26,7 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 app.register_blueprint(usuario_bp)
 app.register_blueprint(esporte_bp)
 app.register_blueprint(evento_bp)
+app.register_blueprint(postagem_bp)
 
 
 try:
