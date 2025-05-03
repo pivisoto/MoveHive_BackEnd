@@ -101,7 +101,6 @@ def deletar_usuario_por_id(usuario_id):
 
 
 # Função para Editar Usuario por ID
-@token_required  
 def editar_usuario_por_id(novos_dados):
     usuario_id = g.user_id
     doc_ref = db.collection('Usuarios').document(usuario_id)

@@ -1,12 +1,8 @@
 from flask import Blueprint, request, jsonify
 from datetime import datetime, timezone
-from Services.Eventos_Service import (
-    adicionar_evento,
-    listar_eventos,
-    buscar_evento_por_id,
-    atualizar_evento,
-    excluir_evento
-)
+from middlewares.auth_token import token_required
+
+import Services.Eventos_Service as eventos_services
 
 
 evento_bp = Blueprint('evento_bp', __name__, url_prefix="/eventos")
@@ -27,7 +23,8 @@ def parse_datetime_from_iso(dt_string):
 
 
 
-@evento_bp.route('/AdicionarEvento', methods=['POST', 'OPTIONS'])
+@evento_bp.route('/AdicionarEvento', methods=['POST'])
+@token_required
 def adicionar_evento_route():
     if request.method == 'OPTIONS':
         return '', 200
@@ -41,34 +38,14 @@ def adicionar_evento_route():
         return jsonify({"erro": "Dados do evento não fornecidos"}), 400
 
 
-    usuario_id = data.get('usuario_id')
+    titulo = data.get('titulo')
+    descricao = data.get('descricao')
     esporte_id = data.get('esporte_id')
-    nome = data.get('nome')
+    nivel_esporte = data.get('nivel_esporte')
     localizacao = data.get('localizacao')
     data_hora_str = data.get('data_hora') 
-    descricao = data.get('descricao')
     max_participantes = data.get('max_participantes')
-    nivel_esporte = data.get('nivel_esporte')
-    tipo_evento = data.get('tipo_evento')
-    link_oficial = data.get('link_oficial', '') 
-
-    required_fields = {
-        'esporte_id': esporte_id,
-        'nome': nome,
-        'localizacao': localizacao,
-        'data_hora': data_hora_str,
-        'descricao': descricao,
-        'max_participantes': max_participantes,
-        'nivel_esporte': nivel_esporte,
-        'tipo_evento' : tipo_evento,
-    }
-
-    
-    missing_fields = [field for field, value in required_fields.items() if value is None or value == '']
-
-
-    if missing_fields:
-        return jsonify({"erro": f"Campos obrigatórios faltando: {', '.join(missing_fields)}"}), 400
+    visibilidade = data.get('visibilidade')
 
 
     data_hora_dt = parse_datetime_from_iso(data_hora_str)
@@ -78,19 +55,25 @@ def adicionar_evento_route():
 
     if not isinstance(max_participantes, int) or max_participantes < 1:
          return jsonify({"erro": "'max_participantes' deve ser um número inteiro positivo"}), 400
+    
+
+    if not isinstance(localizacao, dict):
+        return jsonify({"erro": "'localizacao' deve ser um objeto JSON (dicionário)"}), 400
+    
+
+    if not all(key in localizacao for key in ['Estado', 'Cidade', 'Localizacao']):
+        return jsonify({"erro": "'localizacao' deve conter as chaves 'Estado', 'Cidade' e 'Localização'"}), 400
 
       
-    resposta, status = adicionar_evento(
-        usuario_id=usuario_id, 
+    resposta, status = eventos_services.adicionar_evento(
         esporte_id=esporte_id,
-        nome=nome,
+        titulo=titulo,
         localizacao=localizacao,
         data_hora=data_hora_dt,
         descricao=descricao,
         max_participantes=max_participantes,
         nivel_esporte=nivel_esporte,
-        link_oficial=link_oficial,
-        tipo_evento=tipo_evento,
+        visibilidade=visibilidade
     )
 
     return jsonify(resposta), status
@@ -100,7 +83,7 @@ def adicionar_evento_route():
 @evento_bp.route('/ListarEvento', methods=['GET'])
 def listarEventos():
     try:
-        eventos = listar_eventos()
+        eventos = eventos_services.listar_eventos()
         return jsonify(eventos), 200
     except Exception as e:
         print(f"Erro na rota listar_eventos_route: {e}")
@@ -112,7 +95,7 @@ def listarEventos():
 
 @evento_bp.route('/BuscarEventoID/<evento_id>', methods=['GET'])
 def buscarEventoID(evento_id):
-    resposta, status = buscar_evento_por_id(evento_id)
+    resposta, status = eventos_services.buscar_evento_por_id(evento_id)
     return jsonify(resposta), status
 
 
@@ -152,6 +135,8 @@ def atualizarEventoID(evento_id):
     if max_participantes is not None: 
          if not isinstance(max_participantes, int) or max_participantes < 1:
               return jsonify({"erro": "'max_participantes' deve ser um número inteiro positivo se fornecido"}), 400
+         
+         
 
 
     updates = {}
@@ -172,12 +157,12 @@ def atualizarEventoID(evento_id):
     if not updates:
          return {"status": "sucesso", "mensagem": "Nenhum campo para atualizar foi fornecido"}, 200
 
-    resposta, status = atualizar_evento(evento_id=evento_id, **updates) 
+    resposta, status = eventos_services.atualizar_evento(evento_id=evento_id, **updates) 
 
     return jsonify(resposta), status
 
 
 @evento_bp.route('/ExcluirEventoID/<evento_id>', methods=['DELETE'])
 def excluirEventoID(evento_id):
-    resposta, status = excluir_evento(evento_id)
+    resposta, status = eventos_services.excluir_evento(evento_id)
     return jsonify(resposta), status

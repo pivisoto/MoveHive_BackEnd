@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adicionar Novo Evento</title>
+  <style>
+    /* Estilos CSS baseados no seu exemplo */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      color: #333;
+      line-height: 1.6; /* Adicionado para melhor legibilidade */
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative; /* Needed for absolute positioning of the back button */
+    }
+    h1 {
+      color: #212529;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px; /* Adjust based on container padding */
+      left: 20px; /* Adjust based on container padding */
+      font-size: 1.5rem; /* Make the arrow visible */
+      text-decoration: none;
+      color: #007bff; /* Use a theme color */
+      padding: 5px; /* Give it a clickable area */
+      border-radius: 5px; /* Slight rounding */
+      transition: color 0.2s ease, background-color 0.2s ease; /* Smooth hover effect */
+    }
+    .back-button:hover {
+      color: #0056b3; /* Darken color on hover */
+      background-color: #f0f0f0; /* Subtle background on hover */
+    }
+
+    .message {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: none; /* Inicialmente oculto */
+      opacity: 0; /* Para transição */
+      transition: opacity 0.3s ease-in-out;
+    }
+     .message.show {
+         display: block; /* Mostrar quando a classe 'show' é adicionada */
+         opacity: 1; /* Fade in */
+     }
+
+    .message.info {
+      background-color: #cfe2ff;
+      color: #084298;
+      border-left: 4px solid #0d6efd;
+    }
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4px solid #28a745;
+    }
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4rpx solid #dc3545;
+    }
+     .message.warning {
+        background-color: #fff3cd;
+        color: #664d03;
+        border-left: 4px solid #ffc107;
+     }
+
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group input[type="datetime-local"],
+    .form-group input[type="url"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      box-sizing: border-box; /* Inclui padding e border no width */
+      font-size: 1rem;
+      color: #495057;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group select:disabled,
+    .form-group input[readonly] {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+    /* Ocultando estilos não usados neste formulário */
+    .profile-picture-preview, .profile-picture-upload, .sports-container, .sport-entry, .add-sport-btn {
+        display: none;
+    }
+
+    /* Estilo específico para o grupo de localização com 3 colunas */
+    .location-group {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); /* 3 colunas responsivas */
+        gap: 10px; /* Espaçamento entre os inputs/selects */
+    }
+
+    .location-group > * { /* Aplica a inputs e selects dentro do location-group */
+         width: 100%; /* Garante que elementos internos usem 100% do grid column */
+    }
+
+    /* Botão de submit usando a classe btn-save */
+    button[type="submit"].btn-save {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 30px;
+    }
+
+    button[type="submit"].btn-save:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 15px;
+        }
+        /* Descomente se usar o botão voltar */
+        /* .back-button { top: 15px; left: 15px; } */
+        .location-group {
+            grid-template-columns: 1fr; /* Empilha inputs/selects em telas pequenas */
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Exemplo de botão voltar (opcional, ajuste o href conforme necessário) -->
+    <!-- <a href="#" class="back-button" onclick="history.back(); return false;">←</a> -->
+
+    <h1>Adicionar Novo Evento</h1>
+
+    <!-- Mensagem de feedback -->
+    <div id="message" class="message"></div>
+
+    <form id="addEventForm">
+
+      <div class="form-group">
+        <label for="esporteSelect">Esporte:</label>
+         <!-- Select para o esporte, populado via API -->
+        <select id="esporteSelect" required disabled>
+             <option value="">Carregando esportes...</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="titulo">Nome do Evento:</label>
+        <input type="text" id="titulo" required>
+      </div>
+
+       <div class="form-group">
+           <label>Localização:</label>
+           <div class="location-group">
+               <!-- Select para Estado (lista embutida) -->
+               <select id="estadoSelect" required>
+                   <option value="">Selecione o Estado</option>
+                   <option value="AC">Acre (AC)</option>
+                   <option value="AL">Alagoas (AL)</option>
+                   <option value="AP">Amapá (AP)</option>
+                   <option value="AM">Amazonas (AM)</option>
+                   <option value="BA">Bahia (BA)</option>
+                   <option value="CE">Ceará (CE)</option>
+                   <option value="DF">Distrito Federal (DF)</option>
+                   <option value="ES">Espírito Santo (ES)</option>
+                   <option value="GO">Goiás (GO)</option>
+                   <option value="MA">Maranhão (MA)</option>
+                   <option value="MT">Mato Grosso (MT)</option>
+                   <option value="MS">Mato Grosso do Sul (MS)</option>
+                   <option value="MG">Minas Gerais (MG)</option>
+                   <option value="PA">Pará (PA)</option>
+                   <option value="PB">Paraíba (PB)</option>
+                   <option value="PR">Paraná (PR)</option>
+                   <option value="PE">Pernambuco (PE)</option>
+                   <option value="PI">Piauí (PI)</option>
+                   <option value="RJ">Rio de Janeiro (RJ)</option>
+                   <option value="RN">Rio Grande do Norte (RN)</option>
+                   <option value="RS">Rio Grande do Sul (RS)</option>
+                   <option value="RO">Rondônia (RO)</option>
+                   <option value="RR">Roraima (RR)</option>
+                   <option value="SC">Santa Catarina (SC)</option>
+                   <option value="SP">São Paulo (SP)</option>
+                   <option value="SE">Sergipe (SE)</option>
+                   <option value="TO">Tocantins (TO)</option>
+               </select>
+               <!-- Select para Cidade (populado via API IBGE) -->
+               <select id="cidadeSelect" required disabled>
+                   <option value="">Selecione o Estado Primeiro</option>
+               </select>
+               <!-- Input para Lugar/Referência -->
+               <input type="text" id="localizacaoLugar" placeholder="Nome do Local / Referência" required>
+           </div>
+       </div>
+
+      <div class="form-group">
+        <label for="data_hora">Data e Hora:</label>
+        <input type="datetime-local" id="data_hora" required>
+      </div>
+
+      <div class="form-group">
+        <label for="descricao">Descrição:</label>
+        <textarea id="descricao" rows="4" required></textarea>
+      </div>
+
+      <div class="form-group">
+        <label for="max_participantes">Máx. Participantes:</label>
+        <input type="number" id="max_participantes" min="1" required>
+      </div>
+
+      <div class="form-group">
+        <label for="nivel_esporte">Nível do Esporte:</label>
+        <!-- Dropdown para Nível do Esporte -->
+        <select id="nivel_esporte" required>
+            <option value="">Selecione o Nível</option>
+            <option value="Iniciante">Iniciante</option>
+            <option value="Amador">Amador</option>
+            <option value="Profissional">Profissional</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="visibilidade">Visibilidade:</label>
+        <!-- Dropdown para Visibilidade - CORRIGIDOS OS VALUES -->
+        <select id="visibilidade" required>
+            <option value="">Selecione a visibilidade</option>
+            <option value="Publico">Publico</option>
+            <option value="Privado">Privado</option>
+        </select>
+      </div>
+      <!-- Botão de submit usando a classe btn-save -->
+      <button type="submit" class="btn-save">Adicionar Evento</button>
+    </form>
+  </div>
+
+  <script>
+    // --- Helper Function (Defined globally) ---
+     // Função para exibir mensagem com classe de estilo, transição e auto-ocultar
+    function showMessage(type, text) {
+        const messageDiv = document.getElementById('message');
+        messageDiv.textContent = text;
+        messageDiv.className = `message ${type}`; // Define a classe de tipo (success/error/etc)
+         // Força o reflow para garantir a transição (reseta o estado de display/opacity)
+         messageDiv.style.display = 'block';
+         messageDiv.style.opacity = '0';
+         void messageDiv.offsetWidth; // Trigger reflow
+        messageDiv.style.opacity = '1'; // Inicia a transição de fade-in
+        messageDiv.classList.add('show'); // Adiciona classe para controle futuro se necessário
+
+        // Oculta a mensagem automaticamente após 5 segundos, a menos que seja um erro persistente
+        if (type !== 'error') { // Não auto-oculta mensagens de erro por padrão
+           clearTimeout(messageDiv.dataset.timer); // Limpa timers anteriores
+           messageDiv.dataset.timer = setTimeout(() => {
+               messageDiv.style.opacity = '0'; // Inicia fade-out
+               messageDiv.classList.remove('show');
+               setTimeout(() => {
+                    messageDiv.style.display = 'none'; // Remove display após fade-out
+                    messageDiv.textContent = ''; // Limpa o texto
+               }, 300); // Espera a transição terminar (0.3s definido no CSS)
+           }, 5000); // 5 segundos
+        } else {
+             clearTimeout(messageDiv.dataset.timer); // Garante que erros não sejam auto-ocultados por um timer anterior
+        }
+    }
+
+    // --- End Helper Function ---
+
+
+    const baseUrl = 'http://127.0.0.1:5000'; // <<<<<<< AJUSTE SEU BASE URL DO BACKEND
+    const adicionarEventoApiUrl = `${baseUrl}/eventos`; // Endpoint base para eventos
+    const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`; // Endpoint para listar esportes
+    const cidadesApiUrl = (uf) => `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios?orderBy=nome`; // API IBGE para cidades
+
+    let availableSports = [];
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const token = localStorage.getItem('token'); // Pega o token do localStorage
+      const addEventForm = document.getElementById('addEventForm');
+      const esporteSelect = document.getElementById('esporteSelect');
+      const estadoSelect = document.getElementById('estadoSelect');
+      const cidadeSelect = document.getElementById('cidadeSelect');
+      const localizacaoLugarInput = document.getElementById('localizacaoLugar');
+      const nivelEsporteSelect = document.getElementById('nivel_esporte');
+      const visibilidadeElement = document.getElementById('visibilidade'); // Renomeada para evitar conflito
+
+
+      document.getElementById('message').style.display = 'none'; // Garante que a div de mensagem inicia oculta
+
+      // Verifica se o token existe
+      if (!token) {
+        showMessage('error', 'Você precisa estar logado para adicionar um evento.');
+         setTimeout(() => {
+             // Redirecione para a página de login, ajuste a URL conforme necessário
+             window.location.href = '/caminho/para/sua/pagina/de/login.html';
+        }, 2000);
+        // Desabilita o formulário
+        addEventForm.querySelectorAll('input, select, textarea, button').forEach(el => el.disabled = true);
+        return; // Para a execução do script
+      }
+
+      // Carrega APENAS a lista de esportes ao carregar a página
+      fetch(esportesApiUrl)
+      .then(async sportsResponse => {
+          if (!sportsResponse.ok) {
+               console.error(`Erro ao carregar lista de esportes: ${sportsResponse.status} ${sportsResponse.statusText}`);
+               showMessage('warning', 'Não foi possível carregar a lista de esportes.');
+               availableSports = []; // Garante que seja um array vazio em caso de erro
+               esporteSelect.innerHTML = '<option value="">Erro ao carregar esportes</option>';
+               esporteSelect.disabled = true;
+
+          } else {
+               availableSports = await sportsResponse.json();
+               if (!Array.isArray(availableSports)) {
+                    console.error("Lista de esportes retornada não é um array:", availableSports);
+                    availableSports = [];
+                    esporteSelect.innerHTML = '<option value="">Formato inesperado de esportes</option>';
+                    esporteSelect.disabled = true;
+               } else {
+                    populateEsportesSelect(availableSports);
+                    esporteSelect.disabled = false; // Habilita o select se carregado com sucesso
+               }
+          }
+
+           // Se a lista de esportes falhou, talvez desabilite o botão de submit?
+           // Verifique se o botão de submit existe antes de tentar desabilitá-lo
+           const submitButton = addEventForm.querySelector('button[type="submit"]');
+           if (submitButton && esporteSelect.disabled) {
+                submitButton.disabled = true;
+           }
+
+      })
+      .catch(error => {
+        console.error('Erro durante o carregamento inicial (esportes):', error);
+         showMessage('error', 'Erro ao carregar dados essenciais (esportes). Tente novamente.');
+         esporteSelect.disabled = true;
+         cidadeSelect.disabled = true; // Cidades ainda dependem do estado
+         const submitButton = addEventForm.querySelector('button[type="submit"]');
+         if (submitButton) {
+             submitButton.disabled = true;
+         }
+      });
+
+
+      // --- Event Listener para o Formulário ---
+      addEventForm.addEventListener('submit', async function (event) {
+        event.preventDefault(); // Impede o envio padrão do formulário
+
+        // Limpa mensagens anteriores e oculta
+        showMessage('', ''); // Usa a função para limpar e ocultar
+
+        // 1. Coleta os dados do formulário
+        const esporte_id = esporteSelect.value;
+        const titulo = document.getElementById('titulo').value.trim();
+        const localizacao_estado = estadoSelect.value;
+        const localizacao_cidade = cidadeSelect.value;
+        const localizacao_lugar = localizacaoLugarInput.value.trim();
+        const data_hora_str = document.getElementById('data_hora').value; // YYYY-MM-DDTHH:mm
+        const descricao = document.getElementById('descricao').value.trim();
+        const max_participantes_str = document.getElementById('max_participantes').value;
+        const nivel_esporte = nivelEsporteSelect.value; // Valor do select de nível
+        const visibilidadeValue = visibilidadeElement.value; // CORRIGIDO: Acessa o valor do elemento visibilidadeElement
+
+
+         // Desabilita o botão de submit para evitar cliques múltiplos
+         const submitButton = addEventForm.querySelector('button[type="submit"]');
+         // Verifica se o botão existe antes de manipulá-lo
+         if (submitButton) {
+             submitButton.disabled = true;
+             submitButton.textContent = 'Adicionando...';
+             showMessage('info', 'Processando...');
+         } else {
+             console.error("Botão de submit não encontrado!");
+             showMessage('error', 'Erro interno: botão de submit não encontrado.');
+             return; // Não pode enviar se o botão não existe
+         }
+
+
+        // 2. Validações básicas e Conversão de tipos
+        // checkValidity() cobre campos `required` no HTML (incluindo os selects)
+        if (!addEventForm.checkValidity()) {
+             submitButton.disabled = false;
+             submitButton.textContent = 'Adicionar Evento';
+             showMessage('warning', 'Por favor, preencha todos os campos obrigatórios.');
+             return;
+        }
+
+        const max_participantes = parseInt(max_participantes_str, 10);
+        if (isNaN(max_participantes) || max_participantes < 1) {
+            showMessage('error', 'Máx. Participantes deve ser um número inteiro positivo.');
+            submitButton.disabled = false;
+            submitButton.textContent = 'Adicionar Evento';
+            return;
+        }
+
+        // Conversão de Data/Hora
+        let data_hora_iso;
+        try {
+            const dateObj = new Date(data_hora_str);
+            if (isNaN(dateObj.getTime())) {
+                 showMessage('error', 'Formato de Data/Hora inválido.');
+                 submitButton.disabled = false;
+                 submitButton.textContent = 'Adicionar Evento';
+                 return;
+            }
+             // toISOString() gera o formato esperado pelo backend (datetime.fromisoformat)
+             // Note: toISOString() usa UTC. Se seu backend espera local time,
+             // você pode precisar ajustar ou garantir que seu backend lida com UTC.
+             // Para a maioria dos backends Python com datetime, ISO format UTC é comum.
+            data_hora_iso = dateObj.toISOString();
+        } catch (e) {
+             showMessage('error', 'Erro ao processar a Data/Hora.');
+             console.error("Erro ao parsear data:", e);
+             submitButton.disabled = false;
+             submitButton.textContent = 'Adicionar Evento';
+             return;
+        }
+
+         // 3. Monta o objeto de dados para enviar
+         const eventData = {
+             esporte_id: esporte_id,
+             titulo: titulo,
+             localizacao: { // Monta o objeto aninhado para localização
+                 Estado: localizacao_estado,
+                 Cidade: localizacao_cidade,
+                 Localizacao: localizacao_lugar
+             },
+             data_hora: data_hora_iso,
+             descricao: descricao,
+             max_participantes: max_participantes,
+             nivel_esporte: nivel_esporte, // Valor do select de nível
+             visibilidade: visibilidadeValue // CORRIGIDO: Usando o valor coletado
+         };
+
+         console.log("Dados a serem enviados:", eventData);
+
+         // Verifica se o token foi substituído ou está ausente (redundante mas seguro)
+         if (!token || token === 'SEU_TOKEN_AQUI' || token === 'null' || token === 'undefined') {
+             showMessage('error', 'ERRO: Token de autenticação ausente ou inválido. Faça login novamente.');
+             submitButton.disabled = false;
+             submitButton.textContent = 'Adicionar Evento';
+             // Opcionalmente redirecionar para login aqui
+              setTimeout(() => {
+                 localStorage.removeItem('token');
+                 window.location.href = '/caminho/para/sua/pagina/de/login.html';
+              }, 2000);
+             return;
+         }
+
+
+        // 4. Envia os dados para o backend
+        try {
+            const response = await fetch(adicionarEventoApiUrl + "/AdicionarEvento", { // Construindo URL completa aqui
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}` // Inclui o token de autenticação
+                },
+                body: JSON.stringify(eventData)
+            });
+
+            // Tenta parsear a resposta como JSON.
+            let result = null; // Inicializa result como null
+            try {
+                const text = await response.text(); // Lê a resposta como texto primeiro
+                 if (text) { // Só tenta parsear se não for vazio (evita erro em 204 No Content)
+                     result = JSON.parse(text);
+                 }
+            } catch (jsonError) {
+                 // Se não for JSON, ou der erro no parse, o 'result' continuará null ou terá o erro
+                 console.warn("Resposta do servidor não é JSON ou erro no parse:", jsonError);
+                 // A resposta de texto já foi lida em 'text'
+            }
+
+
+            // Processa a resposta
+            if (response.ok) { // status code 2xx
+                const eventId = result && result.id ? result.id : (result && result._id ? result._id : 'N/A');
+                showMessage('success', `Evento adicionado com sucesso! ID: ${eventId}`);
+                addEventForm.reset(); // Limpa o formulário após sucesso
+                 // Opcionalmente, redirecionar ou fazer algo mais
+                 // setTimeout(() => { window.location.href = '/caminho/para/lista/de/eventos.html'; }, 1500);
+            } else { // status code 4xx, 5xx
+                // Mostra a mensagem de erro vinda do backend (prioriza 'mensagem' ou 'erro')
+                let errorMessage = 'Erro desconhecido no servidor.';
+                if (result && (result.mensagem || result.error || result.erro)) {
+                     errorMessage = result.mensagem || result.error || result.erro;
+                     // Se o erro for um objeto ou array complexo, apenas stringify (limitado)
+                    if (typeof errorMessage !== 'string') {
+                        try {
+                             errorMessage = JSON.stringify(errorMessage);
+                        } catch (e) {
+                             errorMessage = "Erro no servidor em formato inesperado.";
+                        }
+                    }
+                } else if (!result && response.statusText) {
+                     errorMessage = `Erro no servidor: Status ${response.status} - ${response.statusText}`;
+                 } else {
+                     errorMessage = `Erro no servidor: Status ${response.status}. Resposta vazia ou inesperada.`;
+                 }
+
+
+                showMessage('error', `Erro ao adicionar evento: ${errorMessage}`);
+
+                // Se for erro de autenticação (401) ou a mensagem indicar token inválido
+                if (response.status === 401 || (errorMessage && typeof errorMessage === 'string' && (errorMessage.toLowerCase().includes('token') || errorMessage.toLowerCase().includes('autenticação')))) {
+                     showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
+                     setTimeout(() => {
+                        localStorage.removeItem('token');
+                        window.location.href = '/caminho/para/sua/pagina/de/login.html'; // Redireciona para login
+                     }, 2000);
+                }
+            }
+
+        } catch (error) {
+            // Este catch pega erros de rede ou falhas na requisição fetch ANTES que o backend responda (ou se a resposta for completamente ilegível/inesperada)
+            console.error('Erro na requisição fetch:', error);
+            showMessage('error', `Erro na comunicação com o servidor: ${error.message}`);
+        } finally {
+            // Reabilita o botão de submit e restaura o texto, independentemente do resultado
+            const submitButton = addEventForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = 'Adicionar Evento';
+            }
+        }
+      });
+
+      // --- Handle State Selection Change Listener to Populate Cities ---
+      estadoSelect.addEventListener('change', () => {
+          const selectedUf = estadoSelect.value;
+          populateCidadesPorEstado(selectedUf);
+      });
+
+
+      // --- Adiciona listener para ocultar mensagem ao focar nos campos ---
+       const inputsToClearMessage = addEventForm.querySelectorAll('input, textarea, select');
+       inputsToClearMessage.forEach(element => {
+           element.addEventListener('focus', () => {
+                const messageDiv = document.getElementById('message');
+                if (messageDiv.classList.contains('show')) { // Apenas se a mensagem estiver visível
+                    messageDiv.style.opacity = '0'; // Inicia fade-out
+                    messageDiv.classList.remove('show');
+                    clearTimeout(messageDiv.dataset.timer); // Cancela qualquer timer de auto-ocultar
+                    setTimeout(() => {
+                         messageDiv.style.display = 'none'; // Remove display após fade-out
+                         messageDiv.textContent = ''; // Limpa o texto
+                    }, 300); // Espera a transição terminar (0.3s definido no CSS)
+                }
+           });
+       });
+
+
+    }); // End DOMContentLoaded
+
+
+    // --- Helper Functions (Defined globally) ---
+
+     // Função para popular o select de esportes
+    function populateEsportesSelect(sports) {
+        const esporteSelect = document.getElementById('esporteSelect');
+        esporteSelect.innerHTML = '<option value="">Selecione um esporte</option>'; // Adiciona opção padrão
+
+        if (!sports || sports.length === 0) {
+             esporteSelect.innerHTML += '<option value="" disabled>Nenhum esporte disponível</option>';
+             esporteSelect.disabled = true;
+             return;
+        }
+
+        sports.sort((a, b) => {
+             const nomeA = (a && typeof a.nome === 'string') ? a.nome.toLowerCase() : '';
+             const nomeB = (b && typeof b.nome === 'string') ? b.nome.toLowerCase() : '';
+             return nomeA.localeCompare(nomeB);
+        }).forEach(sport => {
+            // Use sport._id ou sport.id dependendo de como seu backend retorna
+            const sportId = sport._id || sport.id; // Preferência por _id (MongoDB/Mongoose)
+             if (sportId) {
+                 const option = document.createElement('option');
+                 option.value = String(sportId); // Garante que o valor é string
+                 option.textContent = sport.nome || 'Esporte sem nome';
+                 esporteSelect.appendChild(option);
+             } else {
+                 console.warn("Esporte com ID ausente ou inválido:", sport);
+             }
+        });
+
+        esporteSelect.disabled = false;
+    }
+
+     // Função para popular o select de cidades baseado no estado selecionado (usa API IBGE)
+    async function populateCidadesPorEstado(uf) {
+        const cidadeSelect = document.getElementById('cidadeSelect');
+
+        cidadeSelect.innerHTML = '<option value="">Carregando Cidades...</option>';
+        cidadeSelect.disabled = true;
+        cidadeSelect.value = ''; // Reseta o valor selecionado
+
+        if (!uf) {
+            cidadeSelect.innerHTML = '<option value="">Selecione o Estado Primeiro</option>';
+            cidadeSelect.disabled = true;
+            cidadeSelect.value = '';
+            return;
+        }
+
+        const apiUrl = cidadesApiUrl(uf);
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                 let errorText = await response.text();
+                 console.error(`Erro HTTP ao carregar cidades para ${uf}: ${response.status} ${response.statusText}`, errorText);
+                 cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+                 cidadeSelect.disabled = true;
+                 // Não lança erro aqui para não quebrar a chain, apenas trata localmente
+            } else {
+                const cidades = await response.json();
+
+                cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
+
+                if (!Array.isArray(cidades) || cidades.length === 0) {
+                    console.warn(`Nenhuma cidade encontrada para o estado ${uf} ou formato inesperado.`, cidades);
+                    cidadeSelect.innerHTML = '<option value="">Nenhuma cidade encontrada</option>';
+                    cidadeSelect.disabled = true;
+                } else {
+                    cidades.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(cidade => {
+                        const option = document.createElement('option');
+                        option.value = cidade.nome;
+                        option.textContent = cidade.nome;
+                        cidadeSelect.appendChild(option);
+                    });
+                     cidadeSelect.disabled = false;
+                }
+            }
+
+
+        } catch (error) {
+            console.error('Erro inesperado ao carregar cidades:', error);
+            cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+            cidadeSelect.disabled = true;
+            cidadeSelect.value = '';
+        }
+    }
+
+
+  </script>
+</body>
+</html>

@@ -1,5 +1,7 @@
 import uuid
-from datetime import datetime, timezone 
+from datetime import datetime, timezone
+
+from flask import g 
 from Models.Eventos_Model import Evento
 from firebase_admin import firestore, credentials
 import firebase_admin
@@ -17,24 +19,26 @@ db = firestore.client()
 
 
 # Função para Adicionar Evento
-def adicionar_evento(usuario_id, esporte_id, nome, localizacao, data_hora: datetime, 
-                     descricao, max_participantes, nivel_esporte,
-                     link_oficial= '', tipo_evento= ''):
+
+def adicionar_evento(esporte_id, titulo, localizacao, data_hora: datetime, 
+                     descricao, max_participantes, nivel_esporte, visibilidade
+                     ):
    
     try:
+        usuario_id = g.user_id
         eventos_ref = db.collection("Eventos")
+
 
         evento = Evento(
             usuario_id=usuario_id,
             esporte_id=esporte_id,
-            nome=nome,
+            titulo=titulo,
             localizacao=localizacao,
             data_hora=data_hora,
             descricao=descricao,
             max_participantes=max_participantes,
             nivel_esporte=nivel_esporte,
-            link_oficial=link_oficial,
-            tipo_evento=tipo_evento,
+            visibilidade=visibilidade
         )
 
         doc_ref = eventos_ref.document(evento.id)
