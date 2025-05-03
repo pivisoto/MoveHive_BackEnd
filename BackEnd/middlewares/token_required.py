@@ -1,7 +1,6 @@
 import jwt
 import datetime
 
-# Define a chave secreta para assinar o token
 SECRET_KEY = 'move'
 
 def generate_token(user_id):

@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import request, jsonify
+from flask import request, jsonify, g
 import jwt
 
 SECRET_KEY = 'move'
@@ -19,7 +19,7 @@ def token_required(f):
 
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-            request.user_id = data['user_id']
+            g.user_id = data['user_id']
         except jwt.ExpiredSignatureError:
             return jsonify({'erro': 'Token expirado!'}), 401
         except jwt.InvalidTokenError:

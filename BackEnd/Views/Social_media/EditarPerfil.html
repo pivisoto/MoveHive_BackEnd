@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Editar Perfil</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f0f2f5;
+      color: #333;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      position: relative; /* Needed for absolute positioning of the back button */
+    }
+    h1 {
+      color: #212529;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    .back-button {
+      position: absolute;
+      top: 20px; /* Adjust based on container padding */
+      left: 20px; /* Adjust based on container padding */
+      font-size: 1.5rem; /* Make the arrow visible */
+      text-decoration: none;
+      color: #007bff; /* Use a theme color */
+      padding: 5px; /* Give it a clickable area */
+      border-radius: 5px; /* Slight rounding */
+      transition: color 0.2s ease, background-color 0.2s ease; /* Smooth hover effect */
+    }
+    .back-button:hover {
+      color: #0056b3; /* Darken color on hover */
+      background-color: #f0f0f0; /* Subtle background on hover */
+    }
+
+    .message {
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      font-weight: 500;
+      display: none;
+    }
+    .message.info {
+      background-color: #cfe2ff;
+      color: #084298;
+      border-left: 4px solid #0d6efd;
+    }
+    .message.success {
+      background-color: #d4edda;
+      color: #155724;
+      border-left: 4溪 solid #28a745;
+    }
+    .message.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border-left: 4px solid #dc3545;
+    }
+     .message.warning {
+        background-color: #fff3cd;
+        color: #664d03;
+        border-left: 4px solid #ffc107;
+     }
+
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #495057;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="email"],
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ced4da;
+      border-radius: 5px;
+      box-sizing: border-box;
+      font-size: 1rem;
+      color: #495057;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+
+    .form-group select:disabled,
+    .form-group input[readonly] {
+        background-color: #e9ecef;
+        cursor: not-allowed;
+    }
+
+
+    .profile-picture-preview {
+        display: block;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-top: 10px;
+        border: 3px solid #e9ecef;
+        box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+        background-color: #e9ecef;
+        text-align: center;
+        line-height: 100px;
+        font-size: 30px;
+        color: #6c757d;
+        font-weight: bold;
+    }
+     .profile-picture-preview img {
+         display: block;
+         width: 100%;
+         height: 100%;
+         object-fit: cover;
+         border-radius: 50%;
+     }
+
+
+     .profile-picture-upload {
+         margin-top: 15px;
+         padding: 10px;
+         border: 2px dashed #ced4da;
+         border-radius: 5px;
+         background-color: #f8f9fa;
+         text-align: center;
+         cursor: pointer;
+     }
+     .profile-picture-upload:hover {
+         border-color: #007bff;
+     }
+      .profile-picture-upload input[type="file"] {
+          display: none;
+      }
+
+    .form-group input[type="text"][readonly] {
+      background-color: #e9ecef;
+      cursor: not-allowed;
+    }
+
+    .sports-container {
+        border: 1px solid #ced4da;
+        border-radius: 5px;
+        padding: 15px;
+        background-color: #f8f9fa;
+    }
+
+    .sport-entry {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e9ecef;
+    }
+    .sport-entry:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+
+    .sport-entry select {
+        flex: 1;
+        min-width: 120px;
+    }
+
+    .sport-entry .remove-sport-btn {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        padding: 5px 10px;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        font-size: 0.9rem;
+    }
+     .sport-entry .remove-sport-btn:hover {
+         background-color: #c82333;
+     }
+
+    .add-sport-btn {
+       display: inline-block;
+       background-color: #28a745;
+       color: white;
+       border: none;
+       border-radius: 5px;
+       padding: 8px 15px;
+       cursor: pointer;
+       transition: background-color 0.2s;
+       margin-top: 10px;
+    }
+    .add-sport-btn:hover {
+        background-color: #218838;
+    }
+
+
+    .btn-save {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1rem;
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      margin-top: 30px;
+    }
+
+    .btn-save:hover {
+      background-color: #0056b3;
+    }
+
+    @media (max-width: 600px) {
+        .container {
+            padding: 15px;
+        }
+         .back-button {
+             top: 15px;
+             left: 15px;
+         }
+        .sport-entry {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+        }
+         .sport-entry select, .sport-entry button {
+            width: 100%;
+            min-width: 0;
+         }
+    }
+
+  </style>
+</head>
+<body>
+  <div class="container">
+    <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html" class="back-button">←</a>
+
+    <h1>Editar Perfil</h1>
+
+    <div id="mensagemDiv" class="message"></div>
+
+    <form id="editProfileForm">
+
+      <div class="form-group">
+        <label>Foto de Perfil:</label>
+         <div id="profilePicturePreview" class="profile-picture-preview">
+         </div>
+         <label for="fileInput" class="profile-picture-upload">
+            Clique para selecionar uma nova foto
+             <input type="file" id="fileInput" name="foto_perfil" accept="image/*">
+         </label>
+         <small style="color: #dc3545;">Nota: O upload de foto não é suportado nesta versão da página de edição.</small>
+      </div>
+
+      <div class="form-group">
+        <label for="nomeCompleto">Nome Completo:</label>
+        <input type="text" id="nomeCompleto" name="nome_completo" required>
+      </div>
+
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" readonly>
+      </div>
+
+       <div class="form-group">
+           <label>Localização:</label>
+           <div style="display: flex; gap: 15px;">
+               <select id="estado" name="estado" style="flex: 1;" required>
+                   <option value="">Selecione o Estado</option>
+                   <option value="AC">Acre (AC)</option>
+                   <option value="AL">Alagoas (AL)</option>
+                   <option value="AP">Amapá (AP)</option>
+                   <option value="AM">Amazonas (AM)</option>
+                   <option value="BA">Bahia (BA)</option>
+                   <option value="CE">Ceará (CE)</option>
+                   <option value="DF">Distrito Federal (DF)</option>
+                   <option value="ES">Espírito Santo (ES)</option>
+                   <option value="GO">Goiás (GO)</option>
+                   <option value="MA">Maranhão (MA)</option>
+                   <option value="MT">Mato Grosso (MT)</option>
+                   <option value="MS">Mato Grosso do Sul (MS)</option>
+                   <option value="MG">Minas Gerais (MG)</option>
+                   <option value="PA">Pará (PA)</option>
+                   <option value="PB">Paraíba (PB)</option>
+                   <option value="PR">Paraná (PR)</option>
+                   <option value="PE">Pernambuco (PE)</option>
+                   <option value="PI">Piauí (PI)</option>
+                   <option value="RJ">Rio de Janeiro (RJ)</option>
+                   <option value="RN">Rio Grande do Norte (RN)</option>
+                   <option value="RS">Rio Grande do Sul (RS)</option>
+                   <option value="RO">Rondônia (RO)</option>
+                   <option value="RR">Roraima (RR)</option>
+                   <option value="SC">Santa Catarina (SC)</option>
+                   <option value="SP">São Paulo (SP)</option>
+                   <option value="SE">Sergipe (SE)</option>
+                   <option value="TO">Tocantins (TO)</option>
+               </select>
+               <select id="cidadeSelect" name="cidade" style="flex: 1;" disabled required>
+                   <option value="">Selecione o Estado Primeiro</option>
+               </select>
+           </div>
+       </div>
+
+
+      <div class="form-group">
+        <label for="biografia">Biografia:</label>
+        <textarea id="biografia" name="biografia" rows="4"></textarea>
+      </div>
+
+      <div class="form-group">
+          <label>Esportes e Habilidade:</label>
+          <div id="esportesHabilidadeContainer" class="sports-container">
+          </div>
+           <button type="button" id="addSportBtn" class="add-sport-btn">+ Adicionar Esporte</button>
+      </div>
+
+      <button type="submit" class="btn-save">Salvar Alterações</button>
+    </form>
+  </div>
+
+  <script>
+    const baseUrl = 'http://127.0.0.1:5000';
+    const usuarioApiUrl = `${baseUrl}/usuario`;
+    const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
+    const cidadesApiUrl = (uf) => `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`;
+
+    let currentUserId = null;
+    let availableSports = [];
+    const skillLevels = ['iniciante', 'intermediario', 'avancado'];
+
+    document.addEventListener("DOMContentLoaded", function () {
+      const token = localStorage.getItem('token');
+      const mensagemDiv = document.getElementById('mensagemDiv');
+      const editProfileForm = document.getElementById('editProfileForm');
+      const profilePicturePreview = document.getElementById('profilePicturePreview');
+      const fileInput = document.getElementById('fileInput');
+      const esportesHabilidadeContainer = document.getElementById('esportesHabilidadeContainer');
+      const addSportBtn = document.getElementById('addSportBtn');
+      const estadoSelect = document.getElementById('estado');
+      const cidadeSelect = document.getElementById('cidadeSelect');
+
+
+      mensagemDiv.style.display = 'none';
+
+      if (!token) {
+        showMessage('error', 'Você precisa estar logado para editar o perfil.');
+         setTimeout(() => {
+             window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+        }, 2000);
+        return;
+      }
+
+      Promise.all([
+          fetch(usuarioApiUrl + "/BuscarUsuarioID", {
+              method: 'GET',
+              headers: { 'Authorization': `Bearer ${token}` }
+          }),
+          fetch(esportesApiUrl, {
+              method: 'GET'
+          })
+      ])
+      .then(async ([profileResponse, sportsResponse]) => {
+          if (!profileResponse.ok) {
+              if (profileResponse.status === 401) {
+                   showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
+                   setTimeout(() => {
+                        localStorage.removeItem('token');
+                        window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+                    }, 2000);
+              } else {
+                   const errorData = await profileResponse.json();
+                   showMessage('error', errorData.erro || `Erro ao carregar perfil: ${profileResponse.status} ${profileResponse.statusText}`);
+              }
+              throw new Error('Failed to load profile');
+          }
+
+           if (!sportsResponse.ok) {
+               console.error(`Erro ao carregar lista de esportes: ${sportsResponse.status} ${sportsResponse.statusText}`);
+               showMessage('warning', 'Não foi possível carregar a lista de esportes para edição.');
+               availableSports = [];
+           } else {
+               availableSports = await sportsResponse.json();
+               if (!Array.isArray(availableSports)) {
+                    console.error("Lista de esportes retornada não é um array:", availableSports);
+                    availableSports = [];
+               }
+           }
+
+          const profileData = await profileResponse.json();
+          return profileData;
+
+      })
+      .then(profileData => {
+
+        if (profileData.status === 'sucesso') {
+          const usuario = profileData.usuario;
+
+          currentUserId = usuario.id; // Store the user ID
+          if (!currentUserId) {
+              showMessage('error', 'ID do usuário não encontrado nos dados do perfil. Não é possível editar.');
+              editProfileForm.style.display = 'none';
+              return;
+          }
+
+          document.getElementById('nomeCompleto').value = usuario.nome_completo || '';
+          document.getElementById('username').value = usuario.username || '';
+          document.getElementById('biografia').value = usuario.biografia || '';
+
+          const userStateUf = usuario.estado || '';
+          estadoSelect.value = userStateUf;
+
+          if (userStateUf) {
+              populateCidadesPorEstado(userStateUf, usuario.cidade || '');
+          } else {
+              cidadeSelect.innerHTML = '<option value="">Selecione o Estado Primeiro</option>';
+              cidadeSelect.disabled = true;
+              cidadeSelect.value = '';
+          }
+
+          updateProfilePicturePreview(usuario.foto_perfil, usuario.nome_completo);
+
+          populateUserSports(usuario.esportes_praticados); // Pass the array of objects directly
+
+          showMessage('success', 'Dados do perfil carregados. Você pode editá-los.');
+
+        } else {
+           showMessage('error', profileData.erro || 'Erro ao carregar dados do perfil para edição.');
+           console.error('PerfilData status erro:', profileData);
+           editProfileForm.style.display = 'none';
+        }
+      })
+      .catch(error => {
+        console.error('Erro durante o carregamento dos dados:', error);
+         if (mensagemDiv.style.display === 'none' || !mensagemDiv.textContent.includes('Você precisa estar logado')) {
+             showMessage('error', 'Erro ao carregar dados para edição. Verifique a conexão ou contate o suporte.');
+        }
+        editProfileForm.style.display = 'none';
+      });
+
+
+      // --- Handle Form Submission (MODIFIED FOR NEW ENDPOINT) ---
+      editProfileForm.addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        if (!currentUserId) {
+             showMessage('error', 'Erro: ID do usuário não disponível para salvar.');
+             return;
+        }
+
+        showMessage('info', 'Salvando alterações...');
+
+
+        const updatedSports = [];
+        const sportEntries = esportesHabilidadeContainer.querySelectorAll('.sport-entry');
+
+        let hasEmptySportOrLevel = false;
+
+        sportEntries.forEach(entry => {
+             const sportSelect = entry.querySelector('.sport-select');
+             const levelSelect = entry.querySelector('.level-select');
+
+             const sportId = sportSelect.value;
+             const level = levelSelect.value;
+
+             if (sportId && level) {
+                 const sportObject = availableSports.find(sport => String(sport.id) === sportId);
+
+                 if (sportObject) {
+                     updatedSports.push({
+                         id: sportId,
+                         nome: sportObject.nome,
+                         nivel: level
+                     });
+                 } else {
+                     console.warn(`Esporte com ID ${sportId} não encontrado na lista de esportes disponíveis. Entrada ignorada.`);
+                     showMessage('warning', `Esporte com ID ${sportId} não reconhecido e será ignorado.`);
+                 }
+             } else if (sportId || level) {
+                 hasEmptySportOrLevel = true;
+             }
+        });
+
+         if (hasEmptySportOrLevel) {
+            showMessage('warning', 'Algumas entradas de esporte/nível estavam incompletas e foram ignoradas.');
+        }
+
+
+        // --- Collect other form data INCLUDING the user ID ---
+        const updatedData = {
+            //id: currentUserId, // *** Add the user ID to the JSON body ***
+            nome_completo: document.getElementById('nomeCompleto').value,
+            estado: estadoSelect.value,
+            cidade: cidadeSelect.value,
+            biografia: document.getElementById('biografia').value,
+            esportes_praticados: updatedSports,
+        };
+
+        if (!updatedData.nome_completo || !updatedData.estado || !updatedData.cidade) {
+             showMessage('warning', 'Por favor, preencha Nome, Estado e Cidade.');
+             return;
+        }
+
+
+        const fileInput = document.getElementById('fileInput');
+        if (fileInput.files && fileInput.files[0]) {
+             console.warn("Nova foto de perfil selecionada, mas o endpoint atual não suporta upload de arquivo via JSON body. A foto não será salva.");
+        }
+
+
+        // --- Send PUT request with JSON body to the NEW endpoint ---
+        fetch(`${usuarioApiUrl}/EditarUsuario`, { // *** Changed URL: Removed the user ID from the path ***
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify(updatedData) // Send JSON string including the 'id'
+        })
+        .then(response => response.json().then(data => ({ status: response.status, body: data })))
+        .then(({ status, body }) => {
+            if (status >= 200 && status < 300) {
+                if (body.status === 'sucesso') {
+                    showMessage('success', body.mensagem || 'Perfil atualizado com sucesso!');
+                    setTimeout(() => {
+                       window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html';
+                    }, 1500);
+                } else {
+                    showMessage('error', body.erro || 'Erro ao salvar perfil. Resposta inesperada do servidor.');
+                    console.error('Backend reported error:', body);
+                }
+            } else if (status === 401) {
+                 showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
+                 setTimeout(() => {
+                    localStorage.removeItem('token');
+                    window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+                 }, 2000);
+            }
+             else {
+                 showMessage('error', body.erro || `Erro ao salvar perfil: ${status} ${body.mensagem || ''}`);
+                 console.error('Server error:', status, body);
+            }
+        })
+        .catch(error => {
+            console.error('Erro de rede ou ao enviar dados do perfil:', error);
+            showMessage('error', 'Erro ao conectar com o servidor para salvar o perfil.');
+        });
+      });
+
+      // --- Handle Add Sport Button ---
+      addSportBtn.addEventListener('click', function() {
+           if (availableSports && availableSports.length > 0) {
+               addSportEntry('', '');
+           } else {
+               showMessage('warning', 'Não foi possível adicionar esporte. A lista de esportes não foi carregada.');
+           }
+      });
+
+       // --- Delegate Remove Sport Button Clicks ---
+       esportesHabilidadeContainer.addEventListener('click', function(event) {
+           if (event.target.classList.contains('remove-sport-btn')) {
+               const entryDiv = event.target.closest('.sport-entry');
+               if (entryDiv) {
+                   const sportSelect = entryDiv.querySelector('.sport-select');
+                    if (sportSelect) {
+                       sportSelect.dataset.previousValue = '';
+                    }
+                   entryDiv.remove();
+                }
+           }
+       });
+
+        // --- Handle Profile Picture Preview ---
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const userName = document.getElementById('nomeCompleto').value;
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                     updateProfilePicturePreview(e.target.result, userName);
+                }
+                reader.readAsDataURL(file);
+            } else {
+                 const currentPreviewSrc = profilePicturePreview.querySelector('img')?.src;
+                 if (!currentPreviewSrc || currentPreviewSrc.startsWith('data:image')) {
+                      updateProfilePicturePreview(null, userName);
+                 }
+            }
+        });
+
+        // --- Delegate Sport Selection Change Listener (Duplicate Check) ---
+        esportesHabilidadeContainer.addEventListener('change', function(event) {
+            if (event.target.classList.contains('sport-select')) {
+                const currentSelect = event.target;
+                const newSportId = currentSelect.value;
+                const previousSportId = currentSelect.dataset.previousValue || '';
+
+                if (newSportId !== '') {
+                    const sportSelects = esportesHabilidadeContainer.querySelectorAll('.sport-select');
+                    let isDuplicate = false;
+
+                    sportSelects.forEach(otherSelect => {
+                        if (otherSelect !== currentSelect && otherSelect.value === newSportId && otherSelect.value !== '') {
+                            isDuplicate = true;
+                        }
+                    });
+
+                    if (isDuplicate) {
+                        showMessage('warning', 'Este esporte já foi selecionado em outra entrada.');
+                        currentSelect.value = previousSportId;
+                    } else {
+                        currentSelect.dataset.previousValue = newSportId;
+                         if (mensagemDiv.classList.contains('warning') && mensagemDiv.textContent.includes('Este esporte já foi selecionado')) {
+                            mensagemDiv.style.display = 'none';
+                         }
+                    }
+                } else {
+                    currentSelect.dataset.previousValue = '';
+                     if (mensagemDiv.classList.contains('warning') && mensagemDiv.textContent.includes('Este esporte já foi selecionado')) {
+                        mensagemDiv.style.display = 'none';
+                     }
+                }
+            }
+        });
+
+        // --- Handle State Selection Change Listener to Populate Cities ---
+        estadoSelect.addEventListener('change', () => {
+            const selectedUf = estadoSelect.value;
+            populateCidadesPorEstado(selectedUf); // Fixed typo: selectedUuf -> selectedUf
+        });
+
+
+    }); // End DOMContentLoaded
+
+    // --- Helper Functions ---
+
+    function updateProfilePicturePreview(imageUrl, userName = '') {
+        const previewDiv = document.getElementById('profilePicturePreview');
+        previewDiv.innerHTML = '';
+
+        if (imageUrl) {
+            const img = document.createElement('img');
+            img.src = imageUrl;
+            img.alt = 'Foto de perfil';
+            previewDiv.appendChild(img);
+            previewDiv.style.fontSize = '';
+            previewDiv.style.color = '';
+            previewDiv.style.backgroundColor = '';
+            previewDiv.style.lineHeight = '';
+
+        } else {
+            const initials = userName ? userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
+            previewDiv.textContent = initials;
+            previewDiv.style.fontSize = '30px';
+            previewDiv.style.color = '#6c757d';
+            previewDiv.style.backgroundColor = '#e9ecef';
+            previewDiv.style.lineHeight = '100px';
+        }
+    }
+
+    async function populateCidadesPorEstado(uf, initialCity = null) {
+        const cidadeSelect = document.getElementById('cidadeSelect');
+
+        cidadeSelect.innerHTML = '<option value="">Carregando Cidades...</option>';
+        cidadeSelect.disabled = true;
+
+        if (!uf) {
+            cidadeSelect.innerHTML = '<option value="">Selecione o Estado Primeiro</option>';
+            cidadeSelect.disabled = true;
+            cidadeSelect.value = '';
+            return;
+        }
+
+        const apiUrl = cidadesApiUrl(uf);
+
+        try {
+            const response = await fetch(apiUrl);
+            if (!response.ok) {
+                throw new Error(`Erro HTTP! status: ${response.status}`);
+            }
+            const cidades = await response.json();
+
+            cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
+
+            if (cidades.length === 0) {
+                cidadeSelect.innerHTML = '<option value="">Nenhuma cidade encontrada</option>';
+                 cidadeSelect.disabled = true;
+            } else {
+                cidades.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(cidade => {
+                    const option = document.createElement('option');
+                    option.value = cidade.nome;
+                    option.textContent = cidade.nome;
+                    cidadeSelect.appendChild(option);
+                });
+                 cidadeSelect.disabled = false;
+
+                 if (initialCity) {
+                     const optionToSelect = Array.from(cidadeSelect.options).find(option => option.value === initialCity);
+                     if (optionToSelect) {
+                         cidadeSelect.value = initialCity;
+                     } else {
+                         console.warn(`Cidade "${initialCity}" não encontrada na lista para o estado ${uf}.`);
+                         cidadeSelect.value = '';
+                     }
+                 }
+            }
+
+
+        } catch (error) {
+            console.error('Erro ao carregar cidades:', error);
+            cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+            cidadeSelect.disabled = true;
+            cidadeSelect.value = '';
+        }
+    }
+
+    function populateUserSports(userPracticedSports) {
+        const container = document.getElementById('esportesHabilidadeContainer');
+        container.innerHTML = '';
+
+        const safeUserPracticedSports = (userPracticedSports && Array.isArray(userPracticedSports)) ? userPracticedSports : [];
+
+        if (safeUserPracticedSports.length > 0) {
+            safeUserPracticedSports.forEach(esporte => {
+                 if (esporte && (esporte.id || esporte._id) && esporte.nivel) { // Allow _id or id
+                     const sportId = String(esporte.id || esporte._id);
+                     addSportEntry(sportId, esporte.nivel);
+                 } else {
+                      console.warn('Formato de objeto esporte inesperado encontrado:', esporte);
+                 }
+            });
+        }
+
+        // Always add at least one empty sport entry if no sports are loaded or if availableSports is empty
+        if (container.children.length === 0 && (availableSports && availableSports.length > 0)) {
+             addSportEntry('', '');
+        }
+
+
+         if (!availableSports || availableSports.length === 0) {
+              addSportBtn.disabled = true;
+              container.querySelectorAll('.sport-select, .level-select, .remove-sport-btn').forEach(el => el.disabled = true);
+         } else {
+              addSportBtn.disabled = false;
+         }
+    }
+
+
+    function addSportEntry(selectedSportId = '', selectedLevel = '') {
+        const container = document.getElementById('esportesHabilidadeContainer');
+        const levels = skillLevels;
+
+        const entryDiv = document.createElement('div');
+        entryDiv.className = 'sport-entry';
+
+        const sportSelect = document.createElement('select');
+        sportSelect.className = 'sport-select';
+        sportSelect.dataset.previousValue = selectedSportId;
+
+
+        let sportOptions = '<option value="">Selecione um esporte</option>';
+        if (availableSports && Array.isArray(availableSports) && availableSports.length > 0) {
+            availableSports.forEach(sport => {
+                 const currentSportId = String(sport.id || sport._id); // Handle both 'id' and '_id'
+                 sportOptions += `<option value="${currentSportId}" ${currentSportId === selectedSportId ? 'selected' : ''}>${sport.nome}</option>`;
+            });
+             sportSelect.disabled = false;
+
+        } else {
+             sportOptions += '<option value="" disabled>Nenhum esporte disponível</option>';
+             sportSelect.disabled = true;
+        }
+        sportSelect.innerHTML = sportOptions;
+
+        const levelSelect = document.createElement('select');
+        levelSelect.className = 'level-select';
+        let levelOptions = '<option value="">Selecione o nível</option>';
+        levels.forEach(level => {
+            levelOptions += `<option value="${level}" ${level === selectedLevel ? 'selected' : ''}>${level.charAt(0).toUpperCase() + level.slice(1)}</option>`;
+        });
+        levelSelect.innerHTML = levelOptions;
+        if (!availableSports || availableSports.length === 0) {
+            levelSelect.disabled = true;
+        }
+
+
+        const removeButton = document.createElement('button');
+        removeButton.type = 'button';
+        removeButton.className = 'remove-sport-btn';
+        removeButton.textContent = 'Remover';
+         if (!availableSports || availableSports.length === 0) {
+             removeButton.disabled = true;
+          } else {
+              removeButton.disabled = false;
+          }
+
+        entryDiv.appendChild(sportSelect);
+        entryDiv.appendChild(levelSelect);
+        entryDiv.appendChild(removeButton);
+
+        container.appendChild(entryDiv);
+    }
+
+    function showMessage(type, text) {
+        const mensagemDiv = document.getElementById('mensagemDiv');
+        mensagemDiv.className = `message ${type}`;
+        mensagemDiv.textContent = text;
+        mensagemDiv.style.display = 'block';
+
+        if (type !== 'error') {
+           clearTimeout(mensagemDiv.dataset.timer);
+           mensagemDiv.dataset.timer = setTimeout(() => {
+               mensagemDiv.style.display = 'none';
+           }, 5000);
+        } else {
+             clearTimeout(mensagemDiv.dataset.timer);
+        }
+    }
+
+  </script>
+</body>
+</html>

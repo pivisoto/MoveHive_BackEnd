@@ -1,6 +1,6 @@
 import bcrypt
 from firebase_admin import firestore, credentials
-from flask import jsonify
+from flask import g, jsonify
 from Models.Usuario_Model import Usuario
 from middlewares.token_required import generate_token
 from middlewares.auth_token import token_required
@@ -17,23 +17,37 @@ db = firestore.client()
 
 
 # Função para Registar Usuario
-def registrar_usuario(nome, email, senha, esporte_id, estado):
+def registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados):
     usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('email', '==', email).limit(1)
-    docs = query.stream()
 
-    if any(docs):
+    # Verifica se o e-mail já está cadastrado
+    email_query = usuarios_ref.where('email', '==', email).limit(1)
+    email_docs = list(email_query.stream())
+    if email_docs:
         return {"erro": "E-mail já cadastrado"}, 400
+
+    # Verifica se o username já está cadastrado
+    username_query = usuarios_ref.where('username', '==', username).limit(1)
+    username_docs = list(username_query.stream())
+    if username_docs:
+        return {"erro": "Username já está em uso"}, 400
 
     senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
-    usuario = Usuario(nome=nome, email=email, senha=senha_hash, esporte_id=esporte_id, estado=estado)
+    usuario = Usuario(
+        nome_completo=nome_completo,
+        username=username,
+        email=email,
+        senha=senha_hash,
+        estado=estado,
+        cidade=cidade,
+        esportes_praticados=esportes_praticados 
+    )
 
     doc_ref = usuarios_ref.document(usuario.id)
     doc_ref.set(usuario.to_dict())
 
     return {"status": "sucesso", "id": doc_ref.id}, 201
-
 
 
 # Função para Logar Usuario
@@ -63,6 +77,7 @@ def login_usuario(email, senha):
 
 
 # Função para Listar Usuarios
+@token_required  
 def listar_usuarios():
     usuarios = db.collection('Usuarios').stream()
     lista = []
@@ -74,6 +89,7 @@ def listar_usuarios():
 
 
 # Função para Deletar Usuario por ID
+@token_required  
 def deletar_usuario_por_id(usuario_id):
     doc_ref = db.collection('Usuarios').document(usuario_id)
     if not doc_ref.get().exists:
@@ -83,8 +99,11 @@ def deletar_usuario_por_id(usuario_id):
     return {"status": "sucesso", "mensagem": "Usuário deletado com sucesso"}, 200
 
 
+
 # Função para Editar Usuario por ID
-def editar_usuario_por_id(usuario_id, novos_dados):
+@token_required  
+def editar_usuario_por_id(novos_dados):
+    usuario_id = g.user_id
     doc_ref = db.collection('Usuarios').document(usuario_id)
     snapshot = doc_ref.get()
 
@@ -101,20 +120,12 @@ def editar_usuario_por_id(usuario_id, novos_dados):
 
 
 
-@token_required  # A verificação do token vai ser feita aqui no Service
-def meu_perfil(request):
-    user_id = request.user_id  # Obtém o user_id do token decodificado
-
-    # Acessa o banco para buscar as informações do usuário
+  
+def buscar_usuario_por_id(user_id):
     usuario_ref = db.collection('Usuarios').document(user_id)
     usuario = usuario_ref.get()
 
     if not usuario.exists:
         return jsonify({'erro': 'Usuário não encontrado!'}), 404
 
-    dados_usuario = usuario.to_dict()
-
-    return jsonify({
-        'status': 'sucesso',
-        'usuario': dados_usuario  # Retorna as informações do usuário
-    }), 200
+    return usuario.to_dict()

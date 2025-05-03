@@ -1,13 +1,8 @@
-from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify, g
 from middlewares.token_required import generate_token
-from Services.Usuario_Service import (
-    registrar_usuario,
-    login_usuario,
-    listar_usuarios,
-    deletar_usuario_por_id,
-    editar_usuario_por_id,
-    meu_perfil
-)
+from middlewares.auth_token import token_required
+import Services.Usuario_Service as usuario_service
+
 
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix="/usuario" )
 
@@ -22,18 +17,23 @@ def registrarUsuario():
     if not data:
         return jsonify({"erro": "Dados do evento não fornecidos"}), 400
 
-
-    nome = data.get('nome')
+    nome_completo = data.get('nome_completo')
+    username = data.get('username')
     email = data.get('email')
     senha = data.get('senha')
-    esporte_id = data.get('esporte_id')
     estado = data.get('estado')
+    cidade = data.get('cidade')
+    esportes_praticados = data.get('esportes_praticados')  
 
-    if not email or not senha or not esporte_id or not nome or not estado:
-        return jsonify({"erro": "Campos 'email', 'senha' , 'nome' , 'estado' e 'esporte_id' são obrigatórios"}), 400
+    if not email or not senha or not nome_completo or not estado or not esportes_praticados:
+        return jsonify({"erro": "Campos 'email', 'senha', 'nome', 'estado' e 'esportes_praticados' são obrigatórios"}), 400
 
-    resposta, status = registrar_usuario(nome, email, senha, esporte_id, estado)
+    resposta, status = usuario_service.registrar_usuario(
+        nome_completo, username, email, senha, estado, cidade, esportes_praticados)
+    
+    
     return jsonify(resposta), status
+
 
 
 
@@ -46,7 +46,7 @@ def loginUsuario():
     if not email or not senha:
         return jsonify({"erro": "Campos 'email' e 'senha' são obrigatórios"}), 400
 
-    resposta, status = login_usuario(email, senha)
+    resposta, status = usuario_service.login_usuario(email, senha)
 
     return jsonify(resposta), status
 
@@ -56,7 +56,7 @@ def loginUsuario():
 @usuario_bp.route('/ListarUsuarios', methods=['GET'])
 def listarUsuarios():
     try:
-        usuarios = listar_usuarios()
+        usuarios = usuario_service.listar_usuarios()
         return jsonify(usuarios), 200
     
     except Exception as e:
@@ -67,25 +67,39 @@ def listarUsuarios():
 
 
 @usuario_bp.route('/ExcluirUsuario/<usuario_id>', methods=['DELETE'])
-def deletarPorID(usuario_id):
-    resposta, status = deletar_usuario_por_id(usuario_id)
+@token_required  
+def deletar_por_ID(usuario_id):
+    resposta, status = usuario_service.deletar_usuario_por_id(usuario_id)
     return jsonify(resposta), status
 
 
 
 
-@usuario_bp.route('/EditarUsuario/<usuario_id>', methods=['PUT'])
-def editar(usuario_id):
+@usuario_bp.route('/EditarUsuario', methods=['PUT'])
+@token_required
+def editar():
     novos_dados = request.get_json()
 
     if not novos_dados:
         return jsonify({"erro": "Nenhum dado fornecido para atualização"}), 400
 
-    resposta, status = editar_usuario_por_id(usuario_id, novos_dados)
+    resposta, status = usuario_service.editar_usuario_por_id(novos_dados)
+
     return jsonify(resposta), status
 
 
 
-@usuario_bp.route('/MeuPerfil', methods=['GET'])
-def meu_perfil_route():
-    return meu_perfil(request)  
+
+@usuario_bp.route('/BuscarUsuarioID', methods=['GET'])
+@token_required  
+def buscar_usuario_por_id():
+    user_id = g.user_id
+    dados_usuario = usuario_service.buscar_usuario_por_id(user_id)
+
+    if not dados_usuario:
+        return jsonify({'erro': 'Usuário não encontrado!'}), 404
+
+    return jsonify({
+        'status': 'sucesso',
+        'usuario': dados_usuario
+    }), 200 
