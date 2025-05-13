@@ -28,11 +28,12 @@ def criarPostagem():
     imagem = data.get('imagem', '')
     status_postagem = data.get('status_postagem', 'ativo')
     contador_curtidas = data.get('contador_curtidas', 0)
+    comentarios = data.get('comentarios','')
 
     if not usuario_id or not conteudo or not esporte_praticado:
         return jsonify({"erro": "Campos 'usuario_id', 'conteudo' e 'esporte_praticado' são obrigatórios"}), 400
 
-    resposta, status = criar_postagem(usuario_id, conteudo, esporte_praticado, imagem, status_postagem, contador_curtidas)
+    resposta, status = criar_postagem(usuario_id, conteudo, esporte_praticado, imagem, status_postagem, contador_curtidas,comentarios)
     return jsonify(resposta), status
 
 
