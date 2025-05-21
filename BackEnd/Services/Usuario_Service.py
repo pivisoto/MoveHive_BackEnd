@@ -17,7 +17,7 @@ db = firestore.client()
 
 
 # Função para Registar Usuario
-def registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados):
+def registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados,seguidores,seguindo):
     usuarios_ref = db.collection('Usuarios')
 
     # Verifica se o e-mail já está cadastrado
@@ -41,7 +41,9 @@ def registrar_usuario(nome_completo, username, email, senha, estado, cidade, esp
         senha=senha_hash,
         estado=estado,
         cidade=cidade,
-        esportes_praticados=esportes_praticados 
+        esportes_praticados=esportes_praticados,
+        seguidores=seguidores,
+        seguindo=seguindo
     )
 
     doc_ref = usuarios_ref.document(usuario.id)
@@ -71,7 +73,7 @@ def login_usuario(email, senha):
         "mensagem": "Login bem-sucedido",
         "token": token,
     }
-
+    
     return resposta, 200
 
 
@@ -118,6 +120,39 @@ def editar_usuario_por_id(novos_dados):
     return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
 
 
+def toggle_seguir_usuario(solicitacao):
+    usuario_pedindo = g.user_id
+    usuario_seguido = solicitacao['id_solicitando']
+
+    doc_ref_solicitante = db.collection('Usuarios').document(usuario_pedindo)
+    doc_ref_seguido = db.collection('Usuarios').document(usuario_seguido)
+
+    snapshot_solicitante = doc_ref_solicitante.get()
+    snapshot_seguido = doc_ref_seguido.get()
+
+    if not snapshot_solicitante.exists:
+        return {"erro": "Usuário solicitante não encontrado"}, 404
+
+    if not snapshot_seguido.exists:
+        return {"erro": "Usuário seguido não encontrado"}, 404
+
+    dados_solicitante = snapshot_solicitante.to_dict()
+    dados_seguido = snapshot_seguido.to_dict()
+    seguindo_solicitante = dados_solicitante.get('seguindo', [])
+    seguidores_seguido = dados_seguido.get('seguidores', [])
+
+    if usuario_seguido in seguindo_solicitante:
+        seguindo_solicitante.remove(usuario_seguido)
+        seguidores_seguido.remove(usuario_pedindo)
+        doc_ref_solicitante.update({"seguindo": seguindo_solicitante})
+        doc_ref_seguido.update({"seguidores": seguidores_seguido})
+        return {"status": "sucesso", "mensagem": "Você deixou de seguir o usuário"}, 201
+    else:
+        seguindo_solicitante.append(usuario_seguido)
+        seguidores_seguido.append(usuario_pedindo)
+        doc_ref_solicitante.update({"seguindo": seguindo_solicitante})
+        doc_ref_seguido.update({"seguidores": seguidores_seguido})
+        return {"status": "sucesso", "mensagem": "Você começou a seguir o usuário"}, 200
 
   
 def buscar_usuario_por_id(user_id):

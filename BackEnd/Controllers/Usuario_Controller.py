@@ -24,12 +24,12 @@ def registrarUsuario():
     estado = data.get('estado')
     cidade = data.get('cidade')
     esportes_praticados = data.get('esportes_praticados')  
-
+    seguidores = []
+    seguindo = []
     if not email or not senha or not nome_completo or not estado or not esportes_praticados:
         return jsonify({"erro": "Campos 'email', 'senha', 'nome', 'estado' e 'esportes_praticados' são obrigatórios"}), 400
 
-    resposta, status = usuario_service.registrar_usuario(
-        nome_completo, username, email, senha, estado, cidade, esportes_praticados)
+    resposta, status = usuario_service.registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados,seguidores,seguindo)
     
     
     return jsonify(resposta), status
@@ -58,7 +58,6 @@ def listarUsuarios():
     try:
         usuarios = usuario_service.listar_usuarios()
         return jsonify(usuarios), 200
-    
     except Exception as e:
         print(f"Erro na rota listarUsuarios: {e}")
         return jsonify({"erro": "Erro interno ao listarUsuarios"}), 500
@@ -87,7 +86,17 @@ def editar():
 
     return jsonify(resposta), status
 
+@usuario_bp.route('/ToggleSeguir', methods=['PUT'])
+@token_required
+def toggle_seguir(solicitacao):
+    novos_dados = request.get_json()
 
+    if not novos_dados:
+        return jsonify({"erro": "Nenhum usuario para seguir"}), 400
+
+    resposta, status = usuario_service.toggle_seguir_usuario(solicitacao)
+
+    return jsonify(resposta), status
 
 
 @usuario_bp.route('/BuscarUsuarioID', methods=['GET'])

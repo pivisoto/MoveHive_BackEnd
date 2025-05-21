@@ -3,7 +3,7 @@ from datetime import datetime
 
 class Postagem:
     def __init__(self, usuario_id, conteudo,  esporte_praticado,
-                 imagem='', status_postagem='ativo',comentarios,contador_curtidas=0):
+                 imagem='', status_postagem='ativo',comentarios=[],contador_curtidas=0):
         
         self.id = str(uuid.uuid4())
         self.usuario_id = usuario_id
