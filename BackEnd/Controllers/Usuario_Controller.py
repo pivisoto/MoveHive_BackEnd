@@ -62,7 +62,27 @@ def listarUsuarios():
         print(f"Erro na rota listarUsuarios: {e}")
         return jsonify({"erro": "Erro interno ao listarUsuarios"}), 500
 
+#exemplo http://localhost:5000/ListarSeguindo?username=joao
+@usuario_bp.route('/ListarSeguindo', methods=['GET'])
+def listarSeguidores():
+    try:
+        solicitacao = request.args.get('username')
+        seguindo = usuario_service.listar_seguindo(solicitacao)
+        return jsonify(seguindo), 200
+    except Exception as e:
+        print(f"Erro na rota listarUsuarios: {e}")
+        return jsonify({"erro": "Erro interno ao listarSeguindo"}), 500
 
+
+@usuario_bp.route('/ListarSeguidores', methods=['GET'])
+def listarSeguindo():
+    try:
+        solicitacao = request.args.get('username')
+        seguindo = usuario_service.listar_seguidores(solicitacao)
+        return jsonify(seguindo), 200
+    except Exception as e:
+        print(f"Erro na rota listarUsuarios: {e}")
+        return jsonify({"erro": "Erro interno ao listarSeguidores"}), 500
 
 
 @usuario_bp.route('/ExcluirUsuario/<usuario_id>', methods=['DELETE'])
@@ -86,14 +106,12 @@ def editar():
 
     return jsonify(resposta), status
 
+#exemplo http://127.0.0.1:5000/usuario/Toggle_seguir?username=pivisoto
 @usuario_bp.route('/ToggleSeguir', methods=['PUT'])
-@token_required
-def toggle_seguir(solicitacao):
-    novos_dados = request.get_json()
-
-    if not novos_dados:
+def toggle_seguir():
+    solicitacao = request.get_json()
+    if not solicitacao:
         return jsonify({"erro": "Nenhum usuario para seguir"}), 400
-
     resposta, status = usuario_service.toggle_seguir_usuario(solicitacao)
 
     return jsonify(resposta), status

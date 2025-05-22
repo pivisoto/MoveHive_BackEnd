@@ -159,6 +159,22 @@
       }
     });
 
+        document.addEventListener('DOMContentLoaded', async () => {
+      const select = document.getElementById('esporteSelect');
+      try {
+        const response = await fetch(esportesApiUrl + '/ListarSeguindo');
+        const esportes = await response.json();
+        esportes.forEach(esporte => {
+          const option = document.createElement('option');
+          option.value = esporte.id;
+          option.textContent = esporte.nome;
+          select.appendChild(option);
+        });
+      } catch (error) {
+        console.error('Erro ao carregar esportes:', error);
+      }
+    });
+
     // Registrar usuário
     document.getElementById('form-registrar').addEventListener('submit', function(event) {
       event.preventDefault();
