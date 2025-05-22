@@ -106,7 +106,8 @@ def editar():
 
     return jsonify(resposta), status
 
-#exemplo http://127.0.0.1:5000/usuario/Toggle_seguir?username=pivisoto
+#exemplo http://127.0.0.1:5000/usuario/ToggleSeguir
+# utiliza, username de quem a pessoa quer seguir {"username":"pivisoto"}
 @usuario_bp.route('/ToggleSeguir', methods=['PUT'])
 def toggle_seguir():
     solicitacao = request.get_json()

@@ -120,54 +120,49 @@ def editar_usuario_por_id(novos_dados):
     return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
 
 def toggle_seguir_usuario(solicitacao):
-    #usuario_pedindo = g.user_id
-    usuario_pedindo = 'd8bf00e6-b401-4d0e-a1eb-7e48d3714c97'
+    usuario_pedindo_id = '24873626-9b10-480e-b8e6-6cf661eebb6e'
     username_seguido = solicitacao['username']
 
-    # Referência ao documento do solicitante
-    doc_ref_solicitante = db.collection('Usuarios').document(usuario_pedindo)
+    doc_ref_solicitante = db.collection('Usuarios').document(usuario_pedindo_id)
     snapshot_solicitante = doc_ref_solicitante.get()
 
     if not snapshot_solicitante.exists:
         return {"erro": "Usuário solicitante não encontrado"}, 404
 
-    # Busca do documento do seguido com base no username
-    usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('username', '==', username_seguido).limit(1)
-    resultado = list(query.stream())
+    dados_solicitante = snapshot_solicitante.to_dict()
+    username_solicitante = dados_solicitante.get('username')
 
-    if not resultado:
+    if not username_solicitante:
+        return {"erro": "Username do solicitante não encontrado"}, 400
+
+    usuarios_ref = db.collection('Usuarios')
+    query_seguido = usuarios_ref.where('username', '==', username_seguido).limit(1)
+    resultado_seguido = list(query_seguido.stream())
+
+    if not resultado_seguido:
         return {"erro": "Usuário a ser seguido não encontrado"}, 404
 
-    doc_snapshot_seguido = resultado[0]
-    doc_id_seguido = doc_snapshot_seguido.id  # ID real no Firestore
-    doc_ref_seguido = db.collection('Usuarios').document(doc_id_seguido)
-
-    # Dados dos documentos
-    dados_solicitante = snapshot_solicitante.to_dict()
+    doc_snapshot_seguido = resultado_seguido[0]
+    doc_ref_seguido = doc_snapshot_seguido.reference
     dados_seguido = doc_snapshot_seguido.to_dict()
 
     seguindo_solicitante = dados_solicitante.get('seguindo', [])
     seguidores_seguido = dados_seguido.get('seguidores', [])
 
-    if doc_id_seguido in seguindo_solicitante:
-        # Se já está seguindo, desfaz a ação
-        seguindo_solicitante.remove(doc_id_seguido)
-        seguidores_seguido.remove(usuario_pedindo)
+    if username_seguido in seguindo_solicitante:
+        seguindo_solicitante.remove(username_seguido)
+        seguidores_seguido.remove(username_solicitante)
         mensagem = "Você deixou de seguir o usuário"
         status_code = 201
     else:
-        # Caso contrário, começa a seguir
-        seguindo_solicitante.append(doc_id_seguido)
-        seguidores_seguido.append(usuario_pedindo)
+        seguindo_solicitante.append(username_seguido)
+        seguidores_seguido.append(username_solicitante)
         mensagem = "Você começou a seguir o usuário"
         status_code = 200
 
-    # Atualizações no Firestore
     doc_ref_solicitante.update({"seguindo": seguindo_solicitante})
     doc_ref_seguido.update({"seguidores": seguidores_seguido})
-
-    return {"status": "sucesso", "mensagem": mensagem}, status_code
+    return {"status": "sucesso", "mensagem": "Lista de seguidores e seguindo atualizadas com sucesso"}, 200 
 
 
 def listar_seguindo(username):
