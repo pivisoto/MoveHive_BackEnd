@@ -12,6 +12,4 @@ def generate_token(user_id):
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
 
-    print(token)
-
     return token

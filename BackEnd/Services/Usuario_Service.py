@@ -1,3 +1,4 @@
+from datetime import date, datetime
 import bcrypt
 from firebase_admin import firestore, credentials
 from flask import g, jsonify
@@ -16,65 +17,73 @@ if not firebase_admin._apps:
 db = firestore.client()
 
 
+def calcular_idade(data_nascimento):
+    hoje = date.today()
+    idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
+    return idade
+
+
+
+
 # Função para Registar Usuario
-def registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados,seguidores,seguindo):
+def registrar_usuario(username, data_nascimento_str, email, senha):
     usuarios_ref = db.collection('Usuarios')
 
-    # Verifica se o e-mail já está cadastrado
-    email_query = usuarios_ref.where('email', '==', email).limit(1)
-    email_docs = list(email_query.stream())
-    if email_docs:
-        return {"erro": "E-mail já cadastrado"}, 400
+    if list(usuarios_ref.where('email', '==', email).limit(1).stream()):
+        return {"erro": "E-mail já cadastrado"}
 
-    # Verifica se o username já está cadastrado
-    username_query = usuarios_ref.where('username', '==', username).limit(1)
-    username_docs = list(username_query.stream())
-    if username_docs:
-        return {"erro": "Username já está em uso"}, 400
+    if list(usuarios_ref.where('username', '==', username).limit(1).stream()):
+        return {"erro": "Username já está em uso"}
+
+    try:
+        data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
+    except ValueError:
+        return {"erro": "Data de nascimento inválida. Use o formato YYYY-MM-DD."}
+
+    if data_nascimento > date.today():
+        return {"erro": "Data de nascimento não pode ser futura."}
+
+    if data_nascimento.year < 1900:
+        return {"erro": "Ano de nascimento inválido."}
+
+    idade = calcular_idade(data_nascimento)
+    if idade < 18:
+        return {"erro": "É necessário ter pelo menos 18 anos para se cadastrar."}
 
     senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     usuario = Usuario(
-        nome_completo=nome_completo,
         username=username,
         email=email,
         senha=senha_hash,
-        estado=estado,
-        cidade=cidade,
-        esportes_praticados=esportes_praticados,
-        seguidores=seguidores,
-        seguindo=seguindo
+        data_nascimento=data_nascimento_str
     )
 
     doc_ref = usuarios_ref.document(usuario.id)
     doc_ref.set(usuario.to_dict())
 
-    return {"status": "sucesso", "id": doc_ref.id}, 201
+    token = generate_token(doc_ref.id)
+
+    return {"token": token}, 201
+
 
 
 # Função para Logar Usuario
 def login_usuario(email, senha):
     usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('email', '==', email).limit(1)
-    docs = query.stream()
+    docs = usuarios_ref.where('email', '==', email).limit(1).stream()
     usuario_doc = next(docs, None)
 
     if not usuario_doc:
-        return {"erro": "E-mail não encontrado"}, 400
+        return {"erro": "E-mail não encontrado"}
 
     dados = usuario_doc.to_dict()
     if not bcrypt.checkpw(senha.encode('utf-8'), dados['senha'].encode('utf-8')):
-        return {"erro": "Senha incorreta"}, 400
-    
+        return {"erro": "Senha incorreta"}
+
     token = generate_token(usuario_doc.id)
 
-    resposta = {
-        "status": "sucesso",
-        "mensagem": "Login bem-sucedido",
-        "token": token,
-    }
-    
-    return resposta, 200
+    return {"token": token}, 200
 
 
 

@@ -4,35 +4,30 @@ from middlewares.auth_token import token_required
 import Services.Usuario_Service as usuario_service
 
 
+
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix="/usuario" )
 
 
 @usuario_bp.route('/RegistrarUsuario', methods=['POST'])
 def registrarUsuario():
-    try:
-        data = request.get_json()
-    except Exception:
-        return jsonify({"erro": "Requisição inválida: JSON não fornecido ou mal formatado"}), 400
-
+    data = request.get_json()
     if not data:
-        return jsonify({"erro": "Dados do evento não fornecidos"}), 400
+        return jsonify({"erro": "Dados do formulário não fornecidos"}), 400
 
-    nome_completo = data.get('nome_completo')
     username = data.get('username')
+    data_nascimento = data.get('data_nascimento')
     email = data.get('email')
     senha = data.get('senha')
-    estado = data.get('estado')
-    cidade = data.get('cidade')
-    esportes_praticados = data.get('esportes_praticados')  
-    seguidores = []
-    seguindo = []
-    if not email or not senha or not nome_completo or not estado or not esportes_praticados:
-        return jsonify({"erro": "Campos 'email', 'senha', 'nome', 'estado' e 'esportes_praticados' são obrigatórios"}), 400
 
-    resposta, status = usuario_service.registrar_usuario(nome_completo, username, email, senha, estado, cidade, esportes_praticados,seguidores,seguindo)
-    
-    
-    return jsonify(resposta), status
+    if not all([username, data_nascimento, email, senha]):
+        return jsonify({"erro": "Campos obrigatórios ausentes"}), 400
+
+    resultado = usuario_service.registrar_usuario(username, data_nascimento, email, senha)
+
+    if isinstance(resultado, tuple):
+        return jsonify(resultado[0]), resultado[1]
+
+    return jsonify(resultado), 400
 
 
 
@@ -61,6 +56,7 @@ def listarUsuarios():
     except Exception as e:
         print(f"Erro na rota listarUsuarios: {e}")
         return jsonify({"erro": "Erro interno ao listarUsuarios"}), 500
+
 
 #exemplo http://localhost:5000/ListarSeguindo?username=joao
 @usuario_bp.route('/ListarSeguindo', methods=['GET'])

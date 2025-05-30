@@ -1,530 +1,321 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Registro de Usuário</title>
-  <style>
-    :root {
-      --primary-color: #4361ee;
-      --primary-hover: #3a56d4;
-      --success-color: #4cc9f0;
-      --error-color: #f72585;
-      --light-gray: #f8f9fa;
-      --dark-gray: #343a40;
-      --border-radius: 8px;
-      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --transition: all 0.3s ease;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move Hive - Cadastro</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #ffffff;
+        }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        .form-container {
+            background-color: #2d2d2d;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            text-align: center;
+        }
 
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      background-color: #f5f7fa;
-      color: #333;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
+        .logo {
+            margin-bottom: 30px;
+        }
 
-    .container {
-      width: 100%;
-      max-width: 500px;
-      padding: 2rem;
-    }
+        .logo .move {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+        }
 
-    .card {
-      background: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 2rem;
-      transition: var(--transition);
-    }
+        .logo .hive {
+            font-size: 3em;
+            font-weight: bold;
+            color: #FACC15;
+            display: block;
+            margin-top: -10px;
+        }
 
-    .card:hover {
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
 
-    h2 {
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 1.8rem;
-    }
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #e0e0e0;
+        }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
+        .input-group input[type="email"],
+        .input-group input[type="password"],
+        .input-group input[type="text"],
+        .input-group input[type="date"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #444444;
+            border-radius: 8px;
+            background-color: #3a3a3a;
+            color: #ffffff;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
 
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
+        .input-group input[type="date"]:not(:valid)::before {
+            content: attr(placeholder);
+            color: #888888;
+        }
+        .input-group input[type="date"]:valid,
+        .input-group input[type="date"]:focus {
+           color: #ffffff;
+        }
+        .input-group input[type="date"]::-webkit-datetime-edit-year-field:not(:valid),
+        .input-group input[type="date"]::-webkit-datetime-edit-month-field:not(:valid),
+        .input-group input[type="date"]::-webkit-datetime-edit-day-field:not(:valid) {
+            color: transparent;
+        }
 
-    label {
-      font-weight: 600;
-      color: var(--dark-gray);
-      font-size: 0.9rem;
-    }
 
-    input, select {
-      padding: 0.8rem 1rem;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      transition: var(--transition);
-    }
+        .input-group input::placeholder {
+            color: #888888;
+        }
 
-    input:focus, select:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-    }
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
 
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 1rem;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-top: 0.5rem;
-    }
+        .btn-primary {
+            background-color: #FACC15;
+            color: #000000;
+            margin-bottom: 15px;
+        }
 
-    button:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-2px);
-    }
+        .btn-primary:hover {
+            background-color: #e0b40d;
+        }
 
-    button:active {
-      transform: translateY(0);
-    }
+        .btn-secondary {
+            background-color: transparent;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+        }
 
-    .message {
-      padding: 0.8rem;
-      border-radius: var(--border-radius);
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      text-align: center;
-    }
+        .btn-secondary:hover {
+            background-color: #ffffff;
+            color: #2d2d2d;
+        }
 
-    .error {
-      background-color: rgba(247, 37, 133, 0.1);
-      color: var(--error-color);
-      border: 1px solid rgba(247, 37, 133, 0.3);
-    }
+        .senha-feedback {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            height: 1em;
+        }
+        .senha-feedback.erro {
+            color: #ff6b6b;
+        }
+        .senha-feedback.sucesso {
+            color: #86dc3d;
+        }
+        input.erro-borda {
+            border-color: #ff6b6b !important;
+        }
+        input.sucesso-borda {
+            border-color: #86dc3d !important;
+        }
+        .form-feedback-general {
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            min-height: 1em;
+        }
+        .form-feedback-general.erro {
+            color: #ff6b6b;
+        }
+        .form-feedback-general.sucesso {
+            color: #86dc3d;
+        }
 
-    .success {
-      background-color: rgba(76, 201, 240, 0.1);
-      color: var(--success-color);
-      border: 1px solid rgba(76, 201, 240, 0.3);
-    }
-
-    .selected-sports-list {
-        margin-top: 0.8rem;
-        padding: 0;
-        list-style: none;
-        display: flex;
-        flex-wrap: wrap;
-        gap: 0.5rem;
-    }
-
-    .selected-sport-item {
-        display: inline-flex;
-        align-items: center;
-        background-color: var(--primary-color);
-        color: white;
-        padding: 0.4rem 0.8rem;
-        border-radius: 20px;
-        font-size: 0.9rem;
-        white-space: nowrap;
-        gap: 0.4rem;
-    }
-
-    .selected-sport-item span {
-        flex-grow: 1;
-    }
-
-    .selected-sport-item .remove-sport {
-        background: none;
-        border: none;
-        color: white;
-        font-size: 1rem;
-        line-height: 1;
-        padding: 0;
-        margin: 0;
-        cursor: pointer;
-        transition: opacity 0.2s ease;
-        font-weight: bold;
-        opacity: 0.8;
-    }
-
-    .selected-sport-item .remove-sport:hover {
-        opacity: 1;
-        color: var(--error-color);
-    }
-
-    @media (max-width: 600px) {
-      .container {
-        padding: 1rem;
-      }
-
-      .card {
-        padding: 1.5rem;
-      }
-    }
-  </style>
+    </style>
 </head>
 <body>
 
-  <div class="container">
-    <div class="card">
-      <h2>Registro de Usuário</h2>
-
-      <form id="registroForm">
-        <div class="form-group">
-          <label for="nome_completo">Nome Completo:</label>
-          <input type="text" id="nome_completo" required placeholder="Digite seu nome completo">
+    <div class="form-container">
+        <div class="logo">
+            <span class="move">MOVE</span>
+            <span class="hive">HIVE</span>
         </div>
 
-        <div class="form-group">
-          <label for="username">Username:</label>
-          <input type="text" id="username" required placeholder="Digite seu username">
-        </div>
+        <form id="cadastroForm" action="#" method="post">
+            <div class="input-group">
+                <label for="username">Nome de Usuário</label>
+                <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário @" required>
+            </div>
 
-        <div class="form-group">
-          <label for="email">E-mail:</label>
-          <input type="email" id="email" required placeholder="exemplo@email.com">
-        </div>
+            <div class="input-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" name="email" placeholder="Digite seu E-Mail" required>
+            </div>
 
-        <div class="form-group">
-          <label for="senha">Senha:</label>
-          <input type="password" id="senha" required placeholder="Crie uma senha segura">
-        </div>
+            <div class="input-group">
+                <label for="data-nascimento">Data de Nascimento</label>
+                <input type="date" id="data-nascimento" name="data_nascimento" placeholder="DD/MM/AAAA" required>
+            </div>
 
-        <div class="form-group">
-          <label for="confirmarSenha">Confirmar Senha:</label>
-          <input type="password" id="confirmarSenha" required placeholder="Repita sua senha">
-        </div>
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" placeholder="Digite sua Senha" required>
+            </div>
 
-        <div class="form-group">
-          <label for="estadoSelect">Estado:</label>
-          <select id="estadoSelect" required>
-            <option value="">Selecione o Estado</option>
-            <option value="AC">Acre (AC)</option>
-            <option value="AL">Alagoas (AL)</option>
-            <option value="AP">Amapá (AP)</option>
-            <option value="AM">Amazonas (AM)</option>
-            <option value="BA">Bahia (BA)</option>
-            <option value="CE">Ceará (CE)</option>
-            <option value="DF">Distrito Federal (DF)</option>
-            <option value="ES">Espírito Santo (ES)</option>
-            <option value="GO">Goiás (GO)</option>
-            <option value="MA">Maranhão (MA)</option>
-            <option value="MT">Mato Grosso (MT)</option>
-            <option value="MS">Mato Grosso do Sul (MS)</option>
-            <option value="MG">Minas Gerais (MG)</option>
-            <option value="PA">Pará (PA)</option>
-            <option value="PB">Paraíba (PB)</option>
-            <option value="PR">Paraná (PR)</option>
-            <option value="PE">Pernambuco (PE)</option>
-            <option value="PI">Piauí (PI)</option>
-            <option value="RJ">Rio de Janeiro (RJ)</option>
-            <option value="RN">Rio Grande do Norte (RN)</option>
-            <option value="RS">Rio Grande do Sul (RS)</option>
-            <option value="RO">Rondônia (RO)</option>
-            <option value="RR">Roraima (RR)</option>
-            <option value="SC">Santa Catarina (SC)</option>
-            <option value="SP">São Paulo (SP)</option>
-            <option value="SE">Sergipe (SE)</option>
-            <option value="TO">Tocantins (TO)</option>
-          </select>
-        </div>
+            <div class="input-group">
+                <label for="confirme-senha">Confirme sua senha</label>
+                <input type="password" id="confirme-senha" name="confirme_senha" placeholder="Confirme sua senha" required>
+                <small id="senha-feedback" class="senha-feedback"></small>
+            </div>
 
-        <div class="form-group">
-          <label for="cidadeSelect">Cidade:</label>
-          <select id="cidadeSelect" disabled required>
-            <option value="">Selecione a Cidade</option>
-          </select>
-        </div>
-
-        <div class="form-group">
-          <label for="esporteSelect">Esportes Praticados:</label>
-          <select id="esporteSelect">
-            <option value="">Adicionar Esporte</option>
-          </select>
-          <div id="selectedSportsList" class="selected-sports-list">
-          </div>
-        </div>
-
-
-        <div id="mensagem" class="message"></div>
-
-        <button type="submit">Registrar</button>
-      </form>
+            <button type="submit" class="btn btn-primary">Cadastrar-se</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
+        </form>
+        <div id="form-feedback" class="form-feedback-general"></div>
     </div>
-  </div>
 
-  <script>
+<script>
     const baseUrl = 'http://127.0.0.1:5000';
     const usuarioApiUrl = `${baseUrl}/usuario`;
-    const esportesApiUrl = `${baseUrl}/esportes`;
 
-    const estadoSelect = document.getElementById('estadoSelect');
-    const cidadeSelect = document.getElementById('cidadeSelect');
-    const esporteSelect = document.getElementById('esporteSelect');
-    const selectedSportsList = document.getElementById('selectedSportsList');
-    const registroForm = document.getElementById('registroForm');
-    const mensagemDiv = document.getElementById('mensagem');
+    const senhaInput = document.getElementById('senha');
+    const confirmeSenhaInput = document.getElementById('confirme-senha');
+    const senhaFeedback = document.getElementById('senha-feedback');
+    const cadastroForm = document.getElementById('cadastroForm');
+    const formFeedback = document.getElementById('form-feedback');
 
-    let selectedSportsIds = [];
-    const sportIdToNameMap = {};
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const dataNascimentoInput = document.getElementById('data-nascimento');
 
-    async function popularCidadesPorEstado(uf) {
-        cidadeSelect.innerHTML = '<option value="">Carregando Cidades...</option>';
-        cidadeSelect.disabled = true;
 
-        if (!uf) {
-            cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
-            cidadeSelect.disabled = true;
-            return;
+    function verificarSenhas() {
+        const senhaVal = senhaInput.value;
+        const confirmeSenhaVal = confirmeSenhaInput.value;
+
+        confirmeSenhaInput.classList.remove('erro-borda', 'sucesso-borda');
+        formFeedback.textContent = '';
+        formFeedback.className = 'form-feedback-general';
+
+
+        if (confirmeSenhaVal === "" && senhaVal === "") {
+            senhaFeedback.textContent = "";
+            senhaFeedback.className = 'senha-feedback';
+            return true;
         }
 
-        const apiUrl = `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`;
 
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error(`Erro HTTP! status: ${response.status}`);
-            }
-            const cidades = await response.json();
+        if (confirmeSenhaVal === "" && senhaVal !== "") {
+             senhaFeedback.textContent = "Confirme sua senha.";
+             senhaFeedback.className = 'senha-feedback erro';
+             confirmeSenhaInput.classList.add('erro-borda');
+             return false;
+        }
 
-            cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
 
-            if (cidades.length === 0) {
-                cidadeSelect.innerHTML = '<option value="">Nenhuma cidade encontrada para este estado</option>';
-            } else {
-                cidades.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(cidade => {
-                    const option = document.createElement('option');
-                    option.value = cidade.nome;
-                    option.textContent = cidade.nome;
-                    cidadeSelect.appendChild(option);
-                });
-            }
-
-            cidadeSelect.disabled = false;
-
-        } catch (error) {
-            console.error('Erro ao carregar cidades:', error);
-            cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
-            cidadeSelect.disabled = true;
+        if (senhaVal === confirmeSenhaVal) {
+            senhaFeedback.textContent = "As senhas coincidem!";
+            senhaFeedback.className = 'senha-feedback sucesso';
+            confirmeSenhaInput.classList.add('sucesso-borda');
+            return true;
+        } else {
+            senhaFeedback.textContent = "As senhas não coincidem.";
+            senhaFeedback.className = 'senha-feedback erro';
+            confirmeSenhaInput.classList.add('erro-borda');
+            return false;
         }
     }
 
-    estadoSelect.addEventListener('change', () => {
-        const selectedUf = estadoSelect.value;
-        popularCidadesPorEstado(selectedUf);
-    });
+    senhaInput.addEventListener('input', verificarSenhas);
+    confirmeSenhaInput.addEventListener('input', verificarSenhas);
+
+    cadastroForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        formFeedback.textContent = '';
+        formFeedback.className = 'form-feedback-general';
 
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        esporteSelect.innerHTML = '<option value="">Adicionar Esporte</option>';
-        esporteSelect.disabled = true;
-
-        const response = await fetch(esportesApiUrl + '/ListarEsportes');
-        if (!response.ok) {
-             throw new Error(`Erro HTTP! status: ${response.status}`);
+        if (!verificarSenhas()) {
+            alert("As senhas não coincidem ou não foram confirmadas. Por favor, verifique.");
+            confirmeSenhaInput.focus();
+            return;
         }
-        const esportes = await response.json();
 
-        if (esportes.length > 0) {
-             esportes.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(esporte => {
-              const option = document.createElement('option');
-              option.value = esporte.id;
-              option.textContent = esporte.nome;
-              esporteSelect.appendChild(option);
-              sportIdToNameMap[esporte.id] = esporte.nome;
+        if (!usernameInput.value || !emailInput.value || !dataNascimentoInput.value || !senhaInput.value) {
+            formFeedback.textContent = "Por favor, preencha todos os campos obrigatórios.";
+            formFeedback.className = 'form-feedback-general erro';
+            return;
+        }
+
+        const dadosUsuario = {
+            username: usernameInput.value,
+            email: emailInput.value,
+            data_nascimento: dataNascimentoInput.value,
+            senha: senhaInput.value
+        };
+
+        try {
+            formFeedback.textContent = 'Enviando dados...';
+            formFeedback.className = 'form-feedback-general';
+
+            // *** DESTAQUE: Início da requisição para a API de cadastro ***
+            const response = await fetch(usuarioApiUrl + "/RegistrarUsuario", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(dadosUsuario)
             });
-            esporteSelect.disabled = false;
-        } else {
-             const option = document.createElement('option');
-             option.value = "";
-             option.textContent = "Nenhum esporte disponível";
-             esporteSelect.appendChild(option);
-             esporteSelect.disabled = true;
-        }
 
+            const responseData = await response.json();
 
-      } catch (error) {
-        console.error('Erro ao carregar esportes:', error);
-         esporteSelect.innerHTML = '<option value="">Erro ao carregar esportes</option>';
-         esporteSelect.disabled = true;
-      }
+            if (response.ok) {
+              if (responseData.token) {
+                        localStorage.setItem('jwtToken', responseData.token);
 
-      cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
-      cidadeSelect.disabled = true;
-    });
-
-    esporteSelect.addEventListener('change', () => {
-        const selectedSportId = esporteSelect.value;
-
-        if (selectedSportId && !selectedSportsIds.includes(selectedSportId)) {
-            const selectedSportName = sportIdToNameMap[selectedSportId];
-
-            selectedSportsIds.push(selectedSportId);
-
-            const sportItem = document.createElement('div');
-            sportItem.classList.add('selected-sport-item');
-            sportItem.dataset.sportId = selectedSportId;
-
-            sportItem.innerHTML = `
-                <span>${selectedSportName}</span>
-                <button type="button" class="remove-sport" title="Remover Esporte">×</button>
-            `;
-
-            selectedSportsList.appendChild(sportItem);
-
-            if (mensagemDiv.classList.contains('error') && mensagemDiv.textContent.includes('selecione pelo menos um esporte')) {
-                 mensagemDiv.textContent = '';
-                 mensagemDiv.className = 'message';
+                }
+                formFeedback.textContent = responseData.mensagem || "Usuário registrado com sucesso!";
+                formFeedback.className = 'form-feedback-general sucesso';
+                cadastroForm.reset();
+                senhaFeedback.textContent = "";
+                senhaFeedback.className = 'senha-feedback';
+                confirmeSenhaInput.classList.remove('erro-borda', 'sucesso-borda');
+            } else {
+                formFeedback.textContent = responseData.erro || `Erro ${response.status}: Não foi possível registrar.`;
+                formFeedback.className = 'form-feedback-general erro';
             }
-        }
 
-        esporteSelect.value = "";
-    });
-
-    selectedSportsList.addEventListener('click', (e) => {
-        if (e.target.classList.contains('remove-sport')) {
-            const sportItem = e.target.closest('.selected-sport-item');
-            if (sportItem) {
-                const sportIdToRemove = sportItem.dataset.sportId;
-
-                selectedSportsIds = selectedSportsIds.filter(id => id !== sportIdToRemove);
-
-                sportItem.remove();
-
-                 if (selectedSportsIds.length === 0 && registroForm.querySelector('button[type="submit"]').clicked) {
-                     mensagemDiv.textContent = 'Por favor, selecione pelo menos um esporte.';
-                     mensagemDiv.className = 'message error';
-                 } else if (mensagemDiv.classList.contains('error') && mensagemDiv.textContent.includes('selecione pelo menos um esporte')) {
-                     mensagemDiv.textContent = '';
-                     mensagemDiv.className = 'message';
-                 }
-
-            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            formFeedback.textContent = 'Erro ao conectar com o servidor. Tente novamente.';
+            formFeedback.className = 'form-feedback-general erro';
         }
     });
-
-
-    registroForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const nome_completo = document.getElementById('nome_completo').value.trim();
-      const username = document.getElementById('username').value.trim();
-      const email = document.getElementById('email').value.trim();
-      const senha = document.getElementById('senha').value;
-      const confirmarSenha = document.getElementById('confirmarSenha').value;
-      const estado = estadoSelect.value;
-      const cidade = cidadeSelect.value;
-
-      mensagemDiv.textContent = '';
-      mensagemDiv.className = 'message';
-
-      if (senha !== confirmarSenha) {
-        mensagemDiv.textContent = 'As senhas não coincidem!';
-        mensagemDiv.className = 'message error';
-        return;
-      }
-
-      if (selectedSportsIds.length === 0) {
-         mensagemDiv.textContent = 'Por favor, selecione pelo menos um esporte.';
-         mensagemDiv.className = 'message error';
-         return;
-      }
-
-      if (!nome_completo || !username || !email || !senha || !confirmarSenha || !estado || !cidade) {
-          mensagemDiv.textContent = 'Por favor, preencha todos os campos obrigatórios.';
-          mensagemDiv.className = 'message error';
-          return;
-      }
-
-      // --- MODIFICAÇÃO AQUI: Construir a lista de esportes no formato desejado ---
-      const esportesParaEnviar = selectedSportsIds.map(sportId => {
-          const sportName = sportIdToNameMap[sportId] || 'Nome Desconhecido'; // Busca o nome pelo ID
-          return {
-              id: sportId,
-              nome: sportName,
-              nivel: "Iniciante" // Define o nível como "Iniciante"
-          };
-      });
-      // --- FIM DA MODIFICAÇÃO ---
-
-
-      try {
-        const response = await fetch(usuarioApiUrl + '/RegistrarUsuario', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-              nome_completo: nome_completo,
-              username: username,
-              email: email,
-              senha: senha,
-              esportes_praticados: esportesParaEnviar, // Usa a nova lista formatada
-              estado: estado,
-              cidade: cidade
-          })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-          mensagemDiv.className = 'message success';
-          mensagemDiv.textContent = data.mensagem || 'Usuário registrado com sucesso!';
-          // Reset form and state
-          registroForm.reset();
-          selectedSportsIds = []; // Clear the array
-          selectedSportsList.innerHTML = ''; // Clear the displayed list
-          cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
-          cidadeSelect.disabled = true;
-          estadoSelect.value = "";
-          esporteSelect.value = "";
-
-
-          setTimeout(() => {
-              window.location.href = 'Login.html'; // Redirect after success
-          }, 1500);
-
-        } else {
-          mensagemDiv.className = 'message error';
-          mensagemDiv.textContent = data.erro || data.mensagem || 'Erro ao registrar usuário. Tente novamente.';
-        }
-      } catch (error) {
-        console.error('Erro na requisição de registro:', error);
-        mensagemDiv.className = 'message error';
-        mensagemDiv.textContent = 'Erro de conexão com o servidor ou falha na requisição.';
-      }
-    });
-
-
-  </script>
+</script>
 
 </body>
 </html>

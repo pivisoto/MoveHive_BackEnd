@@ -2,15 +2,19 @@ import uuid
 from datetime import datetime
 
 class Usuario:
-    def __init__(self, email, senha, nome_completo, username, estado, cidade, biografia='', foto_perfil='',
+    def __init__(self, email, senha,  username,  
+                 data_nascimento, 
+                 biografia='', foto_perfil='',
                  esportes_praticados=None,
+                 nome_completo = "",
+                 estado =  "",
+                 cidade = "",
                  tipo_usuario='comum', 
                  status_usuario='ativo',
                  eventos_criados=None, 
                  eventos_participando=None,
-                 seguidores=[],
-                 seguindo=[]):
-        
+                 seguidores=None,
+                 seguindo=None):
         
         self.id = str(uuid.uuid4())
         self.nome_completo = nome_completo
@@ -21,6 +25,7 @@ class Usuario:
         self.foto_perfil = foto_perfil
         self.estado = estado
         self.cidade = cidade
+        self.data_nascimento = data_nascimento 
         self.data_criacao = datetime.utcnow()
         self.tipo_usuario = tipo_usuario
         self.status_usuario = status_usuario
@@ -41,6 +46,7 @@ class Usuario:
             'foto_perfil': self.foto_perfil,
             'estado': self.estado,
             'cidade': self.cidade,
+            'data_nascimento': self.data_nascimento.isoformat() if isinstance(self.data_nascimento, datetime) else self.data_nascimento,
             'data_criacao': self.data_criacao.isoformat(),
             'tipo_usuario': self.tipo_usuario,
             'status_usuario': self.status_usuario,

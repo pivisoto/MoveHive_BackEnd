@@ -1,258 +1,288 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Login de Usuário</title>
-  <style>
-    :root {
-      --primary-color: #4361ee;
-      --primary-hover: #3a56d4;
-      --success-color: #4cc9f0;
-      --error-color: #f72585;
-      --light-gray: #f8f9fa;
-      --dark-gray: #343a40;
-      --border-radius: 8px;
-      --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      --transition: all 0.3s ease;
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      line-height: 1.6;
-      background-color: #f5f7fa;
-      color: #333;
-      padding: 0;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-    }
-    
-    .container {
-      width: 100%;
-      max-width: 500px;
-      padding: 2rem;
-    }
-    
-    .card {
-      background: white;
-      border-radius: var(--border-radius);
-      box-shadow: var(--box-shadow);
-      padding: 2rem;
-      transition: var(--transition);
-    }
-    
-    .card:hover {
-      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    }
-    
-    h1 {
-      color: var(--primary-color);
-      text-align: center;
-      margin-bottom: 1.5rem;
-      font-size: 1.8rem;
-    }
-    
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 1.2rem;
-    }
-    
-    .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-    
-    label {
-      font-weight: 600;
-      color: var(--dark-gray);
-      font-size: 0.9rem;
-    }
-    
-    input {
-      padding: 0.8rem 1rem;
-      border: 1px solid #ddd;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      transition: var(--transition);
-    }
-    
-    input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.2);
-    }
-    
-    button {
-      background-color: var(--primary-color);
-      color: white;
-      border: none;
-      padding: 1rem;
-      border-radius: var(--border-radius);
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: var(--transition);
-      margin-top: 0.5rem;
-    }
-    
-    button:hover {
-      background-color: var(--primary-hover);
-      transform: translateY(-2px);
-    }
-    
-    button:active {
-      transform: translateY(0);
-    }
-    
-    .message {
-      padding: 0.8rem;
-      border-radius: var(--border-radius);
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-      text-align: center;
-    }
-    
-    .error {
-      background-color: rgba(247, 37, 133, 0.1);
-      color: var(--error-color);
-      border: 1px solid rgba(247, 37, 133, 0.3);
-    }
-    
-    .success {
-      background-color: rgba(76, 201, 240, 0.1);
-      color: var(--success-color);
-      border: 1px solid rgba(76, 201, 240, 0.3);
-    }
-    
-    .footer-links {
-      text-align: center;
-      margin-top: 1.5rem;
-      font-size: 0.9rem;
-    }
-    
-    .footer-links a {
-      color: var(--primary-color);
-      text-decoration: none;
-      font-weight: 600;
-    }
-    
-    .footer-links a:hover {
-      text-decoration: underline;
-    }
-    
-    .secondary-button {
-      background-color: #6c757d;
-      margin-top: 1rem;
-    }
-    
-    .secondary-button:hover {
-      background-color: #5a6268;
-    }
-    
-    @media (max-width: 600px) {
-      .container {
-        padding: 1rem;
-      }
-      
-      .card {
-        padding: 1.5rem;
-      }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login Move Hive</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #f0f0f0;
+        }
+
+        .login-container {
+            background-color: #2c2c2c;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 380px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: #a0a0a0;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .logo-move {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+            line-height: 1;
+            margin-bottom: -5px;
+        }
+
+        .logo-hive {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #facc15;
+            display: block;
+            line-height: 1;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            color: #d0d0d0;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 6px;
+            color: #f0f0f0;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: #888888;
+        }
+
+        .forgot-password {
+            display: block;
+            text-align: right;
+            font-size: 0.85em;
+            color: #b0b0b0;
+            text-decoration: none;
+            margin-top: -10px;
+            margin-bottom: 25px;
+        }
+
+        .forgot-password:hover {
+            text-decoration: underline;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            box-sizing: border-box;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #facc15;
+            color: #1e1e1e;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            background-color: #eab308;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #f0f0f0;
+            border: 2px solid #5a5a5a;
+            margin-bottom: 20px;
+        }
+
+        .btn-secondary:hover {
+            background-color: #3a3a3a;
+        }
+        
+        .divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            color: #888888;
+            font-size: 0.9em;
+            margin-bottom: 20px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #4a4a4a;
+        }
+
+        .divider:not(:empty)::before {
+            margin-right: .5em;
+        }
+
+        .divider:not(:empty)::after {
+            margin-left: .5em;
+        }
+
+        .btn-google {
+            background-color: #4a4a4a;
+            color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-google:hover {
+            background-color: #5a5a5a;
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+            margin-right: 10px;
+            filter: invert(100%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(100%) contrast(100%);
+        }
+
+        .message-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: center;
+        }
+        .message-success {
+            background-color: #28a745; /* Verde */
+            color: white;
+        }
+        .message-error {
+            background-color: #dc3545; /* Vermelho */
+            color: white;
+        }
+    </style>
 </head>
 <body>
-
-  <div class="container">
-    <div class="card">
-      <h1>Login de Usuário</h1>
-
-      <form id="form-login">
-        <div class="form-group">
-          <label for="email-login">E-mail:</label>
-          <input type="email" id="email-login" required placeholder="Digite seu e-mail">
+    <div class="login-container">
+        <div class="theme-toggle">
+            ︎
         </div>
-
-        <div class="form-group">
-          <label for="senha-login">Senha:</label>
-          <input type="password" id="senha-login" required placeholder="Digite sua senha">
+        <div class="logo">
+            <span class="logo-move">MOVE</span>
+            <span class="logo-hive">HIVE</span>
         </div>
-
-        <div id="login-message" class="message"></div>
-
-        <button type="submit">Entrar</button>
-      </form>
-
-      <div class="footer-links">
-        <p>Não tem uma conta? <a href="Register.html">Registre-se</a></p>
-        <p><a href="#">Esqueci minha senha</a></p>
-      </div>
-
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Digite seu E-Mail" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha</label>
+                <input type="password" id="password" placeholder="Digite sua Senha" required>
+            </div>
+            <a href="#" class="forgot-password">Esqueceu sua senha?</a>
+            <button type="submit" class="btn btn-primary">Entrar</button>
+            <button type="button" class="btn btn-secondary" onclick="window.location.href='http://127.0.0.1:5500/BackEnd/Views/Social_media/Register.html'">Cadastrar-se</button>
+            <div class="divider">ou</div>
+            <button type="button" class="btn btn-google">
+                <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBmaWxsPSIjRkJCQzA1IiBkPSJNNCAyNGMwIDExLjA0NiA4Ljk1NCAyMCAyMCAyMHMyMC04Ljk1NCAyMC0yMFM0NS4wNDYgNCAyNCA0IDQgMTIuOTU0IDQgMjRaIi8+PHBhdGggZmlsbD0iI0UyNTcyQiIgZD0iTTIyIDIwaDR2MTRoLTR6Ii8+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTQ4IDI0YzAgMTEuMDQ2LTguOTU0IDIwLTIwIDIwUzQgMzUuMDQ2IDQgMjQgOC45NTQgNCAyMCA0czIwIDguOTU0IDIwIDIweiIvPjxwYXRoIGZpbGw9IiNGRkYiIGQ9Ik0yNCAxMGMtMy44NjYgMC03IDMuMTM0LTcgN3MzLjEzNCA3IDcgN2MxLjg1NiAwIDMuNTM0LS43NDYgNC43NjYtMS45NzRsLTIuODMtMi44M0MyNS4yMTQgMjIuNjg4IDI0LjY2IDIyIDI0IDIyYy0xLjY1NyAwLTMtMS4zNDMtMy0zczEuMzQzLTMgMy0zYzEuMjMgMCAyLjI4Mi43NDMgMi43MyAzLjAzMmwyLjg3Ny0xLjA2OEMyOC42MDQgMTQuMzY4IDI2LjQ3OCAxMCAyNCAxMFoiLz48cGF0aCBmaWxsPSIjM0E3OUUyIiBkPSJNMjQgNDRjLTEwLjQ3NyAwLTE5LTguNTIzLTE5LTE5czguNTIzLTE5IDE5LTE5YzUuMjg1IDAgOS44NjYgMi4xNiAxMy4xODIgNS42OTRsLTQuMzg0IDQuMzg0QzI5LjQ0NyAxMi42NTcgMjYuODc0IDEyIDI0IDEyYy02LjYyNyAwLTEyIDUuMzczLTEyIDEyczUuMzczIDEyIDEyIDEyYzMuNTMgMCA2LjYxNC0xLjUyOCA4LjgwOC0zLjk1Nkw0MS44MiAyOC4zMDZDMTQuNzE1IDM3LjU2MiAyNCA0NCAyNCA0NFoiLz48L3N2Zz4=" alt="Google icon">
+                Entrar com o google
+            </button>
+            <div id="messageArea" class="message-area"></div>
+        </form>
     </div>
-  </div>
 
-  <script>
+    <script>
+       const baseUrl = 'http://127.0.0.1:5000';
+      const usuarioApiUrl = `${baseUrl}/usuario`;
 
-    const baseUrl = 'http://127.0.0.1:5000'; 
-    const usuarioApiUrl = `${baseUrl}/usuario`;
+        document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
 
+            const emailInput = document.getElementById('email');
+            const passwordInput = document.getElementById('password');
+            const messageArea = document.getElementById('messageArea');
 
-    document.getElementById('form-login').addEventListener('submit', function(event) {
-      event.preventDefault();
-      
-      const email = document.getElementById('email-login').value.trim();
-      const senha = document.getElementById('senha-login').value;
-      const mensagemDiv = document.getElementById('login-message');
+            const email = emailInput.value;
+            const senha = passwordInput.value;
 
-      mensagemDiv.textContent = '';
-      mensagemDiv.className = 'message';
+            messageArea.textContent = '';
+            messageArea.className = 'message-area'; 
 
-      fetch(usuarioApiUrl + "/LoginUsuario", {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, senha })
-      })
-      .then(response => response.json())
-      .then(data => {
-        console.log(data);
-        
-        if (data.status === 'sucesso') {
-          mensagemDiv.className = 'message success';
-          mensagemDiv.textContent = data.mensagem || 'Login realizado com sucesso!';
+            if (!email || !senha) {
+                messageArea.textContent = 'Por favor, preencha o e-mail e a senha.';
+                messageArea.classList.add('message-error');
+                return;
+            }
 
-          // Salvar token e id no localStorage
-          localStorage.setItem('token', data.token);
+            const data = {
+                email: email,
+                senha: senha
+            };
 
-          console.log('Status:', data.status);
-          console.log('Mensagem:', data.mensagem);
-          console.log('ID:', data.id);
-          console.log('Token:', data.token);
+            try {
+                const response = await fetch(usuarioApiUrl + '/LoginUsuario', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
 
-          setTimeout(() => {
-            window.location.href = 'MeuPerfil.html';
-          }, 1500);
-        } else {
-          mensagemDiv.className = 'message error';
-          mensagemDiv.textContent = data.erro || 'Erro ao realizar login. Verifique suas credenciais.';
-        }
-      })
-      .catch(error => {
-        mensagemDiv.className = 'message error';
-        mensagemDiv.textContent = 'Erro de conexão com o servidor.';
-        console.error('Erro:', error);
-      });
-    });
-   
-  </script>
+                const result = await response.json();
+
+                if (response.ok) {
+                    if (result.erro) { 
+                        messageArea.textContent = result.erro;
+                        messageArea.classList.add('message-error');
+                    } else {
+                      if (result.token) {
+                        localStorage.setItem('jwtToken', result.token);
+                        }
+                        messageArea.textContent = result.mensagem || 'Login realizado com sucesso!';
+                        messageArea.classList.add('message-success');
+
+                    }
+                } else {
+                    messageArea.textContent = result.erro || `Erro ${response.status}: ${response.statusText}`;
+                    messageArea.classList.add('message-error');
+                }
+
+            } catch (error) {
+                console.error('Erro na requisição:', error);
+                messageArea.textContent = 'Ocorreu um erro ao tentar fazer login. Tente novamente.';
+                messageArea.classList.add('message-error');
+            }
+        });
+    </script>
 </body>
 </html>
