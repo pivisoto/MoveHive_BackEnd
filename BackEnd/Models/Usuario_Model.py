@@ -31,7 +31,7 @@ class Usuario:
         self.status_usuario = status_usuario
         self.seguidores = seguidores if seguidores is not None else []
         self.seguindo = seguindo if seguindo is not None else []
-        self.esportes_praticados = esportes_praticados if esportes_praticados is not None else []  
+        self.esportes_praticados = esportes_praticados if esportes_praticados is not None else {}
         self.eventos_criados = eventos_criados if eventos_criados is not None else []
         self.eventos_participando = eventos_participando if eventos_participando is not None else []
 

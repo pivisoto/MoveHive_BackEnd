@@ -3,25 +3,21 @@ import bcrypt
 from firebase_admin import firestore, credentials
 from flask import g, jsonify
 from Models.Usuario_Model import Usuario
-from middlewares.token_required import generate_token
+from middlewares.generate_token import generate_token
 from middlewares.auth_token import token_required
 import firebase_admin
-
 
 if not firebase_admin._apps:
     cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
     firebase_admin.initialize_app(cred)
 
 
-
 db = firestore.client()
-
 
 def calcular_idade(data_nascimento):
     hoje = date.today()
     idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
     return idade
-
 
 
 
@@ -87,6 +83,39 @@ def login_usuario(email, senha):
 
 
 
+@token_required  
+def adicionar_dados_modal(dados_modal):
+    
+    usuario_id = g.user_id
+
+    doc_ref = db.collection('Usuarios').document(usuario_id)
+    snapshot = doc_ref.get()
+
+    if not snapshot.exists:
+        return {"erro": "Usuário não encontrado"}, 404
+
+    dados_para_adicionar = {}
+
+    if 'nome_completo' in dados_modal:
+        dados_para_adicionar['nome_completo'] = dados_modal['nome_completo']
+
+    if 'biografia' in dados_modal:
+        dados_para_adicionar['biografia'] = dados_modal['biografia']
+
+    if 'cidade' in dados_modal:
+        dados_para_adicionar['cidade'] = dados_modal['cidade']
+
+    if 'estado' in dados_modal:
+        dados_para_adicionar['estado'] = dados_modal['estado']
+
+    if 'esportes_praticados' in dados_modal:
+        dados_para_adicionar['esportes_praticados'] = dados_modal['esportes_praticados']
+
+    doc_ref.update(dados_para_adicionar)
+
+    return {"status": "sucesso", "mensagem": "Informações adicionadas com sucesso"}, 200
+
+
 # Função para Listar Usuarios
 @token_required  
 def listar_usuarios():
@@ -127,6 +156,8 @@ def editar_usuario_por_id(novos_dados):
 
     doc_ref.update(dados_atualizados)
     return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
+
+
 
 def toggle_seguir_usuario(solicitacao):
     usuario_pedindo_id = '24873626-9b10-480e-b8e6-6cf661eebb6e'

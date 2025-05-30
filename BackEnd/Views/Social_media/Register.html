@@ -217,8 +217,7 @@
         const confirmeSenhaVal = confirmeSenhaInput.value;
 
         confirmeSenhaInput.classList.remove('erro-borda', 'sucesso-borda');
-        formFeedback.textContent = '';
-        formFeedback.className = 'form-feedback-general';
+
 
 
         if (confirmeSenhaVal === "" && senhaVal === "") {
@@ -254,12 +253,13 @@
 
     cadastroForm.addEventListener('submit', async function(event) {
         event.preventDefault();
-        formFeedback.textContent = '';
+        formFeedback.textContent = ''; 
         formFeedback.className = 'form-feedback-general';
 
 
         if (!verificarSenhas()) {
-            alert("As senhas não coincidem ou não foram confirmadas. Por favor, verifique.");
+            formFeedback.textContent = "As senhas não coincidem ou não foram confirmadas. Por favor, verifique.";
+            formFeedback.className = 'form-feedback-general erro';
             confirmeSenhaInput.focus();
             return;
         }
@@ -279,9 +279,8 @@
 
         try {
             formFeedback.textContent = 'Enviando dados...';
-            formFeedback.className = 'form-feedback-general';
+            formFeedback.className = 'form-feedback-general'; // Neutral feedback during sending
 
-            // *** DESTAQUE: Início da requisição para a API de cadastro ***
             const response = await fetch(usuarioApiUrl + "/RegistrarUsuario", {
                 method: 'POST',
                 headers: {
@@ -293,12 +292,14 @@
 
             const responseData = await response.json();
 
-            if (response.ok) {
-              if (responseData.token) {
-                        localStorage.setItem('jwtToken', responseData.token);
+            if (response.ok && responseData.token) {
+                localStorage.setItem('jwtToken', responseData.token);
+                sessionStorage.setItem('showProfileModal', 'true');
 
-                }
-                formFeedback.textContent = responseData.mensagem || "Usuário registrado com sucesso!";
+                window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
+            } else if (response.ok) {
+                
+                formFeedback.textContent = responseData.mensagem || "Usuário registrado com sucesso! Por favor, faça login para continuar.";
                 formFeedback.className = 'form-feedback-general sucesso';
                 cadastroForm.reset();
                 senhaFeedback.textContent = "";

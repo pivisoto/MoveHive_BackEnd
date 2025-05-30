@@ -179,13 +179,14 @@
             border-radius: 4px;
             font-size: 0.9em;
             text-align: center;
+            min-height: 1.2em; 
         }
         .message-success {
-            background-color: #28a745; /* Verde */
+            background-color: #28a745; 
             color: white;
         }
         .message-error {
-            background-color: #dc3545; /* Vermelho */
+            background-color: #dc3545; 
             color: white;
         }
     </style>
@@ -222,7 +223,7 @@
 
     <script>
        const baseUrl = 'http://127.0.0.1:5000';
-      const usuarioApiUrl = `${baseUrl}/usuario`;
+       const usuarioApiUrl = `${baseUrl}/usuario`;
 
         document.getElementById('loginForm').addEventListener('submit', async function(event) {
             event.preventDefault();
@@ -234,7 +235,7 @@
             const email = emailInput.value;
             const senha = passwordInput.value;
 
-            messageArea.textContent = '';
+            messageArea.textContent = ''; 
             messageArea.className = 'message-area'; 
 
             if (!email || !senha) {
@@ -248,6 +249,9 @@
                 senha: senha
             };
 
+            messageArea.textContent = 'Entrando...'; 
+            messageArea.className = 'message-area'; 
+
             try {
                 const response = await fetch(usuarioApiUrl + '/LoginUsuario', {
                     method: 'POST',
@@ -260,26 +264,29 @@
 
                 const result = await response.json();
 
-                if (response.ok) {
-                    if (result.erro) { 
+                if (response.ok) { 
+                    if (result.token) {
+                        localStorage.setItem('jwtToken', result.token);
+                        
+
+                        window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
+                        return; 
+                    } else if (result.erro) {
                         messageArea.textContent = result.erro;
                         messageArea.classList.add('message-error');
                     } else {
-                      if (result.token) {
-                        localStorage.setItem('jwtToken', result.token);
-                        }
-                        messageArea.textContent = result.mensagem || 'Login realizado com sucesso!';
-                        messageArea.classList.add('message-success');
 
+                        messageArea.textContent = result.mensagem || 'Login bem-sucedido, mas ocorreu um problema inesperado.';
+                        messageArea.classList.add(result.mensagem ? 'message-success' : 'message-error');
                     }
                 } else {
-                    messageArea.textContent = result.erro || `Erro ${response.status}: ${response.statusText}`;
+                    messageArea.textContent = result.erro || `Erro ${response.status}: Não foi possível fazer login.`;
                     messageArea.classList.add('message-error');
                 }
 
             } catch (error) {
                 console.error('Erro na requisição:', error);
-                messageArea.textContent = 'Ocorreu um erro ao tentar fazer login. Tente novamente.';
+                messageArea.textContent = 'Ocorreu um erro ao tentar conectar com o servidor. Tente novamente.';
                 messageArea.classList.add('message-error');
             }
         });

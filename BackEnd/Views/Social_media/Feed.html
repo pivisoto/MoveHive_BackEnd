@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feed Claro com Modal Atualizado - Único Arquivo</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --modal-backdrop: rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-backdrop);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 1; 
+            visibility: visible; 
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.hidden {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-color);
+            padding: 20px 30px 30px 30px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-step {
+            display: none;
+        }
+
+        .modal-step.active-step {
+            display: block;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 15px;
+            color: var(--text-color);
+            font-size: 1.5rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .modal-content label.field-label {
+            display: block;
+            text-align: left;
+            margin-bottom: 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .modal-content input[type="text"],
+        .modal-content input[type="file"],
+        .modal-content textarea,
+        .modal-content select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.95rem;
+        }
+
+        .modal-content textarea {
+            min-height: 70px;
+            resize: vertical;
+        }
+
+        .modal-button {
+            background-color: var(--accent-color);
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: bold;
+            margin: 10px 5px 0 5px;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-button:hover {
+            background-color: #e6c300;
+        }
+
+        .modal-button.prev-step {
+            background-color: #ccc;
+            color: #333;
+        }
+
+        .modal-button.prev-step:hover {
+            background-color: #bbb;
+        }
+
+        .optional-text {
+            font-size: 0.8rem;
+            color: #777;
+            margin-left: 5px;
+        }
+
+        .sport-entry {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sport-entry select {
+            margin-bottom: 0;
+        }
+
+        .sport-entry .sport-select {
+            flex-grow: 2;
+        }
+
+        .sport-entry .level-select {
+            flex-grow: 1;
+        }
+
+        #addSportButton,
+        .remove-sport-button {
+            background-color: #5cb85c;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .remove-sport-button {
+            background-color: #d9534f;
+            padding: 6px 8px;
+            line-height: 1;
+        }
+
+        #addSportButton i {
+            margin-right: 5px;
+        }
+
+        #profilePicPreview {
+            width: 100px;
+            height: 100px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: block;
+            background-color: #f0f0f0;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+        }
+
+        .app-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .honeycomb-logo {
+            width: 30px;
+            height: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .honeycomb-logo div {
+            width: 10px;
+            height: 11.54px;
+            background-color: var(--accent-color);
+            margin: 0.5px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .honeycomb-logo div:nth-child(4),
+        .honeycomb-logo div:nth-child(5),
+        .honeycomb-logo div:nth-child(6),
+        .honeycomb-logo div:nth-child(7) {
+            transform: translateX(5px);
+        }
+
+        .header-actions i {
+            font-size: 1.5rem;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .feed {
+            padding: 0 0 70px 0;
+        }
+
+        .post {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
+
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+        }
+
+        .post-username {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .post-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .post-actions {
+            padding: 10px 15px;
+        }
+
+        .post-actions i {
+            font-size: 1.6rem;
+            margin-right: 15px;
+            cursor: pointer;
+            color: #333;
+        }
+
+        .post-caption {
+            padding: 0 15px 10px;
+            font-size: 0.9rem;
+        }
+
+        .post-caption strong {
+            margin-right: 5px;
+        }
+
+        .post-comments-summary {
+            padding: 0 15px 10px;
+        }
+
+        .post-comments-summary a {
+            color: #8e8e8e;
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .post-add-comment {
+            padding: 10px 15px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #8e8e8e;
+        }
+
+        .comment-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300;
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000;
+            font-weight: bold;
+        }
+
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="modal-overlay hidden" id="pinterestModalOverlay">
+        <div class="modal-content">
+            <div class="modal-step active-step" data-step="1">
+                <h2>Informações Pessoais</h2>
+                <div>
+                    <label for="fullName" class="field-label">Nome Completo *</label>
+                    <input type="text" id="fullName" placeholder="Seu nome completo">
+                </div>
+                <div>
+                    <label for="bio" class="field-label">Bio <span class="optional-text">(Opcional)</span></label>
+                    <textarea id="bio" placeholder="Conte um pouco sobre você..."></textarea>
+                </div>
+                <button class="modal-button next-step">Próximo</button>
+            </div>
+
+            <div class="modal-step" data-step="2">
+                <h2>Seus Esportes</h2>
+                <p>Adicione seus esportes e nível. Pelo menos um é obrigatório.</p>
+                <div id="sportsContainer">
+                    <div class="sport-entry">
+                        <select class="sport-select">
+                            <option value="">Selecione o Esporte</option>
+                            <option value="Futebol">Futebol</option>
+                            <option value="Basquete">Basquete</option>
+                            <option value="Vôlei">Vôlei</option>
+                            <option value="Tênis">Tênis</option>
+                            <option value="Corrida">Corrida</option>
+                            <option value="Natação">Natação</option>
+                            <option value="Ciclismo">Ciclismo</option>
+                            <option value="Artes Marciais">Artes Marciais</option>
+                            <option value="Outro">Outro</option>
+                        </select>
+                        <select class="level-select">
+                            <option value="">Nível</option>
+                            <option value="Amador">Amador</option>
+                            <option value="Mediano">Mediano</option>
+                            <option value="Profissional">Profissional</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="button" id="addSportButton"><i class="fas fa-plus"></i> Adicionar Esporte</button>
+                <div>
+                    <button class="modal-button prev-step">Anterior</button>
+                    <button class="modal-button next-step">Próximo</button>
+                </div>
+            </div>
+
+            <div class="modal-step" data-step="3">
+                <h2>Localização</h2>
+                <div>
+                    <label for="city" class="field-label">Cidade <span class="optional-text">(Opcional)</span></label>
+                    <input type="text" id="city" placeholder="Sua cidade">
+                </div>
+                <div>
+                    <label for="state" class="field-label">Estado <span class="optional-text">(Opcional)</span></label>
+                    <input type="text" id="state" placeholder="Seu estado">
+                </div>
+                <button class="modal-button prev-step">Anterior</button>
+                <button class="modal-button next-step">Próximo</button>
+            </div>
+
+            <div class="modal-step" data-step="4">
+                <h2>Foto de Perfil</h2>
+                <div>
+                    <label for="profilePic" class="field-label">Selecione uma foto <span class="optional-text">(Opcional)</span></label>
+                    <input type="file" id="profilePic" accept="image/*">
+                    <img id="profilePicPreview" src="#" alt="Prévia da foto de perfil">
+                </div>
+                <button class="modal-button prev-step">Anterior</button>
+                <button class="modal-button finish-modal">Concluir e Entrar</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" id="appContainer">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="honeycomb-logo">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <h1>Feed Claro</h1>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bell"></i>
+                <i class="fas fa-comment-alt"></i>
+            </div>
+        </header>
+        <main class="feed">
+            <article class="post">
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40/FFA500/000000?Text=YA" alt="Avatar yuri_alberto" class="post-avatar">
+                    <span class="post-username">yuri_alberto</span>
+                </div>
+                <img src="https://i.imgur.com/pX3vCqN.png" alt="Campeonato de Tênis de Mesa" class="post-image">
+                <div class="post-actions">
+                    <i class="far fa-heart"></i>
+                    <i class="far fa-comment"></i>
+                    <i class="far fa-paper-plane"></i>
+                </div>
+                <div class="post-caption">
+                    <p><strong>yuri_alberto</strong> Torneio de Tenis</p>
+                </div>
+                <div class="post-comments-summary"><a href="#">Comentários</a></div>
+                <div class="post-add-comment">
+                     <img src="https://via.placeholder.com/30/FFA500/000000?Text=YA" alt="Avatar yuri_alberto" class="comment-avatar">
+                     <span>yuri_alberto</span>
+                </div>
+            </article>
+        </main>
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-award"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <script>
+        const baseUrl = 'http://127.0.0.1:5000';
+        const usuarioApiUrl = `${baseUrl}/usuario`;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwtToken');
+
+            if (!token) {
+                alert("Autenticação necessária. Redirecionando para o login.");
+                window.location.href = 'login.html'; // 
+                return;
+            }
+
+            const modalOverlay = document.getElementById('pinterestModalOverlay');
+            const appContainer = document.getElementById('appContainer');
+            const bottomNav = document.querySelector('.bottom-nav');
+            
+            const modalSteps = document.querySelectorAll('.modal-step');
+            const nextButtons = document.querySelectorAll('.next-step');
+            const prevButtons = document.querySelectorAll('.prev-step');
+            const finishButton = document.querySelector('.finish-modal');
+            const addSportButton = document.getElementById('addSportButton');
+            const sportsContainer = document.getElementById('sportsContainer');
+            const profilePicInput = document.getElementById('profilePic');
+            const profilePicPreview = document.getElementById('profilePicPreview');
+
+            let currentStep = 1;
+            const totalSteps = modalSteps.length;
+
+            profilePicPreview.style.display = 'none'; 
+
+            const shouldShowModal = sessionStorage.getItem('showProfileModal') === 'true';
+
+            if (shouldShowModal) {
+                modalOverlay.classList.remove('hidden'); 
+                appContainer.style.display = 'none';     
+                bottomNav.style.display = 'none';      
+                showStep(currentStep);                   
+            } else {
+                appContainer.style.display = 'block';   
+                bottomNav.style.display = 'flex';      
+            }
+
+
+            function showStep(stepNumber) {
+                modalSteps.forEach(step => step.classList.remove('active-step'));
+                const activeStepElement = document.querySelector(`.modal-step[data-step="${stepNumber}"]`);
+                if (activeStepElement) activeStepElement.classList.add('active-step');
+            }
+
+            function validateStep(stepNumber) {
+                if (stepNumber === 1) {
+                    const fullName = document.getElementById('fullName').value.trim();
+                    if (fullName === '') {
+                        alert('Por favor, insira seu Nome Completo.');
+                        return false;
+                    }
+                } else if (stepNumber === 2) {
+                    const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
+                    let validSportFound = false;
+                    sportEntries.forEach(entry => {
+                        const sport = entry.querySelector('.sport-select').value;
+                        const level = entry.querySelector('.level-select').value;
+                        if (sport && level) {
+                            validSportFound = true;
+                        }
+                    });
+                    if (!validSportFound) {
+                        alert('Por favor, adicione pelo menos um esporte com nível.');
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            nextButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (validateStep(currentStep)) {
+                        if (currentStep < totalSteps) {
+                            currentStep++;
+                            showStep(currentStep);
+                        }
+                    }
+                });
+            });
+
+            prevButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    if (currentStep > 1) {
+                        currentStep--;
+                        showStep(currentStep);
+                    }
+                });
+            });
+
+            addSportButton.addEventListener('click', () => {
+                const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
+                newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.classList.add('remove-sport-button');
+                removeButton.innerHTML = '×'; 
+                removeButton.onclick = () => newSportEntry.remove();
+                
+                newSportEntry.appendChild(removeButton);
+                sportsContainer.appendChild(newSportEntry);
+            });
+
+            if (sportsContainer.children.length > 0 && sportsContainer.firstElementChild.querySelectorAll('.remove-sport-button').length === 0) {
+                const firstRemoveButton = document.createElement('button');
+                firstRemoveButton.type = 'button';
+                firstRemoveButton.classList.add('remove-sport-button');
+                firstRemoveButton.innerHTML = '×';
+                firstRemoveButton.onclick = () => {
+                    if(sportsContainer.children.length > 1) {
+                        sportsContainer.firstElementChild.remove();
+                    } else {
+                        alert("Pelo menos um esporte deve ser mantido.");
+                    }
+                };
+                sportsContainer.firstElementChild.appendChild(firstRemoveButton);
+            }
+
+
+            profilePicInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        profilePicPreview.src = e.target.result;
+                        profilePicPreview.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    profilePicPreview.src = "#";
+                    profilePicPreview.style.display = 'none';
+                }
+            });
+
+            finishButton.addEventListener('click', async () => {
+                if (!validateStep(currentStep)) return;
+
+                const collectedData = {
+                    nome_completo: document.getElementById('fullName').value.trim(),
+                    biografia: document.getElementById('bio').value.trim(),
+                    cidade: document.getElementById('city').value.trim(),
+                    estado: document.getElementById('state').value.trim(),
+                    esportes_praticados: {}
+                };
+
+                const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
+                sportEntries.forEach(entry => {
+                    const sport = entry.querySelector('.sport-select').value;
+                    const level = entry.querySelector('.level-select').value;
+                    if (sport && level) {
+                        collectedData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
+                    }
+                });
+
+                console.log("Data to send (new format):", collectedData);
+                const endpointURL = `${usuarioApiUrl}/DadosModal`;
+
+                try {
+                    const response = await fetch(endpointURL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify(collectedData),
+                    });
+
+                    const responseData = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(responseData.erro || `HTTP error ${response.status}`);
+                    }
+
+                    console.log("Server Response:", responseData);
+                    alert(`Bem-vindo, ${collectedData.nome_completo}! Configuração concluída e salva no servidor.`);
+
+                    modalOverlay.classList.add('hidden');
+                    appContainer.style.display = 'block';
+                    bottomNav.style.display = 'flex';
+
+                    sessionStorage.setItem('showProfileModal', 'false');
+
+                } catch (error) {
+                    console.error("Error sending data to server:", error);
+                    alert(`Ocorreu um erro ao salvar suas informações: ${error.message}. Por favor, tente novamente.`);
+                }
+            });
+
+
+        });
+    </script>
+</body>
+</html>
