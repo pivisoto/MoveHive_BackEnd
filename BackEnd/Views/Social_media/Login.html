@@ -244,6 +244,8 @@
                 return;
             }
 
+
+            // ============================ REQUISIÇÂO ============================
             const data = {
                 email: email,
                 senha: senha
@@ -266,8 +268,13 @@
 
                 if (response.ok) { 
                     if (result.token) {
+                        
+                        // Recebendo TokenJWT para identificação e Salvando no LocalStorage, igual no Register
                         localStorage.setItem('jwtToken', result.token);
                         
+                        // Como ja estou registrado, **NÃO** preciso do modal para complementar as informações, ja passei por isso.
+                        // sessionStorage.setItem('showProfileModal', 'true');
+
 
                         window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
                         return; 

@@ -22,14 +22,14 @@ def calcular_idade(data_nascimento):
 
 
 # Função para Registar Usuario
-def registrar_usuario(username, data_nascimento_str, email, senha):
+def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha):
     usuarios_ref = db.collection('Usuarios')
 
     if list(usuarios_ref.where('email', '==', email).limit(1).stream()):
         return {"erro": "E-mail já cadastrado"}
-
+    
     if list(usuarios_ref.where('username', '==', username).limit(1).stream()):
-        return {"erro": "Username já está em uso"}
+        return {"erro": "Username já cadastrado"}
 
     try:
         data_nascimento = datetime.strptime(data_nascimento_str, '%Y-%m-%d').date()
@@ -49,6 +49,7 @@ def registrar_usuario(username, data_nascimento_str, email, senha):
     senha_hash = bcrypt.hashpw(senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
     usuario = Usuario(
+        nome_completo=nome_completo,
         username=username,
         email=email,
         senha=senha_hash,
@@ -71,11 +72,11 @@ def login_usuario(email, senha):
     usuario_doc = next(docs, None)
 
     if not usuario_doc:
-        return {"erro": "E-mail não encontrado"}
+        return {"erro": "E-mail não encontrado"}, 404
 
     dados = usuario_doc.to_dict()
     if not bcrypt.checkpw(senha.encode('utf-8'), dados['senha'].encode('utf-8')):
-        return {"erro": "Senha incorreta"}
+        return {"erro": "Senha incorreta"}, 401
 
     token = generate_token(usuario_doc.id)
 
@@ -95,9 +96,6 @@ def adicionar_dados_modal(dados_modal):
         return {"erro": "Usuário não encontrado"}, 404
 
     dados_para_adicionar = {}
-
-    if 'nome_completo' in dados_modal:
-        dados_para_adicionar['nome_completo'] = dados_modal['nome_completo']
 
     if 'biografia' in dados_modal:
         dados_para_adicionar['biografia'] = dados_modal['biografia']

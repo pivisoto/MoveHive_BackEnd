@@ -2,11 +2,12 @@ import uuid
 from datetime import datetime
 
 class Usuario:
-    def __init__(self, email, senha,  username,  
+    def __init__(self, email, senha,    
                  data_nascimento, 
+                 nome_completo,
+                 username = "",
                  biografia='', foto_perfil='',
                  esportes_praticados=None,
-                 nome_completo = "",
                  estado =  "",
                  cidade = "",
                  tipo_usuario='comum', 

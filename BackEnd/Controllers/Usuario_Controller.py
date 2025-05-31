@@ -14,15 +14,16 @@ def registrarUsuario():
     if not data:
         return jsonify({"erro": "Dados do formulário não fornecidos"}), 400
 
+    nome_completo = data.get('NomeCompleto')
     username = data.get('username')
     data_nascimento = data.get('data_nascimento')
     email = data.get('email')
     senha = data.get('senha')
 
-    if not all([username, data_nascimento, email, senha]):
+    if not all([nome_completo, username, data_nascimento, email, senha]):
         return jsonify({"erro": "Campos obrigatórios ausentes"}), 400
 
-    resultado = usuario_service.registrar_usuario(username, data_nascimento, email, senha)
+    resultado = usuario_service.registrar_usuario(nome_completo, username, data_nascimento, email, senha)
 
     if isinstance(resultado, tuple):
         return jsonify(resultado[0]), resultado[1]
@@ -42,7 +43,6 @@ def loginUsuario():
         return jsonify({"erro": "Campos 'email' e 'senha' são obrigatórios"}), 400
 
     resposta, status = usuario_service.login_usuario(email, senha)
-
     return jsonify(resposta), status
 
 

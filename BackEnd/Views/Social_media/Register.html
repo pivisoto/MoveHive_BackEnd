@@ -166,8 +166,13 @@
 
         <form id="cadastroForm" action="#" method="post">
             <div class="input-group">
-                <label for="username">Nome de Usuário (@)</label>
-                <input type="text" id="username" name="username" placeholder="@" required>
+                <label for="NomeCompleto">Nome Completo</label>
+                <input type="text" id="NomeCompleto" name="NomeCompleto" placeholder="Nome Completo" required>
+            </div>
+
+            <div class="input-group">
+                <label for="username">Username (@)</label>
+                <input type="text" id="username" name="username" placeholder="Digite o seu Username @" required>
             </div>
 
             <div class="input-group">
@@ -207,8 +212,10 @@
     const cadastroForm = document.getElementById('cadastroForm');
     const formFeedback = document.getElementById('form-feedback');
 
-    const usernameInput = document.getElementById('username');
+    const username = document.getElementById('username');
+    const NomeCompletoInput = document.getElementById('NomeCompleto');
     const emailInput = document.getElementById('email');
+
     const dataNascimentoInput = document.getElementById('data-nascimento');
 
 
@@ -259,14 +266,16 @@
             return;
         }
 
-        if (!usernameInput.value || !emailInput.value || !dataNascimentoInput.value || !senhaInput.value) {
+        if (!NomeCompleto.value || !username.value || !emailInput.value || !dataNascimentoInput.value || !senhaInput.value) {
             formFeedback.textContent = "Por favor, preencha todos os campos obrigatórios.";
             formFeedback.className = 'form-feedback-general erro';
             return;
         }
 
+        // ============================ REQUISIÇÂO ============================
         const dadosUsuario = {
-            username: usernameInput.value,
+            NomeCompleto: NomeCompleto.value,
+            username: username.value,
             email: emailInput.value,
             data_nascimento: dataNascimentoInput.value,
             senha: senhaInput.value
@@ -288,7 +297,12 @@
             const responseData = await response.json();
 
             if (response.ok && responseData.token) {
+                
+                // Recebendo TokenJWT para identificação e Salvando no LocalStorage, igual no Login.
                 localStorage.setItem('jwtToken', responseData.token);
+
+                // Como estou me registrando, preciso do modal para complementar as informações.
+                // Por isso esse valor de Session, para o feed verificar se isso existe e se exister mostrar o modal
                 sessionStorage.setItem('showProfileModal', 'true');
                 formFeedback.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
                 formFeedback.className = 'form-feedback-general sucesso';
