@@ -41,8 +41,8 @@
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            opacity: 1; 
-            visibility: visible; 
+            opacity: 1;
+            visibility: visible;
             transition: opacity 0.3s ease, visibility 0.3s ease;
         }
 
@@ -53,7 +53,7 @@
 
         .modal-content {
             background-color: var(--secondary-color);
-            padding: 20px 30px 30px 30px;
+            padding: 25px 30px 30px 30px;
             border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
             width: 90%;
@@ -364,6 +364,33 @@
             font-weight: bold;
         }
 
+        .welcome-animation {
+            font-size: 3.5rem;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            animation: pulseAndRotate 2.5s infinite ease-in-out;
+            display: inline-block;
+        }
+
+        @keyframes pulseAndRotate {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            50% {
+                transform: scale(1.15) rotate(5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .intro-modal-content p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+
         @media (min-width: 601px) {
             .app-container {
                 border-left: 1px solid var(--border-color);
@@ -374,7 +401,19 @@
 </head>
 <body>
 
-    <div class="modal-overlay hidden" id="pinterestModalOverlay">
+    <div class="modal-overlay hidden" id="introModalOverlay">
+        <div class="modal-content intro-modal-content">
+            <div class="welcome-animation">
+                <i class="fas fa-hands-helping"></i>
+            </div>
+            <h2>Olá! Vamos Configurar Seu Perfil!</h2>
+            <p>Para aproveitar ao máximo nossa comunidade e encontrar parceiros de esporte ideais, precisamos de algumas informações sobre você. </p>
+            <p>Este rápido passo a passo nos ajudará a personalizar sua experiência. Prometemos que será rápido!</p>
+            <button class="modal-button" id="startProfileSetupButton">Entendi, Vamos Lá!</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="profileSetupModalOverlay">
         <div class="modal-content">
             <div class="modal-step active-step" data-step="1">
                 <h2>Informações Pessoais</h2>
@@ -396,15 +435,6 @@
                     <div class="sport-entry">
                         <select class="sport-select">
                             <option value="">Selecione o Esporte</option>
-                            <option value="Futebol">Futebol</option>
-                            <option value="Basquete">Basquete</option>
-                            <option value="Vôlei">Vôlei</option>
-                            <option value="Tênis">Tênis</option>
-                            <option value="Corrida">Corrida</option>
-                            <option value="Natação">Natação</option>
-                            <option value="Ciclismo">Ciclismo</option>
-                            <option value="Artes Marciais">Artes Marciais</option>
-                            <option value="Outro">Outro</option>
                         </select>
                         <select class="level-select">
                             <option value="">Nível</option>
@@ -497,24 +527,69 @@
     <script>
         const baseUrl = 'http://127.0.0.1:5000';
         const usuarioApiUrl = `${baseUrl}/usuario`;
+        const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
 
-        document.addEventListener('DOMContentLoaded', () => {
+        let _availableSports = [];
+
+        async function fetchSports() {
+            try {
+                const response = await fetch(esportesApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                    }
+                });
+                if (!response.ok) {
+                    throw new Error(`Erro ao buscar esportes: ${response.statusText}`);
+                }
+                const sports = await response.json();
+                _availableSports = sports;
+                return sports;
+            } catch (error) {
+                console.error("Falha ao carregar esportes:", error);
+                alert("Não foi possível carregar a lista de esportes. Tente novamente mais tarde.");
+                return [];
+            }
+        }
+
+        function populateSportSelect(selectElement, sportsList) {
+            while (selectElement.options.length > 1) {
+                selectElement.remove(1);
+            }
+            sportsList.forEach(sport => {
+                const option = document.createElement('option');
+                if (typeof sport === 'string') {
+                    option.value = sport;
+                    option.textContent = sport;
+                } else if (typeof sport === 'object' && sport !== null && sport.hasOwnProperty('nome')) {
+                    option.value = sport.nome;
+                    option.textContent = sport.nome;
+                }
+                selectElement.appendChild(option);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('jwtToken');
 
             if (!token) {
                 alert("Autenticação necessária. Redirecionando para o login.");
-                window.location.href = 'login.html'; // 
+                window.location.href = 'login.html';
                 return;
             }
 
-            const modalOverlay = document.getElementById('pinterestModalOverlay');
+            await fetchSports();
+
+            const introModalOverlay = document.getElementById('introModalOverlay');
+            const profileSetupModalOverlay = document.getElementById('profileSetupModalOverlay');
             const appContainer = document.getElementById('appContainer');
             const bottomNav = document.querySelector('.bottom-nav');
-            
-            const modalSteps = document.querySelectorAll('.modal-step');
-            const nextButtons = document.querySelectorAll('.next-step');
-            const prevButtons = document.querySelectorAll('.prev-step');
-            const finishButton = document.querySelector('.finish-modal');
+            const startProfileSetupButton = document.getElementById('startProfileSetupButton');
+
+            const modalSteps = profileSetupModalOverlay.querySelectorAll('.modal-step');
+            const nextButtons = profileSetupModalOverlay.querySelectorAll('.next-step');
+            const prevButtons = profileSetupModalOverlay.querySelectorAll('.prev-step');
+            const finishButton = profileSetupModalOverlay.querySelector('.finish-modal');
             const addSportButton = document.getElementById('addSportButton');
             const sportsContainer = document.getElementById('sportsContainer');
             const profilePicInput = document.getElementById('profilePic');
@@ -523,24 +598,41 @@
             let currentStep = 1;
             const totalSteps = modalSteps.length;
 
-            profilePicPreview.style.display = 'none'; 
+            profilePicPreview.style.display = 'none';
 
-            const shouldShowModal = sessionStorage.getItem('showProfileModal') === 'true';
+            const initialSportSelect = sportsContainer.querySelector('.sport-select');
+            if (initialSportSelect) {
+                populateSportSelect(initialSportSelect, _availableSports);
+            }
 
-            if (shouldShowModal) {
-                modalOverlay.classList.remove('hidden'); 
-                appContainer.style.display = 'none';     
-                bottomNav.style.display = 'none';      
-                showStep(currentStep);                   
+
+            const shouldShowOnboarding = sessionStorage.getItem('showProfileModal') === 'true';
+
+            if (shouldShowOnboarding) {
+                introModalOverlay.classList.remove('hidden');
+                profileSetupModalOverlay.classList.add('hidden');
+                appContainer.style.display = 'none';
+                bottomNav.style.display = 'none';
             } else {
-                appContainer.style.display = 'block';   
-                bottomNav.style.display = 'flex';      
+                introModalOverlay.classList.add('hidden');
+                profileSetupModalOverlay.classList.add('hidden');
+                appContainer.style.display = 'block';
+                bottomNav.style.display = 'flex';
+            }
+
+            if (startProfileSetupButton) {
+                startProfileSetupButton.addEventListener('click', () => {
+                    introModalOverlay.classList.add('hidden');
+                    profileSetupModalOverlay.classList.remove('hidden');
+                    currentStep = 1;
+                    showStep(currentStep);
+                });
             }
 
 
             function showStep(stepNumber) {
                 modalSteps.forEach(step => step.classList.remove('active-step'));
-                const activeStepElement = document.querySelector(`.modal-step[data-step="${stepNumber}"]`);
+                const activeStepElement = profileSetupModalOverlay.querySelector(`.modal-step[data-step="${stepNumber}"]`);
                 if (activeStepElement) activeStepElement.classList.add('active-step');
             }
 
@@ -589,19 +681,30 @@
                 });
             });
 
-            addSportButton.addEventListener('click', () => {
-                const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
-                newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-                
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.classList.add('remove-sport-button');
-                removeButton.innerHTML = '×'; 
-                removeButton.onclick = () => newSportEntry.remove();
-                
-                newSportEntry.appendChild(removeButton);
-                sportsContainer.appendChild(newSportEntry);
-            });
+            if (addSportButton) {
+                addSportButton.addEventListener('click', () => {
+                    const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
+                    newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                    
+                    const sportSelect = newSportEntry.querySelector('.sport-select');
+                    if (sportSelect) {
+                         populateSportSelect(sportSelect, _availableSports);
+                    }
+
+                    let removeButton = newSportEntry.querySelector('.remove-sport-button');
+                    if (!removeButton) {
+                        removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.classList.add('remove-sport-button');
+                        removeButton.innerHTML = '×';
+                        newSportEntry.appendChild(removeButton);
+                    }
+                    removeButton.onclick = () => newSportEntry.remove();
+
+                    sportsContainer.appendChild(newSportEntry);
+                });
+            }
+
 
             if (sportsContainer.children.length > 0 && sportsContainer.firstElementChild.querySelectorAll('.remove-sport-button').length === 0) {
                 const firstRemoveButton = document.createElement('button');
@@ -619,77 +722,77 @@
             }
 
 
-            profilePicInput.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = function(e) {
-                        profilePicPreview.src = e.target.result;
-                        profilePicPreview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                } else {
-                    profilePicPreview.src = "#";
-                    profilePicPreview.style.display = 'none';
-                }
-            });
-
-            finishButton.addEventListener('click', async () => {
-                if (!validateStep(currentStep)) return;
-
-                const collectedData = {
-                    nome_completo: document.getElementById('fullName').value.trim(),
-                    biografia: document.getElementById('bio').value.trim(),
-                    cidade: document.getElementById('city').value.trim(),
-                    estado: document.getElementById('state').value.trim(),
-                    esportes_praticados: {}
-                };
-
-                const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
-                sportEntries.forEach(entry => {
-                    const sport = entry.querySelector('.sport-select').value;
-                    const level = entry.querySelector('.level-select').value;
-                    if (sport && level) {
-                        collectedData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
+            if (profilePicInput) {
+                profilePicInput.addEventListener('change', function(event) {
+                    const file = event.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            profilePicPreview.src = e.target.result;
+                            profilePicPreview.style.display = 'block';
+                        }
+                        reader.readAsDataURL(file);
+                    } else {
+                        profilePicPreview.src = "#";
+                        profilePicPreview.style.display = 'none';
                     }
                 });
+            }
 
-                console.log("Data to send (new format):", collectedData);
-                const endpointURL = `${usuarioApiUrl}/DadosModal`;
+            if (finishButton) {
+                finishButton.addEventListener('click', async () => {
+                    if (!validateStep(currentStep)) return;
 
-                try {
-                    const response = await fetch(endpointURL, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: JSON.stringify(collectedData),
+                    const collectedData = {
+                        nome_completo: document.getElementById('fullName').value.trim(),
+                        biografia: document.getElementById('bio').value.trim(),
+                        cidade: document.getElementById('city').value.trim(),
+                        estado: document.getElementById('state').value.trim(),
+                        esportes_praticados: {}
+                    };
+
+                    const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
+                    sportEntries.forEach(entry => {
+                        const sport = entry.querySelector('.sport-select').value;
+                        const level = entry.querySelector('.level-select').value;
+                        if (sport && level) {
+                            collectedData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
+                        }
                     });
 
-                    const responseData = await response.json();
+                    const endpointURL = `${usuarioApiUrl}/DadosModal`;
 
-                    if (!response.ok) {
-                        throw new Error(responseData.erro || `HTTP error ${response.status}`);
+                    try {
+                        const response = await fetch(endpointURL, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Accept': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(collectedData),
+                        });
+
+                        const responseData = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(responseData.erro || `HTTP error ${response.status}`);
+                        }
+
+                        alert(`Bem-vindo, ${collectedData.nome_completo}! Configuração concluída e salva no servidor.`);
+
+                        profileSetupModalOverlay.classList.add('hidden');
+                        appContainer.style.display = 'block';
+                        bottomNav.style.display = 'flex';
+
+                        sessionStorage.setItem('showProfileModal', 'false');
+
+                    } catch (error) {
+                        console.error("Error sending data to server:", error);
+                        alert(`Ocorreu um erro ao salvar suas informações: ${error.message}. Por favor, tente novamente.`);
                     }
-
-                    console.log("Server Response:", responseData);
-                    alert(`Bem-vindo, ${collectedData.nome_completo}! Configuração concluída e salva no servidor.`);
-
-                    modalOverlay.classList.add('hidden');
-                    appContainer.style.display = 'block';
-                    bottomNav.style.display = 'flex';
-
-                    sessionStorage.setItem('showProfileModal', 'false');
-
-                } catch (error) {
-                    console.error("Error sending data to server:", error);
-                    alert(`Ocorreu um erro ao salvar suas informações: ${error.message}. Por favor, tente novamente.`);
-                }
-            });
-
-
+                });
+            }
         });
     </script>
 </body>

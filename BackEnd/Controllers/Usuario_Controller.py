@@ -51,7 +51,6 @@ def loginUsuario():
 def adicionar_informacoes():
     try:
         dados = request.get_json()
-        print(dados)
 
         if not dados:
             return jsonify({"erro": "Nenhum dado fornecido"}), 400

@@ -166,8 +166,8 @@
 
         <form id="cadastroForm" action="#" method="post">
             <div class="input-group">
-                <label for="username">Nome de Usuário</label>
-                <input type="text" id="username" name="username" placeholder="Digite seu nome de usuário @" required>
+                <label for="username">Nome de Usuário (@)</label>
+                <input type="text" id="username" name="username" placeholder="@" required>
             </div>
 
             <div class="input-group">
@@ -218,14 +218,11 @@
 
         confirmeSenhaInput.classList.remove('erro-borda', 'sucesso-borda');
 
-
-
         if (confirmeSenhaVal === "" && senhaVal === "") {
             senhaFeedback.textContent = "";
             senhaFeedback.className = 'senha-feedback';
             return true;
         }
-
 
         if (confirmeSenhaVal === "" && senhaVal !== "") {
              senhaFeedback.textContent = "Confirme sua senha.";
@@ -233,7 +230,6 @@
              confirmeSenhaInput.classList.add('erro-borda');
              return false;
         }
-
 
         if (senhaVal === confirmeSenhaVal) {
             senhaFeedback.textContent = "As senhas coincidem!";
@@ -255,7 +251,6 @@
         event.preventDefault();
         formFeedback.textContent = ''; 
         formFeedback.className = 'form-feedback-general';
-
 
         if (!verificarSenhas()) {
             formFeedback.textContent = "As senhas não coincidem ou não foram confirmadas. Por favor, verifique.";
@@ -279,7 +274,7 @@
 
         try {
             formFeedback.textContent = 'Enviando dados...';
-            formFeedback.className = 'form-feedback-general'; // Neutral feedback during sending
+            formFeedback.className = 'form-feedback-general'; 
 
             const response = await fetch(usuarioApiUrl + "/RegistrarUsuario", {
                 method: 'POST',
@@ -295,10 +290,14 @@
             if (response.ok && responseData.token) {
                 localStorage.setItem('jwtToken', responseData.token);
                 sessionStorage.setItem('showProfileModal', 'true');
-
-                window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
-            } else if (response.ok) {
+                formFeedback.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
+                formFeedback.className = 'form-feedback-general sucesso';
                 
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
+                }, 2000);
+
+            } else if (response.ok) {
                 formFeedback.textContent = responseData.mensagem || "Usuário registrado com sucesso! Por favor, faça login para continuar.";
                 formFeedback.className = 'form-feedback-general sucesso';
                 cadastroForm.reset();
