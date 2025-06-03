@@ -1,6 +1,6 @@
 from datetime import date, datetime
 import bcrypt
-from firebase_admin import firestore, credentials
+from firebase_admin import firestore, credentials, storage
 from flask import g, jsonify
 from Models.Usuario_Model import Usuario
 from middlewares.generate_token import generate_token
@@ -8,10 +8,12 @@ from middlewares.auth_token import token_required
 import firebase_admin
 
 if not firebase_admin._apps:
-    cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
-    firebase_admin.initialize_app(cred)
+    cred = credentials.Certificate("safeviewbd-firebase-adminsdk-657bv-0ff3d67904.json")
+    firebase_admin.initialize_app(cred, {
+    'storageBucket': 'safeviewbd.appspot.com'
+})
 
-
+bucket = storage.bucket()
 db = firestore.client()
 
 def calcular_idade(data_nascimento):
@@ -84,34 +86,32 @@ def login_usuario(email, senha):
 
 
 
-@token_required  
-def adicionar_dados_modal(dados_modal):
-    
+@token_required
+def adicionar_dados_modal(dados_modal, arquivo_foto=None):
     usuario_id = g.user_id
-
     doc_ref = db.collection('Usuarios').document(usuario_id)
-    snapshot = doc_ref.get()
 
-    if not snapshot.exists:
+    if not doc_ref.get().exists:
         return {"erro": "Usuário não encontrado"}, 404
 
     dados_para_adicionar = {}
 
-    if 'biografia' in dados_modal:
-        dados_para_adicionar['biografia'] = dados_modal['biografia']
+    if arquivo_foto:
+        caminho = f"usuarios/{usuario_id}/foto_perfil.jpg"
+        blob = bucket.blob(caminho)
+        blob.upload_from_file(arquivo_foto, content_type=arquivo_foto.content_type)
+        blob.make_public()
+        dados_para_adicionar['foto_perfil'] = blob.public_url
 
-    if 'cidade' in dados_modal:
-        dados_para_adicionar['cidade'] = dados_modal['cidade']
-
-    if 'estado' in dados_modal:
-        dados_para_adicionar['estado'] = dados_modal['estado']
-
-    if 'esportes_praticados' in dados_modal:
-        dados_para_adicionar['esportes_praticados'] = dados_modal['esportes_praticados']
+    campos = ['biografia', 'cidade', 'estado', 'esportes_praticados']
+    for campo in campos:
+        if campo in dados_modal:
+            dados_para_adicionar[campo] = dados_modal[campo]
 
     doc_ref.update(dados_para_adicionar)
 
-    return {"status": "sucesso", "mensagem": "Informações adicionadas com sucesso"}, 200
+    return {"status": "sucesso", "mensagem": "Informações atualizadas com sucesso"}, 200
+
 
 
 # Função para Listar Usuarios

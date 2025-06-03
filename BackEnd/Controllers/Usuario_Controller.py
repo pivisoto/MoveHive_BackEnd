@@ -1,4 +1,4 @@
-from flask import Blueprint, request, jsonify, g
+from flask import Blueprint, json, request, jsonify, g
 from middlewares.generate_token import generate_token
 from middlewares.auth_token import token_required
 import Services.Usuario_Service as usuario_service
@@ -50,12 +50,10 @@ def loginUsuario():
 @usuario_bp.route('/DadosModal', methods=['POST'])
 def adicionar_informacoes():
     try:
-        dados = request.get_json()
+        dados = json.loads(request.form.get('dados', '{}'))
+        arquivo_foto = request.files.get('foto')
 
-        if not dados:
-            return jsonify({"erro": "Nenhum dado fornecido"}), 400
-
-        resposta, status = usuario_service.adicionar_dados_modal(dados)
+        resposta, status = usuario_service.adicionar_dados_modal(dados, arquivo_foto)
         return jsonify(resposta), status
 
     except Exception as e:

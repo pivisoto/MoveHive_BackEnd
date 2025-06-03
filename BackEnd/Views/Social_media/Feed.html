@@ -496,10 +496,10 @@
         <main class="feed">
             <article class="post">
                 <div class="post-header">
-                    <img src="#" alt="Avatar yuri_alberto" class="post-avatar">
+                    <img src="https://via.placeholder.com/40" alt="Avatar yuri_alberto" class="post-avatar"> <!-- Placeholder -->
                     <span class="post-username">yuri_alberto</span>
                 </div>
-                <img src="#" alt="Campeonato de Tênis de Mesa" class="post-image">
+                <img src="https://via.placeholder.com/600x400" alt="Campeonato de Tênis de Mesa" class="post-image"> <!-- Placeholder -->
                 <div class="post-actions">
                     <i class="far fa-heart"></i>
                     <i class="far fa-comment"></i>
@@ -510,8 +510,28 @@
                 </div>
                 <div class="post-comments-summary"><a href="#">Comentários</a></div>
                 <div class="post-add-comment">
-                     <img src="#" alt="Avatar yuri_alberto" class="comment-avatar">
+                     <img src="https://via.placeholder.com/30" alt="Avatar yuri_alberto" class="comment-avatar"> <!-- Placeholder -->
                      <span>yuri_alberto</span>
+                </div>
+            </article>
+             <article class="post">
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40/FF0000/FFFFFF?Text=GS" alt="Avatar gabigol_sem_gol" class="post-avatar"> <!-- Placeholder -->
+                    <span class="post-username">gabigol_sem_gol</span>
+                </div>
+                <img src="https://via.placeholder.com/600x450/0000FF/FFFFFF?Text=Futebol" alt="Partida de Futebol Amistosa" class="post-image"> <!-- Placeholder -->
+                <div class="post-actions">
+                    <i class="far fa-heart"></i>
+                    <i class="far fa-comment"></i>
+                    <i class="far fa-paper-plane"></i>
+                </div>
+                <div class="post-caption">
+                    <p><strong>gabigol_sem_gol</strong> Aquele futebol de lei no fim de semana! ⚽️ #futebol #amigos #esporte</p>
+                </div>
+                <div class="post-comments-summary"><a href="#">Ver todos os 12 comentários</a></div>
+                <div class="post-add-comment">
+                     <img src="https://via.placeholder.com/30/FF0000/FFFFFF?Text=GS" alt="Avatar gabigol_sem_gol" class="comment-avatar"> <!-- Placeholder -->
+                     <span>Adicionar um comentário...</span>
                 </div>
             </article>
         </main>
@@ -525,7 +545,7 @@
     </div>
 
     <script>
-        const baseUrl = 'http://127.0.0.1:5000';
+        const baseUrl = 'http://127.0.0.1:5000'; // Ensure this is your correct backend URL
         const usuarioApiUrl = `${baseUrl}/usuario`;
         const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
 
@@ -546,7 +566,7 @@
                     throw new Error(`Erro ao buscar esportes: ${response.statusText}`);
                 }
                 const sports = await response.json();
-                _availableSports = sports;
+                _availableSports = sports; // Assuming sports is an array of sport objects or strings
                 return sports;
             } catch (error) {
                 console.error("Falha ao carregar esportes:", error);
@@ -556,16 +576,18 @@
         }
 
         function populateSportSelect(selectElement, sportsList) {
+            // Clear existing options except the first placeholder
             while (selectElement.options.length > 1) {
                 selectElement.remove(1);
             }
             sportsList.forEach(sport => {
                 const option = document.createElement('option');
-                if (typeof sport === 'string') {
+                // Assuming sport objects have a 'nome' property as seen in earlier context
+                if (typeof sport === 'string') { // Fallback if it's just an array of strings
                     option.value = sport;
                     option.textContent = sport;
                 } else if (typeof sport === 'object' && sport !== null && sport.hasOwnProperty('nome')) {
-                    option.value = sport.nome;
+                    option.value = sport.nome; // Use 'nome' for value and text
                     option.textContent = sport.nome;
                 }
                 selectElement.appendChild(option);
@@ -596,7 +618,7 @@
             }
             statesList.forEach(state => {
                 const option = document.createElement('option');
-                option.value = state.sigla; 
+                option.value = state.sigla; // Use sigla as value
                 option.textContent = state.nome;
                 selectElement.appendChild(option);
             });
@@ -628,10 +650,10 @@
                 selectElement.options[0].textContent = 'Nenhuma cidade encontrada';
                 return;
             }
-            selectElement.options[0].textContent = 'Selecione a Cidade'; 
+            selectElement.options[0].textContent = 'Selecione a Cidade'; // Reset placeholder
             citiesList.forEach(city => {
                 const option = document.createElement('option');
-                option.value = city.nome;
+                option.value = city.nome; // Use nome as value
                 option.textContent = city.nome;
                 selectElement.appendChild(option);
             });
@@ -644,10 +666,12 @@
 
             if (!token) {
                 alert("Autenticação necessária. Redirecionando para o login.");
+                // Replace with your actual login page if different
                 window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+                return; // Stop further execution if not authenticated
             }
 
-            await fetchSports(); 
+            await fetchSports(); // Fetch sports early
 
             const introModalOverlay = document.getElementById('introModalOverlay');
             const profileSetupModalOverlay = document.getElementById('profileSetupModalOverlay');
@@ -670,13 +694,15 @@
             let currentStep = 1;
             const totalSteps = modalSteps.length;
 
-            profilePicPreview.style.display = 'none';
+            profilePicPreview.style.display = 'none'; // Hide preview initially
 
+            // Populate the initial sport select dropdown
             const initialSportSelect = sportsContainer.querySelector('.sport-select');
             if (initialSportSelect) {
                 populateSportSelect(initialSportSelect, _availableSports);
             }
 
+            // Fetch and populate states
             const ibgeStates = await fetchIBGEStates();
             if (stateSelect && ibgeStates.length > 0) {
                 populateStatesDropdown(stateSelect, ibgeStates);
@@ -686,37 +712,37 @@
                 if (citySelect) citySelect.disabled = true;
             }
 
-            
+            // Event listener for state change to populate cities
             if (stateSelect && citySelect) {
                 stateSelect.addEventListener('change', async function() {
                     const selectedStateUF = this.value;
-                    citySelect.innerHTML = '<option value="">Selecione a Cidade</option>';
+                    citySelect.innerHTML = '<option value="">Selecione a Cidade</option>'; // Reset cities
 
                     if (selectedStateUF) {
-                        citySelect.disabled = true; 
+                        citySelect.disabled = true; // Disable while loading
                         citySelect.options[0].textContent = 'Carregando cidades...';
                         const ibgeCities = await fetchIBGECities(selectedStateUF);
                         populateCitiesDropdown(citySelect, ibgeCities);
-                        citySelect.disabled = false; 
+                        citySelect.disabled = false; // Enable after loading
                     } else {
-                        citySelect.disabled = true; 
+                        citySelect.disabled = true; // Disable if no state selected
                     }
                 });
             }
 
-            // Verificando se tem a session showProfileModal, siginifica que veio pelo Register.
+            // Determine if onboarding modal should be shown
             const shouldShowOnboarding = sessionStorage.getItem('showProfileModal') === 'true';
 
             if (shouldShowOnboarding) {
                 introModalOverlay.classList.remove('hidden');
                 profileSetupModalOverlay.classList.add('hidden');
                 appContainer.style.display = 'none';
-                bottomNav.style.display = 'none';
+                if (bottomNav) bottomNav.style.display = 'none';
             } else {
                 introModalOverlay.classList.add('hidden');
                 profileSetupModalOverlay.classList.add('hidden');
-                appContainer.style.display = 'block';
-                bottomNav.style.display = 'flex';
+                appContainer.style.display = 'block'; // Or 'flex' if it's a flex container
+                if (bottomNav) bottomNav.style.display = 'flex';
             }
 
             if (startProfileSetupButton) {
@@ -737,14 +763,14 @@
 
             function validateStep(stepNumber) {
                 if (stepNumber === 1) {
-
+                    // Bio is optional, no specific validation here
                 } else if (stepNumber === 2) {
                     const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
                     let validSportFound = false;
                     sportEntries.forEach(entry => {
                         const sport = entry.querySelector('.sport-select').value;
                         const level = entry.querySelector('.level-select').value;
-                        if (sport && level) {
+                        if (sport && level) { // Both sport and level must be selected
                             validSportFound = true;
                         }
                     });
@@ -753,8 +779,16 @@
                         return false;
                     }
                 } else if (stepNumber === 3) {
-                   
+                    if (!stateSelect.value) {
+                        alert('Por favor, selecione um estado.');
+                        return false;
+                    }
+                    if (!citySelect.value) {
+                        alert('Por favor, selecione uma cidade.');
+                        return false;
+                    }
                 }
+                // Step 4 (profile pic) is optional, so no specific validation here unless made mandatory.
                 return true;
             }
 
@@ -781,35 +815,37 @@
             if (addSportButton) {
                 addSportButton.addEventListener('click', () => {
                     const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
-                    newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
+                    newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0); // Reset selections
 
                     const sportSelect = newSportEntry.querySelector('.sport-select');
                     if (sportSelect) {
-                         populateSportSelect(sportSelect, _availableSports);
+                         populateSportSelect(sportSelect, _availableSports); // Repopulate with fetched sports
                     }
 
+                    // Ensure a remove button exists or add one
                     let removeButton = newSportEntry.querySelector('.remove-sport-button');
                     if (!removeButton) {
                         removeButton = document.createElement('button');
                         removeButton.type = 'button';
                         removeButton.classList.add('remove-sport-button');
-                        removeButton.innerHTML = '×';
+                        removeButton.innerHTML = '×'; // Using a multiplication sign for 'x'
                         newSportEntry.appendChild(removeButton);
                     }
-                    removeButton.onclick = () => newSportEntry.remove();
+                    removeButton.onclick = () => newSportEntry.remove(); // Add remove functionality
 
                     sportsContainer.appendChild(newSportEntry);
                 });
             }
 
-
+            // Add remove button to the first sport entry if it doesn't have one
+            // and ensure it cannot be removed if it's the only one.
             if (sportsContainer.children.length > 0 && sportsContainer.firstElementChild.querySelectorAll('.remove-sport-button').length === 0) {
                 const firstRemoveButton = document.createElement('button');
                 firstRemoveButton.type = 'button';
                 firstRemoveButton.classList.add('remove-sport-button');
                 firstRemoveButton.innerHTML = '×';
                 firstRemoveButton.onclick = () => {
-                    if(sportsContainer.children.length > 1) {
+                    if(sportsContainer.children.length > 1) { // Only remove if more than one entry exists
                         sportsContainer.firstElementChild.remove();
                     } else {
                         alert("Pelo menos um esporte deve ser mantido.");
@@ -830,7 +866,7 @@
                         }
                         reader.readAsDataURL(file);
                     } else {
-                        profilePicPreview.src = "#";
+                        profilePicPreview.src = "#"; // Clear preview
                         profilePicPreview.style.display = 'none';
                     }
                 });
@@ -838,17 +874,21 @@
 
             if (finishButton) {
                 finishButton.addEventListener('click', async () => {
-                    if (!validateStep(currentStep)) return;
+                    if (!validateStep(1) || !validateStep(2) || !validateStep(3) || !validateStep(4)) {
+                        
+                        if (!validateStep(1)) { showStep(1); return; }
+                        if (!validateStep(2)) { showStep(2); return; }
+                        if (!validateStep(3)) { showStep(3); return; }
+                        
+                        return;
+                    }
 
                     const selectedStateText = stateSelect.value ? stateSelect.options[stateSelect.selectedIndex].text : "";
 
-
-                     // ============================ REQUISIÇÂO ============================
-                     // Apos preencher os dados, enviar para a API de atualizar as info do USER.
-                    const collectedData = {
+                    const textualData = {
                         biografia: document.getElementById('bio').value.trim(),
-                        cidade: citySelect.value, 
-                        estado: selectedStateText,  
+                        cidade: citySelect.value,
+                        estado: selectedStateText,
                         esportes_praticados: {}
                     };
 
@@ -856,40 +896,48 @@
                     sportEntries.forEach(entry => {
                         const sport = entry.querySelector('.sport-select').value;
                         const level = entry.querySelector('.level-select').value;
-                        if (sport && level) {
-                            collectedData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
+                        if (sport && level) { 
+                            textualData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
                         }
                     });
 
+                    const formData = new FormData();
 
+                    formData.append('dados', JSON.stringify(textualData));
+
+                    const profilePicFile = profilePicInput.files[0];
+                    if (profilePicFile) {
+                        formData.append('foto', profilePicFile, profilePicFile.name);
+                    }
 
                     const endpointURL = `${usuarioApiUrl}/DadosModal`;
 
                     try {
-                        console.log("Sending data to server:", JSON.stringify(collectedData, null, 2));
+                        console.log("Sending FormData to server (backend-compatible)...");
+
                         const response = await fetch(endpointURL, {
                             method: 'POST',
                             headers: {
-                                'Content-Type': 'application/json',
-                                'Accept': 'application/json',
+                                'Accept': 'application/json', 
                                 'Authorization': `Bearer ${token}`
                             },
-                            body: JSON.stringify(collectedData),
+                            body: formData, 
                         });
 
-                        const responseData = await response.json();
+                        const responseData = await response.json(); 
                         console.log("Server response:", responseData);
 
-
                         if (!response.ok) {
-                            throw new Error(responseData.erro || `HTTP error ${response.status}`);
+                            const errorMsg = responseData.erro || responseData.message || `HTTP error ${response.status}`;
+                            throw new Error(errorMsg);
                         }
 
                         profileSetupModalOverlay.classList.add('hidden');
-                        appContainer.style.display = 'block';
-                        bottomNav.style.display = 'flex';
+                        appContainer.style.display = 'block'; 
+                        if (bottomNav) bottomNav.style.display = 'flex';
 
-                        sessionStorage.setItem('showProfileModal', 'false');
+                        sessionStorage.setItem('showProfileModal', 'false'); 
+                        alert("Perfil atualizado com sucesso!"); 
 
                     } catch (error) {
                         console.error("Error sending data to server:", error);
