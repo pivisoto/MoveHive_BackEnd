@@ -1,551 +1,373 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Meu Perfil</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f0f2f5;
-      color: #333;
-    }
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    .message {
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      font-weight: 500;
-      display: none;
-    }
-    .message.success {
-      background-color: #d4edda;
-      color: #155724;
-      border-left: 4px solid #28a745;
-    }
-    .message.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border-left: 4px solid #dc3545;
-    }
-    .profile-header {
-      display: flex;
-      flex-wrap: wrap;
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      margin-bottom: 20px;
-      overflow: hidden;
-    }
-    .profile-cover {
-      height: 200px;
-      width: 100%;
-      background: linear-gradient(135deg, #6e8efb, #a777e3);
-    }
-    .profile-info {
-      display: flex;
-      width: 100%;
-      padding: 20px;
-      align-items: flex-start;
-    }
-    .profile-picture {
-      width: 150px;
-      height: 150px;
-      border-radius: 50%;
-      object-fit: cover;
-      border: 5px solid white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-      margin-top: -75px;
-      background-color: #e9ecef;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 60px;
-      color: #6c757d;
-      font-weight: bold;
-      overflow: hidden;
-    }
-    .profile-picture img {
-        display: block;
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        border-radius: 50%;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - paulopalauro</title>
+    <style>
+        /* Reset Básico e Estilo do Corpo */
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f0f2f5; /* Fundo cinza claro como nos exemplos */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start; /* Alinha ao topo para permitir rolagem */
+            min-height: 100vh;
+            padding-top: 20px; /* Espaço no topo */
+            padding-bottom: 20px; /* Espaço na base */
+        }
 
-    .profile-details {
-      flex: 1;
-      padding: 0 30px;
-    }
-    .profile-name {
-      font-size: 28px;
-      margin: 0 0 5px 0;
-      color: #212529;
-    }
-    .profile-username {
-      font-size: 18px;
-      color: #6c757d;
-      margin-top: 0;
-      margin-bottom: 15px;
-    }
-     .profile-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 15px;
-      margin-bottom: 20px;
-    }
-    .meta-item {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: #495057;
-      font-size: 14px;
-    }
-    .meta-icon {
-      color: #6c757d;
-    }
+        .screen-container {
+            width: 100%;
+            max-width: 400px; /* Largura típica de tela móvel */
+            background-color: #fff; /* Fundo da área de conteúdo */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            border-radius: 8px; /* Leve arredondamento, opcional */
+            overflow: hidden; /* Para comportamento da navegação inferior */
+            position: relative; /* Para posicionamento da navegação inferior */
+            padding-bottom: 60px; /* Espaço para a barra de navegação fixa */
+        }
+
+        /* Cabeçalho */
+        .profile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .profile-header h1 {
+            margin: 0;
+            font-size: 1.4em;
+            font-weight: 600;
+        }
+
+        .profile-header .options-icon {
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* Área de Conteúdo do Perfil */
+        .profile-content {
+            padding: 20px;
+        }
+
+        /* Seção de Informações do Usuário */
+        .user-info {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-picture {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid #e0e0e0;
+        }
+
+        .user-info h2 { /* nome_completo */
+            margin: 10px 0 5px;
+            font-size: 1.6em;
+            font-weight: 600;
+        }
+
+        .user-info .username { /* username */
+            margin: 0 0 15px;
+            color: #777;
+            font-size: 0.9em;
+        }
+
+        .stats { /* seguidores, seguindo */
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+        }
+
+        .stats span strong {
+            font-weight: 600;
+        }
+
+        .edit-profile-button {
+            background-color: #e9e9e9; /* Similar às abas inativas/pills no exemplo */
+            color: #555;
+            border: none;
+            padding: 10px 25px;
+            border-radius: 20px; /* Botão arredondado */
+            font-size: 0.9em;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .edit-profile-button:hover {
+            background-color: #dcdcdc;
+        }
+
+        /* Divisores */
+        .divider {
+            border: none;
+            border-top: 1px solid #eee;
+            margin: 25px 0;
+        }
+
+        /* Estilo das Seções */
+        .bio-section, .details-section, .sports-section, .events-tabs-section {
+            margin-bottom: 20px;
+        }
+
+        .bio-section h3, .details-section h3, .sports-section h3 {
+            font-size: 1.0em; /* Ajustado para parecer com "Próximos eventos" */
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #333;
+        }
+
+        .bio-section p { /* biografia */
+            font-size: 0.90em;
+            line-height: 1.5;
+            color: #444;
+            margin: 5px 0;
+        }
+        .details-section p { /* data_nascimento, cidade, estado */
+            font-size: 0.90em;
+            line-height: 1.5;
+            color: #444;
+            margin: 5px 0;
+        }
 
 
-    .profile-sections {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-      gap: 20px;
-      margin-bottom: 20px;
-    }
-    .section {
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-    }
+        .details-section .icon {
+            margin-right: 8px;
+            font-size: 1.1em;
+        }
 
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #e9ecef;
-        margin-bottom: 20px;
-    }
+        /* Tags de Esportes */
+        .sports-tags { /* esportes_praticados */
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
 
-    .section-title {
-      font-size: 20px;
-      margin-top: 0;
-      color: #212529;
-      flex-grow: 1;
-      margin-bottom: 0;
-    }
+        .sport-tag {
+            background-color: #e9e9e9; /* Similar às pills de Eventos/Torneios */
+            padding: 6px 12px;
+            border-radius: 15px;
+            font-size: 0.85em;
+            color: #555;
+        }
 
-    .section-content {
-        flex-grow: 1;
-    }
+        /* Seção de Abas de Eventos */
+        .tabs { /* eventos_criados, eventos_participando */
+            display: flex;
+            margin-bottom: 15px;
+            background-color: #f0f0f0; /* Fundo para o contêiner das abas, como no exemplo */
+            border-radius: 8px; /* Contêiner arredondado para as abas */
+            padding: 4px; /* Preenchimento dentro do contêiner das abas */
+        }
 
-    .profile-bio {
-      margin-bottom: 20px;
-      line-height: 1.6;
-      color: #495057;
-    }
+        .tab-button {
+            flex-grow: 1;
+            padding: 10px 8px;
+            background-color: transparent; /* Abas inativas transparentes */
+            border: none;
+            border-radius: 6px; /* Abas individuais arredondadas */
+            cursor: pointer;
+            font-size: 0.85em;
+            font-weight: 500;
+            color: #777;
+            text-align: center;
+            transition: background-color 0.2s, color 0.2s;
+        }
 
-    .list-style-none {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-     .list-style-none li {
-         padding: 10px 0;
-         border-bottom: 1px solid #e9ecef;
-     }
-     .list-style-none li:last-child {
-         border-bottom: none;
-     }
+        .tab-button.active {
+            background-color: #fff; /* Fundo branco para aba ativa */
+            color: #333;
+            font-weight: 600;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* Sombra sutil para aba ativa */
+        }
 
-     .list-item a {
-        text-decoration: none;
-        color: inherit;
-     }
-     .list-item a:hover {
-         text-decoration: underline;
-     }
+        .tab-button:hover:not(.active) {
+            background-color: #e5e5e5; /* Hover para abas inativas */
+        }
 
-    .empty-state {
-      color: #6c757d;
-      text-align: center;
-      padding: 20px 0;
-    }
-    .btn {
-      padding: 10px 20px;
-      border-radius: 6px;
-      border: none;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-    .btn-primary {
-      background-color: #4267B2;
-      color: white;
-    }
-    .btn-primary:hover {
-      background-color: #365899;
-    }
+        .tab-content .tab-pane {
+            display: none; /* Oculta painéis inativos */
+        }
 
-    .btn-secondary-sm {
-        padding: 5px 10px;
-        font-size: 14px;
-        background-color: #6c757d;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-    }
-    .btn-secondary-sm:hover {
-        background-color: #5a6268;
-    }
-
-    .status-active {
-      color: #28a745;
-      font-weight: 500;
-    }
-    .status-inactive {
-      color: #dc3545;
-      font-weight: 500;
-    }
-
-    @media (max-width: 768px) {
-      .profile-info {
-        flex-direction: column;
-        align-items: center;
-        text-align: center;
-        padding-top: 0;
-      }
-       .profile-picture {
-         margin-top: -75px;
-         margin-bottom: 20px;
-       }
-       .profile-details {
-         padding: 0;
-       }
-       .profile-stats {
-         justify-content: center;
-       }
-       .profile-meta {
-         justify-content: center;
-       }
-        .profile-sections {
-           grid-template-columns: 1fr;
-       }
-       .section-header {
-           flex-direction: column;
-           align-items: flex-start;
-       }
-        .section-title {
+        .tab-content .tab-pane.active {
+            display: block; /* Mostra painel ativo */
+            padding-top: 10px;
+        }
+        
+        .tab-content p { /* Estilo para texto placeholder nas abas */
+            font-size: 0.9em;
+            color: #666;
             margin-bottom: 10px;
         }
-    }
-  </style>
+
+        .event-card-placeholder { /* Card simplificado para eventos */
+            background-color: #fff;
+            border: 1px solid #e8e8e8;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+            color: #444;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Barra de Navegação Inferior */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            position: fixed; /* Fixa na parte inferior da tela do dispositivo */
+            bottom: 0;
+            left: 50%; /* Centraliza horizontalmente na viewport */
+            transform: translateX(-50%); /* Ajuste fino para centralização */
+            width: 100%;
+            max-width: 400px; /* Mesma largura máxima do container da tela */
+            height: 60px;
+            background-color: #FBC02D; /* Fundo amarelo dos exemplos */
+            z-index: 1000;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-decoration: none;
+            color: #fff; /* Ícones brancos */
+            height: 100%;
+        }
+
+        .nav-icon {
+            font-size: 1.6em; /* Tamanho dos ícones */
+        }
+        /* O ícone ativo na navegação inferior nos exemplos tem a mesma cor */
+
+    </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Meu Perfil</h1>
+    <div class="screen-container">
+        <header class="profile-header">
+            <h1>Perfil</h1>
+            <div class="options-icon">⋮</div> <!-- Reticências verticais -->
+        </header>
 
-    <div id="mensagemDiv" class="message"></div>
-
-    <div id="perfilDiv" style="display: none;">
-      <div class="profile-header">
-        <div class="profile-cover"></div>
-        <div class="profile-info">
-          <div id="profilePicture" class="profile-picture"></div>
-          <div class="profile-details">
-            <h2 id="nomeCompleto" class="profile-name"></h2>
-            <p id="username" class="profile-username"></p>
-
-            <div class="profile-meta">
-                <div class="meta-item">
-                  <span class="meta-icon">📍</span>
-                  <span id="localizacao"></span>
+        <main class="profile-content">
+            <section class="user-info">
+                <!-- foto_perfil -->
+                <img src="https://i.pravatar.cc/100?u=paulopalauro" alt="Foto de Perfil de Paulo Palauro" class="profile-picture">
+                <!-- nome_completo -->
+                <h2>Paulo Palauro</h2>
+                <!-- username -->
+                <p class="username">@paulopalauro</p>
+                <div class="stats">
+                    <!-- seguidores -->
+                    <span><strong>1.5K</strong> Seguidores</span>
+                    <!-- seguindo -->
+                    <span><strong>320</strong> Seguindo</span>
                 </div>
-                <div class="meta-item">
-                  <span class="meta-icon">📅</span>
-                  <span id="dataCriacao"></span>
+                <button class="edit-profile-button">Editar Perfil</button>
+            </section>
+
+            <hr class="divider">
+
+            <section class="bio-section">
+                <h3>Biografia</h3>
+                <!-- biografia -->
+                <p>Apaixonado por esportes e tecnologia. Sempre em busca de novos desafios e de conectar pessoas através da atividade física.</p>
+            </section>
+
+            <hr class="divider">
+
+            <section class="details-section">
+                <h3>Detalhes</h3>
+                <!-- data_nascimento -->
+                <p><span class="icon">🎂</span> Nascimento: 15/08/1990</p>
+                <!-- cidade, estado -->
+                <p><span class="icon">📍</span> Localização: São Paulo, SP</p>
+            </section>
+
+            <hr class="divider">
+
+            <section class="sports-section">
+                <h3>Esportes Praticados</h3>
+                <!-- esportes_praticados -->
+                <div class="sports-tags">
+                    <span class="sport-tag">Tênis</span>
+                    <span class="sport-tag">Corrida</span>
+                    <span class="sport-tag">Beach Tennis</span>
+                    <span class="sport-tag">Futebol</span>
                 </div>
-                <div class="meta-item">
-                  <span class="meta-icon">🔰</span>
-                  <span id="tipoUsuario"></span>
+            </section>
+
+            <hr class="divider">
+
+            <section class="events-tabs-section">
+                <div class="tabs">
+                    <!-- eventos_criados -->
+                    <button class="tab-button active" data-tab="criados">Eventos Criados (12)</button>
+                    <!-- eventos_participando -->
+                    <button class="tab-button" data-tab="participando">Eventos Participando (25)</button>
                 </div>
-                 <div class="meta-item">
-                  <span class="meta-icon">●</span>
-                  <span id="statusUsuario"></span>
+                <div class="tab-content">
+                    <div id="criados" class="tab-pane active">
+                        <p>Conteúdo dos eventos criados aparecerá aqui...</p>
+                        <div class="event-card-placeholder">Campeonato de Tênis Amador</div>
+                        <div class="event-card-placeholder">Corrida Matinal no Parque</div>
+                    </div>
+                    <div id="participando" class="tab-pane">
+                        <p>Conteúdo dos eventos participando aparecerá aqui...</p>
+                         <div class="event-card-placeholder">Torneio de Beach Tennis Verão</div>
+                         <div class="event-card-placeholder">Aula Experimental de Yoga</div>
+                    </div>
                 </div>
-            </div>
+            </section>
+        </main>
 
-             <button id="editProfileBtn" class="btn btn-primary">Editar Perfil</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="section">
-          <div class="section-header">
-              <h3 class="section-title">Bio</h3>
-          </div>
-          <div id="biografia" class="profile-bio section-content"></div>
-      </div>
-
-       <div class="section">
-            <div class="section-header">
-                <h3 class="section-title">Esportes e Habilidade</h3>
-            </div>
-            <ul id="esportesHabilidadeList" class="list-style-none section-content">
-            </ul>
-       </div>
-
-      <div class="profile-sections">
-        <div class="section">
-          <div class="section-header">
-            <h3 class="section-title">Eventos Criados (<span id="eventosCriadosCount">0</span>)</h3>
-            <button id="addEventBtn" class="btn btn-secondary-sm">Adicionar</button>
-          </div>
-          <ul id="eventosCriadosList" class="list-style-none section-content">
-          </ul>
-        </div>
-
-        <div class="section">
-          <div class="section-header">
-            <h3 class="section-title">Eventos Participando (<span id="eventosParticipandoCount">0</span>)</h3>
-          </div>
-          <ul id="eventosParticipandoList" class="list-style-none section-content">
-          </ul>
-        </div>
-      </div>
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item"><span class="nav-icon">🏠</span></a>
+            <a href="#" class="nav-item"><span class="nav-icon">⇆</span></a> <!-- Ícone para Atividades/Trocas -->
+            <a href="#" class="nav-item"><span class="nav-icon">🏆</span></a> <!-- Ícone para Torneios/Eventos -->
+            <a href="#" class="nav-item"><span class="nav-icon">🏅</span></a> <!-- Ícone para Conquistas/Ranking (suposição) -->
+            <a href="#" class="nav-item active"><span class="nav-icon">👤</span></a> <!-- Ícone para Perfil -->
+        </nav>
     </div>
-  </div>
 
-  <script>
-    const baseUrl = 'http://127.0.0.1:5000';
-    const usuarioApiUrl = `${baseUrl}/usuario`;
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-content .tab-pane');
 
-    document.addEventListener("DOMContentLoaded", function () {
-      const token = localStorage.getItem('token');
-      const mensagemDiv = document.getElementById('mensagemDiv');
-      const perfilDiv = document.getElementById('perfilDiv');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    // Desativa todos os botões e painéis
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabPanes.forEach(pane => pane.classList.remove('active'));
 
-      mensagemDiv.style.display = 'none';
+                    // Ativa o botão clicado
+                    button.classList.add('active');
 
-      if (!token) {
-        showMessage('error', 'Você precisa estar logado para acessar essa página.');
-        setTimeout(() => {
-             window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-        }, 2000);
-        return;
-      }
-
-      fetch(usuarioApiUrl + "/BuscarUsuarioID", {
-          method: 'GET',
-          headers: { 'Authorization': `Bearer ${token}` }
-      })
-      .then(async (profileResponse) => {
-          if (!profileResponse.ok) {
-              if (profileResponse.status === 401) {
-                   showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
-                   setTimeout(() => {
-                        localStorage.removeItem('token');
-                        window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-                    }, 2000);
-              } else {
-                   const errorData = await profileResponse.json();
-                   showMessage('error', errorData.erro || `Erro ao carregar perfil: ${profileResponse.status} ${profileResponse.statusText}`);
-              }
-              throw new Error('Failed to load profile');
-          }
-          const profileData = await profileResponse.json();
-          console.log(profileData);
-          return profileData;
-      })
-      .then((profileData) => {
-        if (profileData.status === 'sucesso') {
-          showMessage('success', 'Perfil carregado com sucesso!');
-
-          const usuario = profileData.usuario;
-
-          document.getElementById('nomeCompleto').textContent = usuario.nome_completo || 'Nome não informado';
-          document.getElementById('username').textContent = `@${usuario.username || 'usuário'}`;
-
-          const profilePicture = document.getElementById('profilePicture');
-          if (usuario.foto_perfil) {
-            if (usuario.foto_perfil.startsWith('http') || usuario.foto_perfil.startsWith('data:image')) {
-                profilePicture.innerHTML = `<img src="${usuario.foto_perfil}" alt="Foto de perfil">`;
-            } else {
-                 profilePicture.innerHTML = `<img src="${baseUrl}/uploads/${usuario.foto_perfil}" alt="Foto de perfil">`;
-            }
-          } else {
-            const initials = usuario.nome_completo ? usuario.nome_completo.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
-             profilePicture.textContent = initials;
-             profilePicture.style.fontSize = '60px';
-             profilePicture.style.color = '#6c757d';
-             profilePicture.style.backgroundColor = '#e9ecef';
-             profilePicture.innerHTML = initials;
-          }
-
-          const localizacaoElement = document.getElementById('localizacao');
-          const estado = usuario.estado || '';
-          const cidade = usuario.cidade || '';
-          if (estado && cidade) {
-             localizacaoElement.textContent = `${estado}, ${cidade}`;
-          } else if (estado) {
-             localizacaoElement.textContent = estado;
-          } else if (cidade) {
-             localizacaoElement.textContent = cidade;
-          } else {
-             localizacaoElement.textContent = 'Localização não informada';
-          }
-
-          const dataCriacaoElement = document.getElementById('dataCriacao');
-          try {
-              const dataCriacao = new Date(usuario.data_criacao);
-               if (!isNaN(dataCriacao)) {
-                  const day = dataCriacao.getUTCDate().toString().padStart(2, '0');
-                  const month = (dataCriacao.getUTCMonth() + 1).toString().padStart(2, '0');
-                  const year = dataCriacao.getUTCFullYear();
-                  dataCriacaoElement.textContent = `Membro desde ${day}/${month}/${year}`;
-               } else {
-                   dataCriacaoElement.textContent = 'Data de criação inválida';
-               }
-          } catch (e) {
-              dataCriacaoElement.textContent = 'Erro ao formatar data';
-              console.error("Erro ao formatar data:", e);
-          }
-
-          document.getElementById('tipoUsuario').textContent =
-            usuario.tipo_usuario === 'admin' ? 'Administrador' : 'Usuário Comum';
-
-          const statusElement = document.getElementById('statusUsuario');
-          statusElement.textContent = usuario.status_usuario === 'ativo' ? 'Ativo' : 'Inativo';
-          statusElement.className = usuario.status_usuario === 'ativo' ? 'status-active' : 'status-inactive';
-
-          document.getElementById('biografia').textContent = usuario.biografia || 'Nenhuma biografia informada.';
-
-          const esportesHabilidadeList = document.getElementById('esportesHabilidadeList');
-          esportesHabilidadeList.innerHTML = '';
-
-          const userPracticedSports = usuario.esportes_praticados || [];
-          if (userPracticedSports.length > 0 && Array.isArray(userPracticedSports)) {
-              userPracticedSports.forEach(esporte => {
-                  if (esporte && esporte.nome && esporte.nivel) {
-                      const li = document.createElement('li');
-                      li.className = 'list-item';
-                      const sportName = esporte.nome.charAt(0).toUpperCase() + esporte.nome.slice(1);
-                      const level = esporte.nivel.charAt(0).toUpperCase() + esporte.nivel.slice(1);
-                      li.textContent = `${sportName}: ${level}`;
-                      esportesHabilidadeList.appendChild(li);
-                  } else {
-                       console.warn('Item de esporte inesperado encontrado ou incompleto:', esporte);
-                  }
-              });
-          } else {
-              const li = document.createElement('li');
-              li.className = 'empty-state';
-              li.textContent = 'Nenhum esporte informado';
-              esportesHabilidadeList.appendChild(li);
-          }
-
-          const eventosCriadosList = document.getElementById('eventosCriadosList');
-          const eventosCriadosCountElement = document.getElementById('eventosCriadosCount');
-          eventosCriadosList.innerHTML = '';
-          if (usuario.eventos_criados && usuario.eventos_criados.length > 0) {
-            eventosCriadosCountElement.textContent = usuario.eventos_criados.length;
-            usuario.eventos_criados.forEach(evento => {
-              if (evento && evento.id && evento.nome) {
-                  const li = document.createElement('li');
-                  li.className = 'list-item';
-                  const eventLink = document.createElement('a');
-                  eventLink.href = `#event/${evento.id}`;
-                  eventLink.textContent = evento.nome || 'Evento sem nome';
-                  li.appendChild(eventLink);
-                  eventosCriadosList.appendChild(li);
-              } else {
-                  console.warn('Item de evento criado inesperado ou incompleto:', evento);
-              }
+                    // Ativa o painel correspondente
+                    const tabId = button.getAttribute('data-tab');
+                    const activePane = document.getElementById(tabId);
+                    if (activePane) {
+                        activePane.classList.add('active');
+                    }
+                });
             });
-          } else {
-             eventosCriadosCountElement.textContent = '0';
-             const li = document.createElement('li');
-             li.className = 'empty-state';
-             li.textContent = 'Nenhum evento criado ainda';
-             eventosCriadosList.appendChild(li);
-          }
-
-          const eventosParticipandoList = document.getElementById('eventosParticipandoList');
-          const eventosParticipandoCountElement = document.getElementById('eventosParticipandoCount');
-          eventosParticipandoList.innerHTML = '';
-          if (usuario.eventos_participando && usuario.eventos_participando.length > 0) {
-             eventosParticipandoCountElement.textContent = usuario.eventos_participando.length;
-            usuario.eventos_participando.forEach(evento => {
-               if (evento && evento.id && evento.nome) {
-                  const li = document.createElement('li');
-                  li.className = 'list-item';
-                  const eventLink = document.createElement('a');
-                  eventLink.href = `#event/${evento.id}`;
-                  eventLink.textContent = evento.nome || 'Evento sem nome';
-                  li.appendChild(eventLink);
-                  eventosParticipandoList.appendChild(li);
-               } else {
-                   console.warn('Item de evento participando inesperado ou incompleto:', evento);
-               }
-            });
-          } else {
-             eventosParticipandoCountElement.textContent = '0';
-             const li = document.createElement('li');
-             li.className = 'empty-state';
-             li.textContent = 'Não está participando de nenhum evento';
-             eventosParticipandoList.appendChild(li);
-          }
-
-          perfilDiv.style.display = 'block';
-
-          document.getElementById('editProfileBtn').addEventListener('click', function() {
-              window.location.href = 'EditarPerfil.html';
-          });
-
-           const addEventBtn = document.getElementById('addEventBtn');
-           if (addEventBtn) {
-               addEventBtn.addEventListener('click', function() {
-                   window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/AdicionarEvento.html';
-               });
-           }
-
-        } else {
-           showMessage('error', profileData.erro || 'Erro ao carregar perfil. Resposta inesperada.');
-           console.error('PerfilData status erro:', profileData);
-        }
-      })
-      .catch(error => {
-        console.error('Erro durante o carregamento do perfil:', error);
-        if (mensagemDiv.style.display === 'none' || !mensagemDiv.textContent.includes('Você precisa estar logado')) {
-             showMessage('error', 'Erro ao carregar dados. Verifique a conexão ou contate o suporte.');
-        }
-        perfilDiv.style.display = 'none';
-      });
-    });
-
-    function showMessage(type, text) {
-        const mensagemDiv = document.getElementById('mensagemDiv');
-        mensagemDiv.className = `message ${type}`;
-        mensagemDiv.textContent = text;
-        mensagemDiv.style.display = 'block';
-         setTimeout(() => {
-             mensagemDiv.style.display = 'none';
-         }, 5000);
-    }
-  </script>
+        });
+    </script>
 </body>
 </html>

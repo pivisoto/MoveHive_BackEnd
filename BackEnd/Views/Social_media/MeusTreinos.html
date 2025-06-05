@@ -1,0 +1,1312 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Treinos - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700; /* Amarelo Claro */
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --success-color: #5cb85c;
+            --danger-color: #d9534f;
+            --info-color: #5bc0de;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+            position: relative;
+        }
+
+        .app-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .honeycomb-logo {
+            width: 30px;
+            height: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .honeycomb-logo div {
+            width: 10px;
+            height: 11.54px;
+            background-color: var(--accent-color);
+            margin: 0.5px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .honeycomb-logo div:nth-child(4),
+        .honeycomb-logo div:nth-child(5),
+        .honeycomb-logo div:nth-child(6),
+        .honeycomb-logo div:nth-child(7) {
+            transform: translateX(5px);
+        }
+
+        .header-actions i {
+            font-size: 1.5rem;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .page-content {
+            padding: 20px 15px 140px 15px;
+        }
+        
+        .loading-indicator {
+            text-align: center;
+            padding: 20px;
+            font-size: 1.2rem;
+            color: #777;
+        }
+
+        .treino-card {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .treino-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start; 
+            margin-bottom: 10px;
+        }
+
+        .treino-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-right: 10px; 
+        }
+        
+        .treino-sport-badge {
+            font-size: 0.8rem;
+            font-weight: 500;
+            padding: 3px 8px;
+            border-radius: 12px;
+            background-color: var(--accent-color);
+            color: #333; 
+            display: inline-block; 
+            margin-top: 5px; 
+            margin-bottom: 10px;
+        }
+
+        .treino-actions-card { 
+            display: flex;
+            gap: 10px;
+        }
+
+        .treino-actions-card i {
+            font-size: 1.1rem;
+            color: #777;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .treino-actions-card i:hover {
+            color: var(--text-color);
+        }
+
+        .treino-image {
+            width: 100%;
+            max-height: 300px; 
+            object-fit: cover; 
+            border-radius: 6px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+        }
+
+        .treino-details {
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .treino-details p {
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+        }
+        .treino-details p i {
+            margin-right: 8px;
+            width: 16px; 
+            text-align: center;
+            color: var(--accent-color); 
+        }
+        
+        .treino-description {
+            font-size: 0.85rem;
+            color: #444;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color); 
+        }
+
+        .treino-stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: #777;
+            text-transform: uppercase;
+        }
+        
+        .fab-add-treino {
+            position: fixed;
+            width: 56px;
+            height: 56px;
+            background-color: var(--accent-color);
+            color: #333;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            cursor: pointer;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 105;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+        }
+        .fab-add-treino:hover {
+            background-color: #e6c300;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto; 
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300; 
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000; 
+            font-weight: bold; 
+        }
+        .nav-item.active i.fas { 
+            font-weight: 900; 
+        }
+
+        /* Modal Styles (common for both delete and add) */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000; 
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-color);
+            padding: 20px 25px 25px 25px; 
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 90%;
+            max-width: 450px; 
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-height: 90vh; 
+            overflow-y: auto; 
+        }
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            margin-bottom: 20px; 
+            font-size: 1.4rem;
+            color: var(--text-color);
+            text-align: center;
+        }
+
+        #delete-confirmation-modal .modal-content p {
+            margin-bottom: 20px;
+            font-size: 1rem;
+            color: #555;
+            text-align: center;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: space-evenly;
+            gap: 10px;
+            margin-top: 20px; 
+        }
+
+        .modal-actions button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .modal-button-confirm {
+            background-color: var(--success-color); 
+            color: white;
+        }
+        #delete-confirmation-modal .modal-button-confirm { 
+             background-color: var(--danger-color);
+        }
+        .modal-button-confirm:hover {
+            background-color: #4cae4c; 
+        }
+         #delete-confirmation-modal .modal-button-confirm:hover {
+            background-color: #c9302c; 
+        }
+
+        .modal-button-cancel {
+            background-color: #ccc;
+            color: #333;
+        }
+        .modal-button-cancel:hover {
+            background-color: #bbb;
+        }
+
+        .modal-content form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            text-align: left;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #555;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="datetime-local"],
+        .form-group input[type="url"],
+        .form-group input[type="file"],
+        .form-group input[type="number"],
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-size: 0.95rem;
+            background-color: #fdfdfd;
+        }
+        .form-group textarea {
+            resize: vertical;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
+        }
+
+        .image-preview-container img { /* General style for preview images */
+            max-width: 150px; 
+            max-height: 150px; 
+            display: block;
+            margin-top: 5px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+        }
+
+
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="honeycomb-logo">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <h1>Meus Treinos</h1>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-filter"></i>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div id="treinos-list-container">
+                <p class="loading-indicator">Carregando treinos...</p>
+            </div>
+        </main>
+
+        <button class="fab-add-treino" title="Adicionar Novo Treino">
+            <i class="fas fa-plus"></i>
+        </button>
+
+        <nav class="bottom-nav">
+            <a href="feed_claro.html" class="nav-item"><i class="fas fa-home"></i></a>
+            <a href="#" class="nav-item active"><i class="fas fa-dumbbell"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-award"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div id="delete-confirmation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Confirmar Exclusão</h2>
+            <p>Tem certeza de que deseja excluir este treino?</p>
+            <div class="modal-actions">
+                <button id="confirm-delete-btn" class="modal-button-confirm">Sim, Excluir</button>
+                <button id="cancel-delete-btn" class="modal-button-cancel">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Treino Modal -->
+    <div id="add-treino-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Adicionar Novo Treino</h2>
+            <form id="add-treino-form">
+                <div class="form-group">
+                    <label for="treino-titulo-input">Título do Treino:</label>
+                    <input type="text" id="treino-titulo-input" name="titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="treino-esporte-input">Esporte:</label>
+                    <select id="treino-esporte-input" name="nome_esporte" required>
+                        <option value="">Selecione um esporte...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="treino-data-input">Data e Hora:</label>
+                    <input type="datetime-local" id="treino-data-input" name="data_hora_str" required>
+                </div>
+                <div class="form-group">
+                    <label for="treino-estado-input">Estado:</label>
+                    <select id="treino-estado-input" name="estado" required>
+                        <option value="">Carregando estados...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="treino-cidade-input">Cidade:</label>
+                    <select id="treino-cidade-input" name="cidade" required disabled>
+                        <option value="">Selecione um estado primeiro...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="treino-descricao-input">Descrição:</label>
+                    <textarea id="treino-descricao-input" name="descricao" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="treino-imagem-input">Imagem (Opcional):</label>
+                    <input type="file" id="treino-imagem-input" name="arquivo_imagem" accept="image/*">
+                    <div id="add-image-preview-container" class="image-preview-container" style="margin-top: 10px;">
+                        <!-- Preview will be injected here by JS -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="treino-tempo-input">Tempo Treinado (em minutos):</label>
+                    <input type="number" id="treino-tempo-input" name="tempo_treinado" placeholder="Ex: 90" min="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-button-confirm">Salvar Treino</button>
+                    <button type="button" id="cancel-add-treino-btn" class="modal-button-cancel">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Treino Modal -->
+    <div id="edit-treino-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Editar Treino</h2>
+            <form id="edit-treino-form">
+                <input type="hidden" id="edit-treino-id-input" name="treino_id">
+                <div class="form-group">
+                    <label for="edit-treino-titulo-input">Título do Treino:</label>
+                    <input type="text" id="edit-treino-titulo-input" name="titulo" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-esporte-input">Esporte:</label>
+                    <select id="edit-treino-esporte-input" name="nome_esporte" required>
+                        <option value="">Selecione um esporte...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-data-input">Data e Hora:</label>
+                    <input type="datetime-local" id="edit-treino-data-input" name="data_hora_str" required>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-estado-input">Estado:</label>
+                    <select id="edit-treino-estado-input" name="estado" required>
+                        <option value="">Carregando estados...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-cidade-input">Cidade:</label>
+                    <select id="edit-treino-cidade-input" name="cidade" required disabled>
+                        <option value="">Selecione um estado primeiro...</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-descricao-input">Descrição:</label>
+                    <textarea id="edit-treino-descricao-input" name="descricao" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-imagem-input">Nova Imagem (Opcional, para substituir a atual):</label>
+                    <input type="file" id="edit-treino-imagem-input" name="arquivo_imagem" accept="image/*">
+                    <div id="current-edit-image-preview" class="image-preview-container" style="margin-top: 10px; font-size: 0.9rem; color: #555;">
+                        <!-- Current image shown here -->
+                    </div>
+                    <div id="new-edit-image-preview-container" class="image-preview-container" style="margin-top: 10px;">
+                        <!-- New selected image preview will be injected here by JS -->
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="edit-treino-tempo-input">Tempo Treinado (em minutos):</label>
+                    <input type="number" id="edit-treino-tempo-input" name="tempo_treinado" placeholder="Ex: 90" min="1" required>
+                </div>
+                <div class="modal-actions">
+                    <button type="submit" class="modal-button-confirm">Salvar Alterações</button>
+                    <button type="button" id="cancel-edit-treino-btn" class="modal-button-cancel">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwtToken');
+            console.log("Página Meus Treinos carregada.");
+
+            const treinosContainer = document.getElementById('treinos-list-container');
+            const loadingIndicator = document.querySelector('.loading-indicator');
+            let globalTreinosList = [];
+
+            const deleteModal = document.getElementById('delete-confirmation-modal');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            let currentTreinoIdToDelete = null;
+
+            // Add Treino Modal Elements
+            const addTreinoModal = document.getElementById('add-treino-modal');
+            const addTreinoForm = document.getElementById('add-treino-form');
+            const cancelAddTreinoBtn = document.getElementById('cancel-add-treino-btn');
+            const fabAddTreinoButton = document.querySelector('.fab-add-treino');
+            const addEstadoSelect = document.getElementById('treino-estado-input');
+            const addCidadeSelect = document.getElementById('treino-cidade-input');
+            const addTreinoImagemInput = document.getElementById('treino-imagem-input'); 
+            const addImagePreviewContainer = document.getElementById('add-image-preview-container'); 
+
+
+            // Edit Treino Modal Elements
+            const editTreinoModal = document.getElementById('edit-treino-modal');
+            const editTreinoForm = document.getElementById('edit-treino-form');
+            const cancelEditTreinoBtn = document.getElementById('cancel-edit-treino-btn');
+            const editTreinoIdInput = document.getElementById('edit-treino-id-input');
+            const editTituloInput = document.getElementById('edit-treino-titulo-input');
+            const editEsporteSelect = document.getElementById('edit-treino-esporte-input');
+            const editDataInput = document.getElementById('edit-treino-data-input');
+            const editEstadoSelect = document.getElementById('edit-treino-estado-input');
+            const editCidadeSelect = document.getElementById('edit-treino-cidade-input');
+            const editDescricaoInput = document.getElementById('edit-treino-descricao-input');
+            const editTreinoImagemInput = document.getElementById('edit-treino-imagem-input'); 
+            const currentEditImagePreview = document.getElementById('current-edit-image-preview'); 
+            const newEditImagePreviewContainer = document.getElementById('new-edit-image-preview-container'); 
+            const editTempoInput = document.getElementById('edit-treino-tempo-input');
+
+
+            function createTreinoCard(treino) {
+                const placeholderImageUrl = 'https://placehold.co/600x400/EEE/31343C';
+                const card = document.createElement('article');
+                card.className = 'treino-card';
+                card.dataset.treinoId = treino.id;
+
+                let imageHtml = '';
+                const imageUrl = treino.arquivo_imagem || treino.arquivo_imagem; // Backend might return imagem_url
+                if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
+                    imageHtml = `<img src="${imageUrl}" alt="Imagem do treino ${treino.titulo}" class="treino-image">`;
+                } else {
+                    imageHtml = `<img src="${placeholderImageUrl}" alt="Imagem placeholder para ${treino.titulo}" class="treino-image">`;
+                }
+
+                const esporteNome = (treino.esporte && typeof treino.esporte === 'object' && treino.esporte.nome) ?
+                    treino.esporte.nome :
+                    (treino.nome_esporte || (typeof treino.esporte === 'string' ? treino.esporte : 'Esporte não definido'));
+
+                const dataValue = treino.data_hora || treino.data_hora_str;
+                const dataFormatada = dataValue ?
+                    new Date(dataValue).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    }) :
+                    'Data não informada';
+
+                let duracaoDisplay = '-';
+                if (treino.tempo_treinado !== undefined && treino.tempo_treinado !== null) {
+                    if (typeof treino.tempo_treinado === 'number' && treino.tempo_treinado > 0) {
+                        duracaoDisplay = `${treino.tempo_treinado} min`;
+                    } else if (typeof treino.tempo_treinado === 'string' && treino.tempo_treinado.trim() !== '') {
+                        duracaoDisplay = treino.tempo_treinado;
+                    }
+                }
+
+                card.innerHTML = `
+                    <div class="treino-header">
+                        <div>
+                            <h2 class="treino-title">${treino.titulo}</h2>
+                            <span class="treino-sport-badge">${esporteNome}</span>
+                        </div>
+                        <div class="treino-actions-card">
+                            <i class="fas fa-edit" title="Editar"></i>
+                            <i class="fas fa-trash-alt" title="Excluir"></i>
+                        </div>
+                    </div>
+                    ${imageHtml}
+                    <div class="treino-details">
+                        <p><i class="fas fa-calendar-alt"></i> ${dataFormatada}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> ${treino.lugar || 'Local não informado'}</p>
+                    </div>
+                    ${treino.descricao ? `<div class="treino-description"><p>${treino.descricao}</p></div>` : '<div class="treino-description"><p>Sem descrição.</p></div>'}
+                    <div class="treino-stats">
+                        <div class="stat-item">
+                            <span class="stat-value">${treino.pontos !== undefined ? treino.pontos : '-'}</span>
+                            <span class="stat-label">Pontos</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-value">${duracaoDisplay}</span>
+                            <span class="stat-label">Duração</span>
+                        </div>
+                    </div>
+                `;
+                return card;
+            }
+
+            async function loadTreinos() {
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/treino/ListarTreino', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json().catch(() => ({}));
+                        throw new Error(`Erro HTTP: ${response.status} - ${errorData.erro || response.statusText}`);
+                    }
+                    globalTreinosList = await response.json();
+
+                    if (loadingIndicator) loadingIndicator.remove();
+                    treinosContainer.innerHTML = '';
+
+                    if (globalTreinosList && globalTreinosList.length > 0) {
+                        globalTreinosList.sort((a, b) => {
+                            const dateA = a.data_hora || a.data_hora_str;
+                            const dateB = b.data_hora || b.data_hora_str;
+                            if (!dateA && !dateB) return 0;
+                            if (!dateA) return 1;
+                            if (!dateB) return -1;
+                            return new Date(dateB) - new Date(dateA);
+                        });
+                        globalTreinosList.forEach(treinoData => {
+                            const treinoCardElement = createTreinoCard(treinoData);
+                            treinosContainer.appendChild(treinoCardElement);
+                        });
+                    } else {
+                        treinosContainer.innerHTML = '<p>Nenhum treino encontrado.</p>';
+                    }
+                    setupActionListeners();
+                } catch (error) {
+                    console.error("Falha ao buscar treinos:", error);
+                    if (loadingIndicator) loadingIndicator.remove();
+                    treinosContainer.innerHTML = `<p style="color: var(--danger-color);">Não foi possível carregar os treinos. Detalhes: ${error.message}. Tente novamente mais tarde.</p>`;
+                }
+            }
+
+            function showDeleteModal(treinoId) {
+                currentTreinoIdToDelete = treinoId;
+                if (deleteModal) {
+                    deleteModal.style.display = 'flex';
+                    setTimeout(() => {
+                        deleteModal.classList.add('show');
+                    }, 10);
+                }
+            }
+
+            function hideDeleteModal() {
+                currentTreinoIdToDelete = null;
+                if (deleteModal) {
+                    deleteModal.classList.remove('show');
+                    setTimeout(() => {
+                        deleteModal.style.display = 'none';
+                    }, 300);
+                }
+            }
+
+            async function handleDeleteTreino() {
+                if (!currentTreinoIdToDelete || !token) {
+                    alert("Erro de autenticação ou ID do treino ausente.");
+                    hideDeleteModal();
+                    return;
+                }
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/treino/ExcluirTreino', {
+                        method: 'DELETE',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            treino_id: currentTreinoIdToDelete
+                        })
+                    });
+                    const responseData = await response.json();
+                    if (response.ok) {
+                        const cardToRemove = document.querySelector(`.treino-card[data-treino-id="${currentTreinoIdToDelete}"]`);
+                        if (cardToRemove) cardToRemove.remove();
+                        alert(responseData.mensagem || "Treino excluído com sucesso!");
+                        globalTreinosList = globalTreinosList.filter(t => t.id !== currentTreinoIdToDelete);
+                        if (treinosContainer.childElementCount === 0) {
+                            treinosContainer.innerHTML = '<p>Nenhum treino encontrado.</p>';
+                        }
+                    } else {
+                        alert(`Erro ao excluir treino: ${responseData.erro || response.statusText}`);
+                    }
+                } catch (error) {
+                    alert("Falha na comunicação com o servidor ao tentar excluir o treino.");
+                } finally {
+                    hideDeleteModal();
+                }
+            }
+
+            async function loadSportsForDropdown(selectElementId) {
+                const esporteSelectDropdown = document.getElementById(selectElementId);
+                if (!esporteSelectDropdown) return;
+
+                if (!token) {
+                    console.warn("Token JWT não encontrado. Não é possível carregar esportes.");
+                    esporteSelectDropdown.innerHTML = '<option value="">Login necessário</option>';
+                    esporteSelectDropdown.disabled = true;
+                    return;
+                }
+                esporteSelectDropdown.disabled = false;
+                esporteSelectDropdown.innerHTML = '<option value="">Carregando esportes...</option>';
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', {
+                        method: 'GET',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                    });
+                    if (!response.ok) throw new Error('Failed to load sports');
+                    const sportsList = await response.json();
+
+                    esporteSelectDropdown.innerHTML = '<option value="">Selecione um esporte...</option>';
+                    if (sportsList && sportsList.length > 0) {
+                        sportsList.forEach(sport => {
+                            if (sport && sport.nome) {
+                                const option = document.createElement('option');
+                                option.value = sport.nome;
+                                option.textContent = sport.nome;
+                                esporteSelectDropdown.appendChild(option);
+                            }
+                        });
+                    } else {
+                        esporteSelectDropdown.innerHTML = '<option value="">Nenhum esporte cadastrado</option>';
+                    }
+                } catch (error) {
+                    console.error("Falha ao buscar lista de esportes:", error);
+                    esporteSelectDropdown.innerHTML = '<option value="">Erro ao carregar esportes</option>';
+                }
+            }
+
+            async function loadEstados(estadoSelectElementId, cidadeSelectElementId) {
+                const estadoSel = document.getElementById(estadoSelectElementId);
+                const cidadeSel = document.getElementById(cidadeSelectElementId);
+
+                if (!estadoSel) return;
+                estadoSel.innerHTML = '<option value="">Carregando estados...</option>';
+                if (cidadeSel) {
+                    cidadeSel.innerHTML = '<option value="">Selecione um estado primeiro...</option>';
+                    cidadeSel.disabled = true;
+                }
+
+                try {
+                    const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
+                    if (!response.ok) throw new Error(`Erro HTTP IBGE Estados: ${response.status}`);
+                    const estados = await response.json();
+                    estadoSel.innerHTML = '<option value="">Selecione um estado...</option>';
+                    estados.forEach(estado => {
+                        const option = document.createElement('option');
+                        option.value = estado.id;
+                        option.textContent = estado.nome;
+                        option.dataset.sigla = estado.sigla;
+                        estadoSel.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Falha ao carregar estados:", error);
+                    estadoSel.innerHTML = '<option value="">Erro ao carregar estados</option>';
+                }
+            }
+
+            async function loadCidades(estadoId, cidadeSelectElementId) {
+                const cidadeSel = document.getElementById(cidadeSelectElementId);
+                if (!cidadeSel || !estadoId) {
+                    if (cidadeSel) {
+                        cidadeSel.innerHTML = '<option value="">Selecione um estado primeiro...</option>';
+                        cidadeSel.disabled = true;
+                    }
+                    return;
+                }
+                cidadeSel.innerHTML = '<option value="">Carregando cidades...</option>';
+                cidadeSel.disabled = false;
+
+                try {
+                    const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoId}/municipios?orderBy=nome`);
+                    if (!response.ok) throw new Error(`Erro HTTP IBGE Cidades: ${response.status}`);
+                    const cidades = await response.json();
+                    cidadeSel.innerHTML = '<option value="">Selecione uma cidade...</option>';
+                    cidades.forEach(cidade => {
+                        const option = document.createElement('option');
+                        option.value = cidade.nome;
+                        option.textContent = cidade.nome;
+                        cidadeSel.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error("Falha ao carregar cidades:", error);
+                    cidadeSel.innerHTML = '<option value="">Erro ao carregar cidades</option>';
+                    cidadeSel.disabled = true;
+                }
+            }
+
+            function formatDateTimeForInput(dateString) {
+                if (!dateString) return '';
+                const date = new Date(dateString);
+                date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+                return date.toISOString().slice(0, 16);
+            }
+
+            // --- IMAGE PREVIEW FUNCTION ---
+            function displayImagePreview(fileInput, previewContainerElement) {
+                if (!previewContainerElement) return;
+                previewContainerElement.innerHTML = ''; 
+
+                if (fileInput.files && fileInput.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.alt = "Pré-visualização da Imagem";
+                        previewContainerElement.appendChild(img);
+                    }
+                    reader.readAsDataURL(fileInput.files[0]);
+                }
+            }
+
+
+            // --- ADD TREINO MODAL ---
+            function showAddTreinoModal() {
+                if (addTreinoModal) {
+                    addTreinoForm.reset();
+                    if (addImagePreviewContainer) addImagePreviewContainer.innerHTML = ''; 
+                    loadSportsForDropdown('treino-esporte-input');
+                    loadEstados('treino-estado-input', 'treino-cidade-input');
+                    if (addCidadeSelect) {
+                        addCidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro...</option>';
+                        addCidadeSelect.disabled = true;
+                    }
+                    document.getElementById('treino-data-input').value = formatDateTimeForInput(new Date().toISOString());
+
+                    addTreinoModal.style.display = 'flex';
+                    setTimeout(() => {
+                        addTreinoModal.classList.add('show');
+                    }, 10);
+                }
+            }
+
+            function hideAddTreinoModal() {
+                if (addTreinoModal) {
+                    addTreinoModal.classList.remove('show');
+                    setTimeout(() => {
+                        addTreinoModal.style.display = 'none';
+                        if (addImagePreviewContainer) addImagePreviewContainer.innerHTML = ''; 
+                    }, 300);
+                }
+            }
+
+            async function handleAddTreinoSubmit(event) {
+                event.preventDefault();
+                if (!token) {
+                    alert("Erro de autenticação. Faça login novamente.");
+                    return;
+                }
+
+                const form = event.target;
+                const formData = new FormData(form); // This will use 'arquivo_imagem' due to HTML name change
+
+                const titulo = formData.get('titulo')?.trim();
+                const nome_esporte = formData.get('nome_esporte');
+                let data_hora_str_raw = formData.get('data_hora_str')?.trim();
+                let tempo_treinado_raw = formData.get('tempo_treinado')?.trim();
+
+                if (!titulo) {
+                    alert("Título do Treino é obrigatório."); return;
+                }
+                if (!nome_esporte) {
+                    alert("Esporte é obrigatório."); return;
+                }
+
+                const selectedEstadoOption = addEstadoSelect.options[addEstadoSelect.selectedIndex];
+                const selectedCidadeOption = addCidadeSelect.options[addCidadeSelect.selectedIndex];
+
+                if (!selectedEstadoOption || !selectedEstadoOption.value || !selectedEstadoOption.dataset.sigla) {
+                    alert("Por favor, selecione um Estado."); return;
+                }
+                if (!selectedCidadeOption || !selectedCidadeOption.value) {
+                    alert("Por favor, selecione uma Cidade."); return;
+                }
+
+                formData.set('lugar', `${selectedCidadeOption.value}, ${selectedEstadoOption.dataset.sigla}`);
+                formData.delete('estado');
+                formData.delete('cidade');
+
+                if (data_hora_str_raw) {
+                    if (data_hora_str_raw.length === 16) { 
+                        formData.set('data_hora_str', `${data_hora_str_raw}:00`);
+                    }
+                } else {
+                    alert("Data e Hora são obrigatórios."); return;
+                }
+
+                if (tempo_treinado_raw) {
+                    const tempoNum = parseInt(tempo_treinado_raw, 10);
+                    if (isNaN(tempoNum) || tempoNum <= 0) {
+                        alert("Tempo treinado deve ser um número positivo (em minutos)."); return;
+                    }
+                    formData.set('tempo_treinado', tempoNum.toString()); 
+                } else {
+                    alert("Tempo treinado é obrigatório e deve ser um número positivo (em minutos)."); return;
+                }
+
+                // If no file is selected, 'arquivo_imagem' might not be in formData or be a File with empty name.
+                // Backend's request.files.get('arquivo_imagem') will handle this by returning None.
+                // Explicitly deleting it if not present isn't strictly needed but can be done for clarity.
+                if (!addTreinoImagemInput.files || addTreinoImagemInput.files.length === 0) {
+                    formData.delete('arquivo_imagem'); 
+                }
+
+                const descricao = formData.get('descricao')?.trim();
+                if (!descricao) { // If description is empty, remove it so backend uses default or None.
+                    formData.delete('descricao'); 
+                }
+
+                console.log("Enviando dados do novo treino (FormData):");
+                 for (let [key, value] of formData.entries()) { 
+                     if (value instanceof File) {
+                         console.log(key, value.name, value.size, value.type);
+                     } else {
+                         console.log(key, value); 
+                     }
+                 }
+
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/treino/AdicionarTreino', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                            // Content-Type is set automatically by browser for FormData
+                        },
+                        body: formData
+                    });
+                    const responseData = await response.json();
+                    if (response.ok) {
+                        alert(responseData.mensagem || "Treino adicionado com sucesso!");
+                        hideAddTreinoModal();
+                        loadTreinos();
+                    } else {
+                        alert(`Erro ao adicionar treino: ${responseData.erro || responseData.message || response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error("Falha ao enviar novo treino:", error);
+                    alert("Falha na comunicação com o servidor ao tentar adicionar o treino.");
+                }
+            }
+
+            // --- EDIT TREINO MODAL ---
+            async function showEditTreinoModal(treinoId) {
+                const treinoToEdit = globalTreinosList.find(t => t.id == treinoId);
+                if (!treinoToEdit) {
+                    alert("Dados do treino não encontrados para edição.");
+                    return;
+                }
+
+                if (editTreinoModal) {
+                    editTreinoForm.reset();
+                    editTreinoIdInput.value = treinoToEdit.id;
+                    editTituloInput.value = treinoToEdit.titulo || '';
+                    editDataInput.value = formatDateTimeForInput(treinoToEdit.data_hora || treinoToEdit.data_hora_str);
+                    editDescricaoInput.value = treinoToEdit.descricao || '';
+                    editTempoInput.value = treinoToEdit.tempo_treinado || '';
+
+                    editTreinoImagemInput.value = null; 
+                    if (currentEditImagePreview) currentEditImagePreview.innerHTML = ''; 
+                    if (newEditImagePreviewContainer) newEditImagePreviewContainer.innerHTML = ''; 
+
+                    const currentImageUrl = treinoToEdit.arquivo_imagem || treinoToEdit.arquivo_imagem;
+                    if (currentImageUrl && currentEditImagePreview) {
+                        const img = document.createElement('img');
+                        img.src = currentImageUrl;
+                        img.alt = "Imagem Atual";
+                        currentEditImagePreview.appendChild(document.createTextNode('Imagem Atual: '));
+                        currentEditImagePreview.appendChild(img);
+                    } else if (currentEditImagePreview) {
+                        currentEditImagePreview.textContent = 'Nenhuma imagem atual cadastrada.';
+                    }
+
+                    await loadSportsForDropdown('edit-treino-esporte-input');
+                    editEsporteSelect.value = (treinoToEdit.esporte && treinoToEdit.esporte.nome) ? treinoToEdit.esporte.nome : (treinoToEdit.nome_esporte || '');
+
+                    await loadEstados('edit-treino-estado-input', 'edit-treino-cidade-input');
+
+                    if (treinoToEdit.lugar) {
+                        const [cidadeNome, estadoSigla] = treinoToEdit.lugar.split(',').map(s => s.trim());
+                        let foundEstado = false;
+                        for (let option of editEstadoSelect.options) {
+                            if (option.dataset.sigla === estadoSigla) {
+                                editEstadoSelect.value = option.value;
+                                foundEstado = true;
+                                break;
+                            }
+                        }
+
+                        if (foundEstado) {
+                            await loadCidades(editEstadoSelect.value, 'edit-treino-cidade-input');
+                            for (let option of editCidadeSelect.options) {
+                                if (option.value === cidadeNome) {
+                                    editCidadeSelect.value = option.value;
+                                    break;
+                                }
+                            }
+                        } else if (editCidadeSelect) {
+                            editCidadeSelect.innerHTML = '<option value="">Estado não encontrado</option>';
+                            editCidadeSelect.disabled = true;
+                        }
+                    } else if (editCidadeSelect) {
+                        editCidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro...</option>';
+                        editCidadeSelect.disabled = true;
+                    }
+
+                    editTreinoModal.style.display = 'flex';
+                    setTimeout(() => {
+                        editTreinoModal.classList.add('show');
+                    }, 10);
+                }
+            }
+
+            function hideEditTreinoModal() {
+                if (editTreinoModal) {
+                    editTreinoModal.classList.remove('show');
+                    setTimeout(() => {
+                        editTreinoModal.style.display = 'none';
+                        if (currentEditImagePreview) currentEditImagePreview.innerHTML = ''; 
+                        if (newEditImagePreviewContainer) newEditImagePreviewContainer.innerHTML = ''; 
+                    }, 300);
+                }
+            }
+
+            async function handleEditTreinoSubmit(event) {
+                event.preventDefault();
+                if (!token) {
+                    alert("Erro de autenticação. Faça login novamente.");
+                    return;
+                }
+
+                const form = event.target;
+                const formData = new FormData(form); // Will use 'arquivo_imagem' due to HTML name change
+
+                const titulo = formData.get('titulo')?.trim();
+                const nome_esporte = formData.get('nome_esporte');
+                let data_hora_str_raw = formData.get('data_hora_str')?.trim();
+                let tempo_treinado_raw = formData.get('tempo_treinado')?.trim();
+
+                if (!titulo) {
+                    alert("Título do Treino é obrigatório."); return;
+                }
+                if (!nome_esporte) {
+                    alert("Esporte é obrigatório."); return;
+                }
+
+                const selectedEstadoOption = editEstadoSelect.options[editEstadoSelect.selectedIndex];
+                const selectedCidadeOption = editCidadeSelect.options[editCidadeSelect.selectedIndex];
+
+                if (!selectedEstadoOption || !selectedEstadoOption.value || !selectedEstadoOption.dataset.sigla) {
+                    alert("Por favor, selecione um Estado."); return;
+                }
+                if (!selectedCidadeOption || !selectedCidadeOption.value) {
+                    alert("Por favor, selecione uma Cidade."); return;
+                }
+                formData.set('lugar', `${selectedCidadeOption.value}, ${selectedEstadoOption.dataset.sigla}`);
+                formData.delete('estado');
+                formData.delete('cidade');
+
+                if (data_hora_str_raw) {
+                    if (data_hora_str_raw.length === 16) {
+                        formData.set('data_hora_str', `${data_hora_str_raw}:00`);
+                    }
+                } else {
+                    alert("Data e Hora são obrigatórios."); return;
+                }
+
+                if (tempo_treinado_raw) {
+                    const tempoNum = parseInt(tempo_treinado_raw, 10);
+                    if (isNaN(tempoNum) || tempoNum <= 0) {
+                        alert("Tempo treinado deve ser um número positivo (em minutos)."); return;
+                    }
+                    formData.set('tempo_treinado', tempoNum.toString());
+                } else {
+                    alert("Tempo treinado é obrigatório e deve ser um número positivo (em minutos)."); return;
+                }
+
+                if (!editTreinoImagemInput.files || editTreinoImagemInput.files.length === 0) {
+                    formData.delete('arquivo_imagem'); // If no new file is selected, don't send the field.
+                                                    // Backend should not update image if 'arquivo_imagem' is not sent.
+                }
+
+                const descricao = formData.get('descricao')?.trim();
+                if (!descricao) {
+                    formData.delete('descricao');
+                }
+
+                console.log("Enviando dados atualizados do treino (FormData):");
+                 for (let [key, value] of formData.entries()) { 
+                     if (value instanceof File) {
+                         console.log(key, value.name, value.size, value.type);
+                     } else {
+                         console.log(key, value); 
+                     }
+                 }
+
+
+                try {
+                    console.log("att treino", formData)
+                    const response = await fetch('http://127.0.0.1:5000/treino/AtualizarTreino', { // Assuming same endpoint for update
+                        method: 'PUT', // Or POST, depending on your API
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    const responseData = await response.json();
+                    if (response.ok) {
+                        alert(responseData.mensagem || "Treino atualizado com sucesso!");
+                        hideEditTreinoModal();
+                        loadTreinos();
+                    } else {
+                        alert(`Erro ao atualizar treino: ${responseData.erro || responseData.message || response.statusText}`);
+                    }
+                } catch (error) {
+                    console.error("Falha ao enviar atualização do treino:", error);
+                    alert("Falha na comunicação com o servidor ao tentar atualizar o treino.");
+                }
+            }
+
+
+            // --- EVENT LISTENERS ---
+            function setupActionListeners() {
+                treinosContainer.addEventListener('click', function(event) {
+                    const target = event.target;
+                    const card = target.closest('.treino-card');
+                    if (!card) return;
+
+                    const treinoId = card.dataset.treinoId;
+
+                    if (target.classList.contains('fa-edit')) {
+                        showEditTreinoModal(treinoId);
+                    } else if (target.classList.contains('fa-trash-alt')) {
+                        showDeleteModal(treinoId);
+                    }
+                });
+            }
+
+            if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', handleDeleteTreino);
+            if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', hideDeleteModal);
+            if (deleteModal) {
+                deleteModal.addEventListener('click', (event) => {
+                    if (event.target === deleteModal) hideDeleteModal();
+                });
+            }
+
+            // Add Treino Modal Listeners & Image Preview
+            if (fabAddTreinoButton) fabAddTreinoButton.addEventListener('click', showAddTreinoModal);
+            if (addTreinoForm) addTreinoForm.addEventListener('submit', handleAddTreinoSubmit);
+            if (cancelAddTreinoBtn) cancelAddTreinoBtn.addEventListener('click', hideAddTreinoModal);
+            if (addTreinoModal) {
+                addTreinoModal.addEventListener('click', (event) => {
+                    if (event.target === addTreinoModal) hideAddTreinoModal();
+                });
+            }
+            if (addEstadoSelect) {
+                addEstadoSelect.addEventListener('change', (event) => {
+                    loadCidades(event.target.value, 'treino-cidade-input');
+                });
+            }
+            if (addTreinoImagemInput && addImagePreviewContainer) { 
+                addTreinoImagemInput.addEventListener('change', () => {
+                    displayImagePreview(addTreinoImagemInput, addImagePreviewContainer);
+                });
+            }
+
+            // Edit Treino Modal Listeners & Image Preview
+            if (editTreinoForm) editTreinoForm.addEventListener('submit', handleEditTreinoSubmit);
+            if (cancelEditTreinoBtn) cancelEditTreinoBtn.addEventListener('click', hideEditTreinoModal);
+            if (editTreinoModal) {
+                editTreinoModal.addEventListener('click', (event) => {
+                    if (event.target === editTreinoModal) hideEditTreinoModal();
+                });
+            }
+            if (editEstadoSelect) {
+                editEstadoSelect.addEventListener('change', (event) => {
+                    loadCidades(event.target.value, 'edit-treino-cidade-input');
+                });
+            }
+            if (editTreinoImagemInput && newEditImagePreviewContainer) { 
+                editTreinoImagemInput.addEventListener('change', () => {
+                    displayImagePreview(editTreinoImagemInput, newEditImagePreviewContainer);
+                });
+            }
+
+
+            // --- INITIAL LOAD ---
+            if (token) {
+                loadTreinos();
+            } else {
+                console.error("Token JWT não encontrado. Usuário não autenticado.");
+                if (loadingIndicator) loadingIndicator.remove();
+                treinosContainer.innerHTML = `<p style="color: var(--danger-color);">Você precisa estar logado para ver seus treinos. Por favor, <a href="login.html">faça login</a>.</p>`;
+                if (fabAddTreinoButton) fabAddTreinoButton.disabled = true;
+            }
+        });
+    </script>
+</body>
+</html>
+
+
+
+

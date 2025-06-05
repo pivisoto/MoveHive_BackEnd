@@ -61,6 +61,10 @@ def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha
     doc_ref = usuarios_ref.document(usuario.id)
     doc_ref.set(usuario.to_dict())
 
+    bucket = storage.bucket()
+    blob = bucket.blob(f'Usuarios/{usuario.id}/Fotos/.init')
+    blob.upload_from_string('Pasta Fotos inicializada', content_type='text/plain')
+
     token = generate_token(doc_ref.id)
 
     return {"token": token}, 201
@@ -97,10 +101,11 @@ def adicionar_dados_modal(dados_modal, arquivo_foto=None):
     dados_para_adicionar = {}
 
     if arquivo_foto:
-        caminho = f"usuarios/{usuario_id}/foto_perfil.jpg"
+        caminho = f"Usuarios/{usuario_id}/Fotos/foto_perfil.jpg"
         blob = bucket.blob(caminho)
         blob.upload_from_file(arquivo_foto, content_type=arquivo_foto.content_type)
-        blob.make_public()
+        blob.make_public() 
+
         dados_para_adicionar['foto_perfil'] = blob.public_url
 
     campos = ['biografia', 'cidade', 'estado', 'esportes_praticados']
@@ -223,6 +228,8 @@ def listar_seguidores(username):
         seguidores = dados_usuario.get('seguidores', [])
         return seguidores
     return {"erro": "Usuário não encontrado"}, 404
+
+   
      
 def buscar_usuario_por_id(user_id):
     usuario_ref = db.collection('Usuarios').document(user_id)

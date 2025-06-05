@@ -3,8 +3,6 @@ from middlewares.generate_token import generate_token
 from middlewares.auth_token import token_required
 import Services.Usuario_Service as usuario_service
 
-
-
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix="/usuario" )
 
 
@@ -29,8 +27,6 @@ def registrarUsuario():
         return jsonify(resultado[0]), resultado[1]
 
     return jsonify(resultado), 400
-
-
 
 
 @usuario_bp.route('/LoginUsuario', methods=['POST'])
@@ -59,6 +55,19 @@ def adicionar_informacoes():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
+
+
+@usuario_bp.route('/MeuPerfil', methods=['GET'])
+def meu_perfil():
+    try:
+        dados = json.loads(request.form.get('dados', '{}'))
+        arquivo_foto = request.files.get('foto')
+
+        resposta, status = usuario_service.adicionar_dados_modal(dados, arquivo_foto)
+        return jsonify(resposta), status
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
 
 
 
@@ -95,8 +104,7 @@ def listarSeguindo():
         return jsonify({"erro": "Erro interno ao listarSeguidores"}), 500
 
 
-@usuario_bp.route('/ExcluirUsuario/<usuario_id>', methods=['DELETE'])
-@token_required  
+@usuario_bp.route('/ExcluirUsuario/<usuario_id>', methods=['DELETE'])  
 def deletar_por_ID(usuario_id):
     resposta, status = usuario_service.deletar_usuario_por_id(usuario_id)
     return jsonify(resposta), status
@@ -105,7 +113,6 @@ def deletar_por_ID(usuario_id):
 
 
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
-@token_required
 def editar():
     novos_dados = request.get_json()
 
@@ -115,6 +122,7 @@ def editar():
     resposta, status = usuario_service.editar_usuario_por_id(novos_dados)
 
     return jsonify(resposta), status
+
 
 #exemplo http://127.0.0.1:5000/usuario/ToggleSeguir
 # utiliza, username de quem a pessoa quer seguir {"username":"pivisoto"}
@@ -129,7 +137,6 @@ def toggle_seguir():
 
 
 @usuario_bp.route('/BuscarUsuarioID', methods=['GET'])
-@token_required  
 def buscar_usuario_por_id():
     user_id = g.user_id
     dados_usuario = usuario_service.buscar_usuario_por_id(user_id)

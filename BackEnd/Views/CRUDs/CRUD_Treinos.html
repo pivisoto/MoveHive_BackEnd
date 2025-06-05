@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adicionar Treino</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 600px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background-color: #f7f7f7;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    form {
+      display: flex;
+      flex-direction: column;
+    }
+    label {
+      margin: 0.5rem 0 0.2rem;
+      font-weight: bold;
+    }
+    input[type="text"],
+    input[type="datetime-local"],
+    input[type="number"],
+    select,
+    textarea {
+      padding: 0.5rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 1rem;
+    }
+    textarea {
+      resize: vertical;
+    }
+    button {
+      margin-top: 1rem;
+      padding: 0.7rem;
+      font-size: 1rem;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:disabled {
+      background-color: #999;
+      cursor: not-allowed;
+    }
+    .status {
+      margin-top: 1rem;
+      padding: 0.8rem;
+      border-radius: 4px;
+      display: none;
+    }
+    .status.success {
+      background-color: #d4edda;
+      color: #155724;
+      border: 1px solid #c3e6cb;
+    }
+    .status.error {
+      background-color: #f8d7da;
+      color: #721c24;
+      border: 1px solid #f5c6cb;
+    }
+  </style>
+</head>
+<body>
+  <button id="btn-listar-treinos">Listar Treinos</button>
+
+   <table id="tabela-treinos" style="display: none; margin-top: 20px;">
+    <thead>
+      <tr>
+        <th>Título</th>
+        <th>Descrição</th>
+        <th>Esporte</th>
+        <th>Data e Hora</th>
+        <th>Lugar</th>
+        <th>Tempo Treinado (min)</th>
+        <th>Imagem</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Linhas de treinos serão inseridas aqui -->
+    </tbody>
+  </table>
+
+
+  <h1>Adicionar Treino</h1>
+  <form id="form-adicionar-treino">
+
+    <label for="titulo">Título:</label>
+    <input type="text" id="titulo" name="titulo" required />
+
+    <label for="descricao">Descrição:</label>
+    <textarea id="descricao" name="descricao" rows="3" required></textarea>
+
+    <label for="nome_esporte">Esporte:</label>
+    <select id="nome_esporte" name="nome_esporte" required>
+      <option value="" disabled selected>Carregando esportes...</option>
+    </select>
+
+    <label for="data_hora_str">Data e Hora:</label>
+    <input type="datetime-local" id="data_hora_str" name="data_hora_str" required />
+
+    <label for="lugar">Lugar:</label>
+    <input type="text" id="lugar" name="lugar" required />
+
+    <label for="tempo_treinado">Tempo Treinado (minutos):</label>
+    <input type="number" id="tempo_treinado" name="tempo_treinado" min="1" step="1" required />
+
+    <label for="imagem">URL da Imagem (opcional):</label>
+    <input type="text" id="imagem" name="imagem" placeholder="https://..." />
+
+    <button type="submit" id="btn-enviar">Enviar</button>
+  </form>
+
+  <div id="status" class="status"></div>
+
+
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const token = localStorage.getItem('jwtToken');
+
+      const esporteSelect = document.getElementById('nome_esporte');
+      const statusDiv = document.getElementById('status');
+
+      // Função para exibir mensagens de status
+      function exibirStatus(mensagem, isSuccess) {
+        statusDiv.textContent = mensagem;
+        statusDiv.className = 'status ' + (isSuccess ? 'success' : 'error');
+        statusDiv.style.display = 'block';
+      }
+
+      // 1. Buscar a lista de esportes e popular o dropdown
+      //    Ajuste a URL abaixo para seu endpoint real de GET /esportes
+      fetch('http://127.0.0.1:5000/esportes/ListarEsportes')
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Falha ao carregar lista de esportes');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Espera-se que "data" seja um array de objetos como:
+          // [{ id: 'abc123', nome: 'Corrida', descricao: '...', Kcal_por_1hr: 500 }, ...]
+          esporteSelect.innerHTML = '<option value="" disabled selected>-- Selecione um esporte --</option>';
+          data.forEach(esporte => {
+            const option = document.createElement('option');
+            option.value = esporte.nome; // Envia o nome como nome_esporte
+            option.textContent = esporte.nome;
+            esporteSelect.appendChild(option);
+          });
+        })
+        .catch(err => {
+          esporteSelect.innerHTML = '<option value="" disabled>Não foi possível carregar esportes</option>';
+          console.error(err);
+        });
+
+      // 2. Capturar submissão do formulário
+      document.getElementById('form-adicionar-treino').addEventListener('submit', event => {
+        event.preventDefault();
+        statusDiv.style.display = 'none';
+
+        // Desabilita o botão enquanto processa
+        const btnEnviar = document.getElementById('btn-enviar');
+        btnEnviar.disabled = true;
+
+        // Coletar valores do formulário
+        const titulo = document.getElementById('titulo').value.trim();
+        const descricao = document.getElementById('descricao').value.trim();
+        const nome_esporte = document.getElementById('nome_esporte').value;
+        const lugar = document.getElementById('lugar').value.trim();
+        const tempo_treinado = Number(document.getElementById('tempo_treinado').value);
+        const imagem = document.getElementById('imagem').value.trim();
+        const data_hora_input = document.getElementById('data_hora_str').value;
+        const data_hora_str = data_hora_input.length === 16 ? data_hora_input + ':00' : data_hora_input;
+
+        const payload = {
+          titulo,
+          descricao,
+          nome_esporte,
+          data_hora_str, // já no formato YYYY-MM-DDTHH:MM
+          lugar,
+          tempo_treinado,
+          imagem
+        };
+
+        fetch('http://127.0.0.1:5000/treino/AdicionarTreino', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(response => {
+            return response.json().then(body => {
+              if (!response.ok) {
+                // Erro no corpo JSON esperado como { "erro": "mensagem" }
+                const msg = body.erro || 'Erro desconhecido';
+                throw new Error(msg);
+              }
+              return body;
+            });
+          })
+          .then(result => {
+            exibirStatus('Treino criado com sucesso! ID: ' + result.id, true);
+            // Opcional: limpar formulário após sucesso
+            document.getElementById('form-adicionar-treino').reset();
+          })
+          .catch(err => {
+            exibirStatus('Falha ao criar treino: ' + err.message, false);
+          })
+          .finally(() => {
+            btnEnviar.disabled = false;
+          });
+      });
+    });
+
+      document.getElementById('btn-listar-treinos').addEventListener('click', () => {
+      const token = localStorage.getItem('jwtToken');
+      const tabela = document.getElementById('tabela-treinos');
+      const tbody = tabela.querySelector('tbody');
+
+      fetch('http://127.0.0.1:5000/treino/ListarTreino', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Erro ao buscar treinos');
+          }
+          return response.json();
+        })
+        .then(data => {
+          // Limpa o corpo da tabela antes de adicionar novos dados
+          tbody.innerHTML = '';
+
+          data.forEach(treino => {
+            const row = document.createElement('tr');
+
+            row.innerHTML = `
+              <td>${treino.titulo}</td>
+              <td>${treino.descricao}</td>
+              <td>${treino.nome_esporte}</td>
+              <td>${treino.data_hora_str}</td>
+              <td>${treino.lugar}</td>
+              <td>${treino.tempo_treinado}</td>
+              <td>${treino.imagem ? `<img src="${treino.imagem}" alt="Imagem do treino" style="max-width: 100px;">` : 'Sem imagem'}</td>
+            `;
+
+            tbody.appendChild(row);
+          });
+
+          tabela.style.display = 'table';
+        })
+        .catch(err => {
+          exibirStatus('Erro ao listar treinos: ' + err.message, false);
+        });
+    });
+  </script>
+</body>
+</html>
