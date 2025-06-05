@@ -3,6 +3,8 @@ info:
   title: MoveHive - API
   version: 1.0.0
   description: API para gerenciar usuários e esportes na aplicação MoveHive.
+
+
 tags:
   - name: Usuário
     description: Operações relacionadas a usuários
@@ -12,6 +14,9 @@ tags:
     description: Operações relacionadas a eventos
   - name: Posts
     description: Operações relacionadas a Posts
+  - name: Treino
+    description: Operações relacionadas a Treino
+
 
 components:
   securitySchemes:
@@ -254,11 +259,6 @@ paths:
         '500':
           description: Erro interno ao listar usuários
 
-
-
-
-
-
   # EXCLUIR USER
   /usuario/ExcluirUsuario/{usuario_id}:
     delete:
@@ -312,7 +312,6 @@ paths:
           description: Usuário editado com sucesso
         '400':
           description: Nenhum dado fornecido para atualização
-
 
 
 # Esporte
@@ -396,7 +395,6 @@ paths:
           description: Esporte excluído com sucesso
         '404':
           description: Esporte não encontrado
-
 
 
 # Eventos
@@ -547,7 +545,6 @@ paths:
           description: Evento não encontrado
 
 
-
 # Posts
   /postagem/CriarPostagem:
     post:
@@ -691,3 +688,307 @@ paths:
         '500':
           description: Erro interno ao curtir postagem
 
+
+# Treinos
+  /treino/AdicionarTreino:
+    post:
+      tags:
+        - Treino
+      summary: Adiciona um novo treino
+      description: Endpoint para criar um novo treino com informações como título, descrição, esporte, data, lugar, tempo treinado e uma imagem opcional. É necessário fornecer o token JWT no cabeçalho Authorization.
+      security:
+      - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                titulo:
+                  type: string
+                  description: Título do treino
+                  example: Corrida Matinal
+                descricao:
+                  type: string
+                  description: Descrição do treino
+                  example: Corrida leve no parque
+                nome_esporte:
+                  type: string
+                  description: Nome do esporte relacionado
+                  example: Corrida
+                data_hora_str:
+                  type: string
+                  description: Data e hora do treino no formato YYYY-MM-DD HH:MM
+                  example: "2025-06-05 07:30"
+                lugar:
+                  type: string
+                  description: Local onde o treino foi realizado
+                  example: Parque Ibirapuera
+                tempo_treinado:
+                  type: number
+                  description: Tempo treinado em horas
+                  example: 1.5
+                arquivo_imagem:
+                  type: string
+                  format: binary
+                  description: Imagem opcional do treino
+      responses:
+        '200':
+          description: Treino criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: ID do treino
+                    example: "12345"
+                  titulo:
+                    type: string
+                  descricao:
+                    type: string
+                  nome_esporte:
+                    type: string
+                  data_hora:
+                    type: string
+                    format: date-time
+                  lugar:
+                    type: string
+                  tempo_treinado:
+                    type: number
+                  imagem_url:
+                    type: string
+                    description: URL da imagem (se enviada)
+        '400':
+          description: Erro de validação dos dados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Todos os campos obrigatórios devem ser preenchidos."
+  
+
+  /treino/ListarTreino:
+    get:
+      tags:
+        - Treino
+      summary: Lista treinos do usuário autenticado
+      description: Retorna todos os treinos cadastrados para o usuário autenticado. É necessário fornecer o token JWT no cabeçalho Authorization.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de treinos retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID do treino
+                      example: "12345"
+                    titulo:
+                      type: string
+                      example: Corrida Matinal
+                    descricao:
+                      type: string
+                      example: Corrida leve no parque
+                    nome_esporte:
+                      type: string
+                      example: Corrida
+                    data_hora:
+                      type: string
+                      format: date-time
+                      example: "2025-06-05 07:30"
+                    lugar:
+                      type: string
+                      example: Parque Ibirapuera
+                    tempo_treinado:
+                      type: number
+                      example: 1.5
+                    imagem_url:
+                      type: string
+                      description: URL da imagem associada (se houver)
+                      example: "https://site.com/imagem123.jpg"
+        '401':
+          description: Não autorizado — token JWT inválido, expirado ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Token inválido ou não fornecido"
+
+
+  /treino/ExcluirTreino:
+    delete:
+      tags:
+        - Treino
+      summary: Exclui um treino do usuário
+      description: Exclui um treino específico do usuário autenticado, com base no treino_id fornecido no corpo da requisição. É necessário fornecer o token JWT no cabeçalho Authorization.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                treino_id:
+                  type: string
+                  description: ID do treino a ser excluído
+                  example: "12345"
+              required:
+                - treino_id
+      responses:
+        '200':
+          description: Treino excluído com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Treino excluído com sucesso."
+        '400':
+          description: Erro na requisição — campo obrigatório ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O campo 'treino_id' é obrigatório."
+        '401':
+          description: Não autorizado — token JWT inválido, expirado ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Token inválido ou não fornecido"
+
+
+  /treino/AtualizarTreino:
+    put:
+      tags:
+        - Treino
+      summary: Atualiza um treino existente
+      description: Atualiza os dados de um treino do usuário autenticado. Todos os campos são opcionais, exceto o treino_id, que é obrigatório. A imagem pode ser atualizada enviando um arquivo.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                treino_id:
+                  type: string
+                  description: ID do treino a ser atualizado
+                  example: "12345"
+                titulo:
+                  type: string
+                  description: Novo título do treino
+                  example: Corrida Noturna
+                descricao:
+                  type: string
+                  description: Nova descrição do treino
+                  example: Corrida leve à noite
+                nome_esporte:
+                  type: string
+                  description: Nome do esporte
+                  example: Corrida
+                data_hora_str:
+                  type: string
+                  description: Nova data e hora do treino (YYYY-MM-DD HH:MM)
+                  example: "2025-06-05 20:00"
+                lugar:
+                  type: string
+                  description: Novo local do treino
+                  example: Parque da Cidade
+                tempo_treinado:
+                  type: number
+                  description: Novo tempo treinado em horas
+                  example: 1.2
+                arquivo_imagem:
+                  type: string
+                  format: binary
+                  description: Nova imagem do treino (opcional)
+              required:
+                - treino_id
+      responses:
+        '200':
+          description: Treino atualizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Treino atualizado com sucesso."
+                  treino:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                        example: "12345"
+                      titulo:
+                        type: string
+                        example: Corrida Noturna
+                      descricao:
+                        type: string
+                        example: Corrida leve à noite
+                      nome_esporte:
+                        type: string
+                        example: Corrida
+                      data_hora:
+                        type: string
+                        format: date-time
+                        example: "2025-06-05 20:00"
+                      lugar:
+                        type: string
+                        example: Parque da Cidade
+                      tempo_treinado:
+                        type: number
+                        example: 1.2
+                      imagem_url:
+                        type: string
+                        example: "https://site.com/imagem123.jpg"
+        '400':
+          description: Erro na requisição — treino_id ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O campo 'treino_id' é obrigatório."
+        '401':
+          description: Não autorizado — token JWT inválido, expirado ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Token inválido ou não fornecido"

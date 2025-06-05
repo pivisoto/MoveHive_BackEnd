@@ -130,6 +130,18 @@ def excluir_treino_por_treinoID(treino_id):
     if treino_data.get('usuario_id') != usuario_id:
         return {"erro": "Você não tem permissão para excluir este treino."}, 403
 
+    try:
+        caminho = f"Usuarios/{usuario_id}/Fotos/treino_{treino_id}.jpg"
+        blob = bucket.blob(caminho)
+        if blob.exists():
+            blob.delete()
+            print(f"Imagem {caminho} excluída do Storage.")
+        else:
+            print(f"Nenhuma imagem encontrada em {caminho} para excluir.")
+    except Exception as e:
+        print(f"Erro ao excluir a imagem: {e}")
+
+
     treino_ref.delete()
 
     user_ref.update({
@@ -200,7 +212,6 @@ def atualizar_treino_por_treinoID(
 
             timestamp = int(time.time())
             url_para_salvar_no_firestore = f"{blob.public_url}?v={timestamp}"
-            print("NO IF ARQUIVO_iamge")
            
             updates['arquivo_imagem'] = url_para_salvar_no_firestore
             print(f"Service: Imagem upada, URL pública: {blob.public_url}")

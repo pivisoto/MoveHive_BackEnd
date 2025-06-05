@@ -70,7 +70,7 @@ def atualizar_treino():
     lugar = request.form.get('lugar')
     tempo_treinado = request.form.get('tempo_treinado')
 
-    arquivo_imagem = request.files.get('arquivo_imagem')  # Pegando o arquivo da imagem
+    arquivo_imagem = request.files.get('arquivo_imagem')  
     print(arquivo_imagem)
 
     response, status = Treino_Service.atualizar_treino_por_treinoID(

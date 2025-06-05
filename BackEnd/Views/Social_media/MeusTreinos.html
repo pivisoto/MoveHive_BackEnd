@@ -9,7 +9,7 @@
         :root {
             --primary-color: #f0f2f5;
             --secondary-color: #ffffff;
-            --accent-color: #ffd700; /* Amarelo Claro */
+            --accent-color: #ffd700;
             --text-color: #333;
             --border-color: #dbdbdb;
             --success-color: #5cb85c;
@@ -268,7 +268,6 @@
             font-weight: 900; 
         }
 
-        /* Modal Styles (common for both delete and add) */
         .modal-overlay {
             position: fixed;
             top: 0;
@@ -405,7 +404,7 @@
             box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.3);
         }
 
-        .image-preview-container img { /* General style for preview images */
+        .image-preview-container img {
             max-width: 150px; 
             max-height: 150px; 
             display: block;
@@ -458,7 +457,6 @@
         </nav>
     </div>
 
-    <!-- Delete Confirmation Modal -->
     <div id="delete-confirmation-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>Confirmar Exclusão</h2>
@@ -470,7 +468,6 @@
         </div>
     </div>
 
-    <!-- Add Treino Modal -->
     <div id="add-treino-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>Adicionar Novo Treino</h2>
@@ -509,7 +506,6 @@
                     <label for="treino-imagem-input">Imagem (Opcional):</label>
                     <input type="file" id="treino-imagem-input" name="arquivo_imagem" accept="image/*">
                     <div id="add-image-preview-container" class="image-preview-container" style="margin-top: 10px;">
-                        <!-- Preview will be injected here by JS -->
                     </div>
                 </div>
                 <div class="form-group">
@@ -524,7 +520,6 @@
         </div>
     </div>
 
-    <!-- Edit Treino Modal -->
     <div id="edit-treino-modal" class="modal-overlay" style="display: none;">
         <div class="modal-content">
             <h2>Editar Treino</h2>
@@ -564,10 +559,8 @@
                     <label for="edit-treino-imagem-input">Nova Imagem (Opcional, para substituir a atual):</label>
                     <input type="file" id="edit-treino-imagem-input" name="arquivo_imagem" accept="image/*">
                     <div id="current-edit-image-preview" class="image-preview-container" style="margin-top: 10px; font-size: 0.9rem; color: #555;">
-                        <!-- Current image shown here -->
                     </div>
                     <div id="new-edit-image-preview-container" class="image-preview-container" style="margin-top: 10px;">
-                        <!-- New selected image preview will be injected here by JS -->
                     </div>
                 </div>
                 <div class="form-group">
@@ -597,7 +590,6 @@
             const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
             let currentTreinoIdToDelete = null;
 
-            // Add Treino Modal Elements
             const addTreinoModal = document.getElementById('add-treino-modal');
             const addTreinoForm = document.getElementById('add-treino-form');
             const cancelAddTreinoBtn = document.getElementById('cancel-add-treino-btn');
@@ -607,8 +599,6 @@
             const addTreinoImagemInput = document.getElementById('treino-imagem-input'); 
             const addImagePreviewContainer = document.getElementById('add-image-preview-container'); 
 
-
-            // Edit Treino Modal Elements
             const editTreinoModal = document.getElementById('edit-treino-modal');
             const editTreinoForm = document.getElementById('edit-treino-form');
             const cancelEditTreinoBtn = document.getElementById('cancel-edit-treino-btn');
@@ -632,7 +622,7 @@
                 card.dataset.treinoId = treino.id;
 
                 let imageHtml = '';
-                const imageUrl = treino.arquivo_imagem || treino.arquivo_imagem; // Backend might return imagem_url
+                const imageUrl = treino.arquivo_imagem || treino.arquivo_imagem;
                 if (imageUrl && typeof imageUrl === 'string' && imageUrl.trim() !== '') {
                     imageHtml = `<img src="${imageUrl}" alt="Imagem do treino ${treino.titulo}" class="treino-image">`;
                 } else {
@@ -696,11 +686,15 @@
 
             async function loadTreinos() {
                 try {
+                    // --- REQUISIÇÃO PARA API (BACKEND) ---
+                    // Endpoint: /treino/ListarTreino
+                    // Método: GET
+                    // Objetivo: Buscar a lista de treinos do usuário autenticado.
                     const response = await fetch('http://127.0.0.1:5000/treino/ListarTreino', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': `Bearer ${token}` // Token JWT para autenticação
                         },
                     });
 
@@ -764,14 +758,18 @@
                     return;
                 }
                 try {
+                    // --- REQUISIÇÃO PARA API (BACKEND) ---
+                    // Endpoint: /treino/ExcluirTreino
+                    // Método: DELETE
+                    // Objetivo: Excluir um treino específico.
                     const response = await fetch('http://127.0.0.1:5000/treino/ExcluirTreino', {
                         method: 'DELETE',
                         headers: {
                             'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': `Bearer ${token}` // Token JWT para autenticação
                         },
                         body: JSON.stringify({
-                            treino_id: currentTreinoIdToDelete
+                            treino_id: currentTreinoIdToDelete // ID do treino a ser excluído
                         })
                     });
                     const responseData = await response.json();
@@ -807,11 +805,15 @@
                 esporteSelectDropdown.innerHTML = '<option value="">Carregando esportes...</option>';
 
                 try {
+                    // --- REQUISIÇÃO PARA API (BACKEND) ---
+                    // Endpoint: /esportes/ListarEsportes
+                    // Método: GET
+                    // Objetivo: Buscar a lista de esportes disponíveis para o dropdown.
                     const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', {
                         method: 'GET',
                         headers: {
                             'Accept': 'application/json',
-                            'Authorization': `Bearer ${token}`
+                            'Authorization': `Bearer ${token}` // Token JWT para autenticação
                         },
                     });
                     if (!response.ok) throw new Error('Failed to load sports');
@@ -848,15 +850,19 @@
                 }
 
                 try {
+                    // --- REQUISIÇÃO PARA API (EXTERNA - IBGE) ---
+                    // Endpoint: API de localidades do IBGE para buscar estados.
+                    // Método: GET
+                    // Objetivo: Popular o dropdown de estados.
                     const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
                     if (!response.ok) throw new Error(`Erro HTTP IBGE Estados: ${response.status}`);
                     const estados = await response.json();
                     estadoSel.innerHTML = '<option value="">Selecione um estado...</option>';
                     estados.forEach(estado => {
                         const option = document.createElement('option');
-                        option.value = estado.id;
+                        option.value = estado.id; // ID do estado (usado para buscar cidades)
                         option.textContent = estado.nome;
-                        option.dataset.sigla = estado.sigla;
+                        option.dataset.sigla = estado.sigla; // Sigla do estado (usado no campo 'lugar')
                         estadoSel.appendChild(option);
                     });
                 } catch (error) {
@@ -878,13 +884,17 @@
                 cidadeSel.disabled = false;
 
                 try {
+                    // --- REQUISIÇÃO PARA API (EXTERNA - IBGE) ---
+                    // Endpoint: API de localidades do IBGE para buscar municípios de um estado.
+                    // Método: GET
+                    // Objetivo: Popular o dropdown de cidades com base no estado selecionado.
                     const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estadoId}/municipios?orderBy=nome`);
                     if (!response.ok) throw new Error(`Erro HTTP IBGE Cidades: ${response.status}`);
                     const cidades = await response.json();
                     cidadeSel.innerHTML = '<option value="">Selecione uma cidade...</option>';
                     cidades.forEach(cidade => {
                         const option = document.createElement('option');
-                        option.value = cidade.nome;
+                        option.value = cidade.nome; // Nome da cidade (usado no campo 'lugar')
                         option.textContent = cidade.nome;
                         cidadeSel.appendChild(option);
                     });
@@ -902,7 +912,6 @@
                 return date.toISOString().slice(0, 16);
             }
 
-            // --- IMAGE PREVIEW FUNCTION ---
             function displayImagePreview(fileInput, previewContainerElement) {
                 if (!previewContainerElement) return;
                 previewContainerElement.innerHTML = ''; 
@@ -920,7 +929,6 @@
             }
 
 
-            // --- ADD TREINO MODAL ---
             function showAddTreinoModal() {
                 if (addTreinoModal) {
                     addTreinoForm.reset();
@@ -958,7 +966,11 @@
                 }
 
                 const form = event.target;
-                const formData = new FormData(form); // This will use 'arquivo_imagem' due to HTML name change
+                // --- ENVIO DE IMAGEM (ADICIONAR) ---
+                // O objeto FormData é criado a partir do formulário.
+                // Se um arquivo foi selecionado no input 'arquivo_imagem', ele será incluído automaticamente no FormData.
+                // O navegador definirá o Content-Type como 'multipart/form-data' ao enviar.
+                const formData = new FormData(form); 
 
                 const titulo = formData.get('titulo')?.trim();
                 const nome_esporte = formData.get('nome_esporte');
@@ -982,7 +994,12 @@
                     alert("Por favor, selecione uma Cidade."); return;
                 }
 
+                // --- FORMATAÇÃO ESTADO E CIDADE ---
+                // O nome da cidade selecionada (selectedCidadeOption.value) e a sigla do estado
+                // (selectedEstadoOption.dataset.sigla) são combinados em uma única string
+                // no formato "Cidade, UF" e atribuídos ao campo 'lugar' do FormData.
                 formData.set('lugar', `${selectedCidadeOption.value}, ${selectedEstadoOption.dataset.sigla}`);
+                // Remove os campos 'estado' e 'cidade' originais do formulário, pois foram combinados em 'lugar'.
                 formData.delete('estado');
                 formData.delete('cidade');
 
@@ -1003,16 +1020,15 @@
                 } else {
                     alert("Tempo treinado é obrigatório e deve ser um número positivo (em minutos)."); return;
                 }
-
-                // If no file is selected, 'arquivo_imagem' might not be in formData or be a File with empty name.
-                // Backend's request.files.get('arquivo_imagem') will handle this by returning None.
-                // Explicitly deleting it if not present isn't strictly needed but can be done for clarity.
+               
+                // Se nenhum arquivo de imagem foi selecionado, remove o campo 'arquivo_imagem' do FormData.
+                // Caso contrário, o arquivo já está no FormData devido ao new FormData(form).
                 if (!addTreinoImagemInput.files || addTreinoImagemInput.files.length === 0) {
                     formData.delete('arquivo_imagem'); 
                 }
 
                 const descricao = formData.get('descricao')?.trim();
-                if (!descricao) { // If description is empty, remove it so backend uses default or None.
+                if (!descricao) { 
                     formData.delete('descricao'); 
                 }
 
@@ -1025,15 +1041,19 @@
                      }
                  }
 
-
                 try {
+                    // --- REQUISIÇÃO PARA API (BACKEND) ---
+                    // Endpoint: /treino/AdicionarTreino
+                    // Método: POST
+                    // Objetivo: Enviar os dados do novo treino, incluindo a imagem (se houver), para o backend.
                     const response = await fetch('http://127.0.0.1:5000/treino/AdicionarTreino', {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${token}`
-                            // Content-Type is set automatically by browser for FormData
+                            // Ao usar FormData com arquivos, não defina Content-Type manualmente.
+                            // O navegador o fará automaticamente como 'multipart/form-data' com o boundary correto.
+                            'Authorization': `Bearer ${token}` // Token JWT para autenticação
                         },
-                        body: formData
+                        body: formData // O FormData contém todos os campos do formulário, incluindo o arquivo de imagem.
                     });
                     const responseData = await response.json();
                     if (response.ok) {
@@ -1049,7 +1069,6 @@
                 }
             }
 
-            // --- EDIT TREINO MODAL ---
             async function showEditTreinoModal(treinoId) {
                 const treinoToEdit = globalTreinosList.find(t => t.id == treinoId);
                 if (!treinoToEdit) {
@@ -1085,22 +1104,25 @@
 
                     await loadEstados('edit-treino-estado-input', 'edit-treino-cidade-input');
 
+                    // --- FORMATAÇÃO ESTADO E CIDADE (AO CARREGAR EDIÇÃO) ---
+                    // Se o treino possui um campo 'lugar', ele é dividido em cidade e sigla do estado
+                    // para pré-selecionar os dropdowns corretos.
                     if (treinoToEdit.lugar) {
                         const [cidadeNome, estadoSigla] = treinoToEdit.lugar.split(',').map(s => s.trim());
                         let foundEstado = false;
                         for (let option of editEstadoSelect.options) {
                             if (option.dataset.sigla === estadoSigla) {
-                                editEstadoSelect.value = option.value;
+                                editEstadoSelect.value = option.value; // Seleciona o estado pelo ID
                                 foundEstado = true;
                                 break;
                             }
                         }
 
                         if (foundEstado) {
-                            await loadCidades(editEstadoSelect.value, 'edit-treino-cidade-input');
+                            await loadCidades(editEstadoSelect.value, 'edit-treino-cidade-input'); // Carrega cidades do estado
                             for (let option of editCidadeSelect.options) {
                                 if (option.value === cidadeNome) {
-                                    editCidadeSelect.value = option.value;
+                                    editCidadeSelect.value = option.value; // Seleciona a cidade
                                     break;
                                 }
                             }
@@ -1139,7 +1161,12 @@
                 }
 
                 const form = event.target;
-                const formData = new FormData(form); // Will use 'arquivo_imagem' due to HTML name change
+                 // --- ENVIO DE IMAGEM (ATUALIZAR) ---
+                // O objeto FormData é criado a partir do formulário.
+                // Se um NOVO arquivo foi selecionado no input 'edit-treino-imagem-input', ele será incluído.
+                // Se nenhum novo arquivo for selecionado, o campo 'arquivo_imagem' será removido do FormData
+                // (indicando ao backend que a imagem existente não deve ser alterada ou que não há nova imagem).
+                const formData = new FormData(form); 
 
                 const titulo = formData.get('titulo')?.trim();
                 const nome_esporte = formData.get('nome_esporte');
@@ -1162,6 +1189,8 @@
                 if (!selectedCidadeOption || !selectedCidadeOption.value) {
                     alert("Por favor, selecione uma Cidade."); return;
                 }
+                // --- FORMATAÇÃO ESTADO E CIDADE (AO SALVAR EDIÇÃO) ---
+                // Similar ao adicionar, combina cidade e sigla do estado no campo 'lugar'.
                 formData.set('lugar', `${selectedCidadeOption.value}, ${selectedEstadoOption.dataset.sigla}`);
                 formData.delete('estado');
                 formData.delete('cidade');
@@ -1184,9 +1213,10 @@
                     alert("Tempo treinado é obrigatório e deve ser um número positivo (em minutos)."); return;
                 }
 
+                // Se nenhum NOVO arquivo de imagem foi selecionado, remove o campo 'arquivo_imagem' do FormData.
+                // O backend deve interpretar isso como "não atualizar a imagem existente" ou "remover se não houver".
                 if (!editTreinoImagemInput.files || editTreinoImagemInput.files.length === 0) {
-                    formData.delete('arquivo_imagem'); // If no new file is selected, don't send the field.
-                                                    // Backend should not update image if 'arquivo_imagem' is not sent.
+                    formData.delete('arquivo_imagem'); 
                 }
 
                 const descricao = formData.get('descricao')?.trim();
@@ -1205,13 +1235,17 @@
 
 
                 try {
-                    console.log("att treino", formData)
-                    const response = await fetch('http://127.0.0.1:5000/treino/AtualizarTreino', { // Assuming same endpoint for update
-                        method: 'PUT', // Or POST, depending on your API
+                    // --- REQUISIÇÃO PARA API (BACKEND) ---
+                    // Endpoint: /treino/AtualizarTreino
+                    // Método: PUT
+                    // Objetivo: Enviar os dados atualizados do treino, incluindo uma nova imagem (se houver), para o backend.
+                    const response = await fetch('http://127.0.0.1:5000/treino/AtualizarTreino', { 
+                        method: 'PUT', 
                         headers: {
-                            'Authorization': `Bearer ${token}`
+                            // Novamente, não definir Content-Type manualmente para FormData com arquivos.
+                            'Authorization': `Bearer ${token}` // Token JWT para autenticação
                         },
-                        body: formData
+                        body: formData // O FormData contém os campos atualizados e, opcionalmente, o novo arquivo de imagem.
                     });
                     const responseData = await response.json();
                     if (response.ok) {
@@ -1228,7 +1262,6 @@
             }
 
 
-            // --- EVENT LISTENERS ---
             function setupActionListeners() {
                 treinosContainer.addEventListener('click', function(event) {
                     const target = event.target;
@@ -1253,7 +1286,6 @@
                 });
             }
 
-            // Add Treino Modal Listeners & Image Preview
             if (fabAddTreinoButton) fabAddTreinoButton.addEventListener('click', showAddTreinoModal);
             if (addTreinoForm) addTreinoForm.addEventListener('submit', handleAddTreinoSubmit);
             if (cancelAddTreinoBtn) cancelAddTreinoBtn.addEventListener('click', hideAddTreinoModal);
@@ -1273,7 +1305,6 @@
                 });
             }
 
-            // Edit Treino Modal Listeners & Image Preview
             if (editTreinoForm) editTreinoForm.addEventListener('submit', handleEditTreinoSubmit);
             if (cancelEditTreinoBtn) cancelEditTreinoBtn.addEventListener('click', hideEditTreinoModal);
             if (editTreinoModal) {
@@ -1293,7 +1324,6 @@
             }
 
 
-            // --- INITIAL LOAD ---
             if (token) {
                 loadTreinos();
             } else {
@@ -1306,7 +1336,3 @@
     </script>
 </body>
 </html>
-
-
-
-
