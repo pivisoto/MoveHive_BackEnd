@@ -4,9 +4,6 @@ import firebase_admin
 import uuid
 from datetime import datetime
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
-    firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 

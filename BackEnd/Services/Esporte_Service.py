@@ -2,13 +2,6 @@ from firebase_admin import firestore, credentials
 from Models.Esporte_Model import Esporte
 import firebase_admin
 
-if not firebase_admin._apps:
-    try:
-        cred = credentials.Certificate("move-hive-firebase-adminsdk-fbsvc-0334323fd4.json")
-        firebase_admin.initialize_app(cred)
-        print("Firebase Admin SDK inicializado com sucesso.")
-    except:
-        print(f"Erro ao inicializar Firebase Admin SDK: {e}")
 
 
 db = firestore.client()

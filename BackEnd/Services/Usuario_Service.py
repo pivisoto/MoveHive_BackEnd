@@ -7,11 +7,6 @@ from middlewares.generate_token import generate_token
 from middlewares.auth_token import token_required
 import firebase_admin
 
-if not firebase_admin._apps:
-    cred = credentials.Certificate("safeviewbd-firebase-adminsdk-657bv-0ff3d67904.json")
-    firebase_admin.initialize_app(cred, {
-    'storageBucket': 'safeviewbd.appspot.com'
-})
 
 bucket = storage.bucket()
 db = firestore.client()
