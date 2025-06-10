@@ -225,9 +225,10 @@ def listar_seguidores(username):
     return {"erro": "Usuário não encontrado"}, 404
 
    
-     
-def buscar_usuario_por_id(user_id):
-    usuario_ref = db.collection('Usuarios').document(user_id)
+@token_required 
+def buscar_usuario_por_id():
+    usuario_id = g.user_id
+    usuario_ref = db.collection('Usuarios').document(usuario_id)
     usuario = usuario_ref.get()
 
     if not usuario.exists:

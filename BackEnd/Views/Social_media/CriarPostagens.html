@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Criar Nova Publicação</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --link-color: #0095f6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+            min-height: 100vh;
+            display: flex; 
+            flex-direction: column;
+            display: none;
+        }
+
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+
+        .bottom-nav {
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300;
+            z-index: 100;
+            margin-top: auto;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000;
+            font-weight: bold;
+        }
+
+        .create-post-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .create-post-header a, .create-post-header button {
+            text-decoration: none;
+            color: var(--link-color);
+            font-size: 1rem;
+            font-weight: 600;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+
+        .create-post-header button:disabled {
+            color: #b2dffc;
+            cursor: not-allowed;
+        }
+
+        .create-post-header i { font-size: 1.5rem; color: var(--text-color); }
+        .create-post-header h1 { font-size: 1.1rem; font-weight: 600; }
+        .create-post-main { padding: 20px 15px; flex-grow: 1; }
+        
+        .user-info-container {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            margin-bottom: 20px;
+            border-radius: 8px;
+        }
+        
+        .post-header {
+            display: flex;
+            align-items: center;
+            padding: 12px 15px;
+        }
+
+        .post-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 12px;
+            object-fit: cover;
+            background-color: #eee;
+        }
+
+        .post-user-info { display: flex; flex-direction: column; }
+        .post-username { font-weight: 600; font-size: 0.9rem; }
+        .post-fullname { font-size: 0.8rem; color: #8e8e8e; }
+        
+        .user-bio {
+            padding: 0 15px 15px 15px;
+            font-size: 0.9rem;
+            color: #555;
+            line-height: 1.4;
+            border-top: 1px solid var(--border-color);
+            margin-top: 12px;
+            padding-top: 12px;
+        }
+
+        .post-input-container {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .image-upload-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 200px;
+            background-color: #fafafa;
+            cursor: pointer;
+            position: relative;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .image-upload-area:hover .image-placeholder { color: #aaa; }
+        #image-preview {
+            width: 100%;
+            max-height: 400px;
+            object-fit: contain;
+            display: none;
+        }
+
+        .image-placeholder { text-align: center; color: #ccc; transition: color 0.2s ease; }
+        .image-placeholder i { font-size: 3rem; margin-bottom: 10px; }
+        #image-upload-input { display: none; }
+        .caption-section { padding: 15px; border-bottom: 1px solid var(--border-color); }
+
+        #caption-textarea {
+            width: 100%;
+            border: none;
+            outline: none;
+            resize: none;
+            font-size: 1rem;
+            height: 100px;
+            font-family: inherit;
+        }
+        
+        #caption-textarea::placeholder { color: #aaa; }
+        .post-options-list { list-style: none; }
+        .option-item {
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+        }
+        .option-item:hover { background-color: #fafafa; }
+        .option-item span { font-weight: 500; }
+        .option-item i.fa-chevron-right { color: #ccc; }
+    </style>
+</head>
+<body>
+
+    <div class="app-container" id="app-container">
+        
+        <header class="create-post-header">
+            <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i></a>
+            <h1>Nova Publicação</h1>
+            <button type="submit" form="create-post-form" id="publish-button">Publicar</button>
+        </header>
+        
+        <main class="create-post-main">
+            
+            <div class="user-info-container">
+                <div class="post-header">
+                    <img src="https://via.placeholder.com/40" alt="Sua foto de perfil" class="post-avatar">
+                    <div class="post-user-info">
+                        <span class="post-username">Carregando...</span>
+                        <span class="post-fullname">Carregando...</span>
+                    </div>
+                </div>
+                <p class="user-bio">
+                    Carregando biografia...
+                </p>
+            </div>
+
+            <form id="create-post-form">
+                <div class="post-input-container">
+                    <label for="image-upload-input" class="image-upload-area">
+                        <div class="image-placeholder" id="image-placeholder-container">
+                            <i class="fas fa-camera"></i>
+                            <p>Toque para selecionar uma foto</p>
+                        </div>
+                        <img id="image-preview" src="#" alt="Pré-visualização da imagem">
+                    </label>
+                    <input type="file" id="image-upload-input" name="imagem" accept="image/*">
+
+                    <div class="caption-section">
+                        <textarea id="caption-textarea" name="descricao" placeholder="Escreva uma legenda..."></textarea>
+                    </div>
+                </div>
+            </form>
+        </main>
+        
+        <nav class="bottom-nav">
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html" class="nav-item"><i class="fas fa-home"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-image"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('jwtToken');
+            if (!token) {
+                alert('Você não está logado. Redirecionando para a página de login.');
+                window.location.href = '/login.html'; 
+                return; 
+            }
+            
+            document.getElementById('app-container').style.display = 'flex';
+            
+            // --> INÍCIO: Pegar os dados do user para montar widget
+            async function fetchAndDisplayUserInfo() {
+                const avatarElement = document.querySelector('.post-avatar');
+                const usernameElement = document.querySelector('.post-username');
+                const fullnameElement = document.querySelector('.post-fullname');
+                const bioElement = document.querySelector('.user-bio');
+
+                try {
+                    // Substitua 'usuario' pelo nome do seu blueprint, se for diferente.
+                    const response = await fetch('http://127.0.0.1:5000/usuario/BuscarUsuarioID', {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.erro || `Erro ${response.status}: Não foi possível buscar os dados.`);
+                    }
+                    
+                    const userData = await response.json();
+
+                    // Atualiza os elementos HTML com os dados recebidos da API
+                    // IMPORTANTE: Ajuste os nomes das chaves (ex: 'foto_perfil', 'username') para corresponder exatamente ao que sua API retorna
+                    avatarElement.src = userData.foto_perfil || 'https://via.placeholder.com/40/FFC107/FFFFFF?Text=U'; 
+                    usernameElement.textContent = userData.username || 'Usuário não encontrado';
+                    fullnameElement.textContent = userData.nome_completo || 'Nome não informado';
+                    bioElement.textContent = userData.biografia || 'Nenhuma biografia disponível.';
+
+                } catch (error) {
+                    console.error('Erro ao buscar informações do usuário:', error);
+                    alert('Não foi possível carregar as informações do seu perfil. Tente recarregar a página.');
+                    usernameElement.textContent = 'Erro ao carregar';
+                    fullnameElement.textContent = '';
+                    bioElement.textContent = 'Não foi possível carregar a biografia.';
+                }
+            }
+            fetchAndDisplayUserInfo();
+            // --> FIM: Pegar os dados do user para montar widget
+            
+
+            const imageUploadInput = document.getElementById('image-upload-input');
+            const imagePreview = document.getElementById('image-preview');
+            const imagePlaceholder = document.getElementById('image-placeholder-container');
+            const postForm = document.getElementById('create-post-form');
+            const publishButton = document.getElementById('publish-button');
+
+            imageUploadInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imagePreview.src = e.target.result;
+                        imagePreview.style.display = 'block';
+                        imagePlaceholder.style.display = 'none';
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // --> INÍCIO: Como enviar os dados para o back
+            postForm.addEventListener('submit', async function(event) {
+                event.preventDefault(); 
+                
+                publishButton.disabled = true;
+                publishButton.textContent = 'Publicando...';
+
+                const caption = document.getElementById('caption-textarea').value;
+                const imageFile = imageUploadInput.files[0];
+                
+                // Cria um objeto FormData para enviar arquivos (imagem) e texto juntos.
+                const formData = new FormData();
+                formData.append('descricao', caption); 
+                formData.append('imagem', imageFile); 
+
+                try {
+                    // Envia a requisição POST para a API com o token de autorização e o corpo do formulário.
+                    const response = await fetch('http://127.0.0.1:5000/postagem/CriarPostagem', {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        alert('Publicação criada com sucesso!');
+                        window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html'; 
+                    } else {
+                        throw new Error(result.message || 'Ocorreu um erro ao criar a publicação.');
+                    }
+
+                } catch (error) {
+                    console.error('Erro ao enviar a publicação:', error);
+                    alert(`Erro: ${error.message}`);
+                    publishButton.disabled = false;
+                    publishButton.textContent = 'Publicar';
+                }
+            });
+            // --> FIM: Como enviar os dados para o back
+        });
+    </script>
+
+</body>
+</html>

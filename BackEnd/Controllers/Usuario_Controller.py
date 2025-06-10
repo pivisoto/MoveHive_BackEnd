@@ -138,13 +138,10 @@ def toggle_seguir():
 
 @usuario_bp.route('/BuscarUsuarioID', methods=['GET'])
 def buscar_usuario_por_id():
-    user_id = g.user_id
-    dados_usuario = usuario_service.buscar_usuario_por_id(user_id)
+
+    dados_usuario = usuario_service.buscar_usuario_por_id()
 
     if not dados_usuario:
         return jsonify({'erro': 'Usuário não encontrado!'}), 404
 
-    return jsonify({
-        'status': 'sucesso',
-        'usuario': dados_usuario
-    }), 200 
+    return jsonify(dados_usuario), 200

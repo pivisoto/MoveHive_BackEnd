@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Evento:
     def __init__(self, usuario_id, esporte_id, titulo, localizacao, data_hora,
@@ -16,7 +16,7 @@ class Evento:
         self.localizacao = localizacao if localizacao is not None else [] 
         self.data_hora = data_hora
         self.max_participantes = max_participantes
-        self.data_criacao = datetime.utcnow()
+        self.data_criacao = datetime.now(timezone.utc)
         self.evento_ativo = evento_ativo
         self.visibilidade = visibilidade
         self.inscricoes_ativas = inscricoes_ativas

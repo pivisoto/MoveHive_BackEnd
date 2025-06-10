@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meus Posts - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --success-color: #5cb85c;
+            --danger-color: #d9534f;
+            --info-color: #5bc0de;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+            position: relative;
+        }
+
+        .app-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .honeycomb-logo {
+            width: 30px;
+            height: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .honeycomb-logo div {
+            width: 10px;
+            height: 11.54px;
+            background-color: var(--accent-color);
+            margin: 0.5px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .honeycomb-logo div:nth-child(4),
+        .honeycomb-logo div:nth-child(5),
+        .honeycomb-logo div:nth-child(6),
+        .honeycomb-logo div:nth-child(7) {
+            transform: translateX(5px);
+        }
+
+        .header-actions i {
+            font-size: 1.5rem;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .page-content {
+            padding: 20px 15px 140px 15px;
+        }
+        
+        .empty-state-message {
+            text-align: center;
+            padding: 40px 20px;
+            font-size: 1rem;
+            color: #777;
+        }
+        .empty-state-message a {
+            color: var(--info-color);
+            font-weight: 600;
+            text-decoration: none;
+        }
+        .empty-state-message a:hover {
+            text-decoration: underline;
+        }
+
+        .post-card {
+            background-color: var(--secondary-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center; 
+            padding: 15px 15px 10px 15px;
+        }
+
+        .post-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-right: 10px; 
+        }
+
+        .post-actions-card { 
+            display: flex;
+            gap: 15px;
+        }
+
+        .post-actions-card i {
+            font-size: 1.1rem;
+            color: #777;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        .post-actions-card i:hover {
+            color: var(--text-color);
+        }
+
+        .post-image {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            border-top: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+            background-color: #eee;
+        }
+        
+        .post-description {
+            font-size: 0.9rem;
+            color: #444;
+            padding: 15px;
+            line-height: 1.5;
+        }
+
+        .post-social-actions {
+            display: flex;
+            justify-content: flex-start; 
+            gap: 25px; 
+            padding: 10px 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .social-item {
+            cursor: pointer;
+            color: #555;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s ease;
+        }
+        .social-item:hover {
+            color: var(--text-color);
+        }
+        .social-item span {
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        
+        .fab-add-post {
+            position: fixed;
+            width: 56px;
+            height: 56px;
+            background-color: var(--accent-color);
+            color: #333;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+            cursor: pointer;
+            bottom: 70px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 105;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            text-decoration: none;
+        }
+        .fab-add-post:hover {
+            background-color: #e6c300;
+            transform: translateX(-50%) scale(1.05);
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px; 
+            margin: 0 auto; 
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300; 
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000; 
+            font-weight: bold; 
+        }
+        .nav-item.active i.fas { 
+            font-weight: 900; 
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1100; 
+            padding: 15px;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-color);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 500px;
+            position: relative;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            font-size: 1.3rem;
+            color: var(--text-color);
+        }
+        
+        #delete-confirmation-modal .modal-content {
+             max-width: 400px; 
+             text-align: center;
+        }
+        #delete-confirmation-modal p {
+            font-size: 1.1rem;
+            margin: 20px 0;
+            color: #555;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .modal-actions button {
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s, transform 0.2s;
+        }
+        .modal-actions button:hover {
+             transform: translateY(-2px);
+        }
+        .modal-button-confirm {
+            background-color: var(--danger-color);
+            color: white;
+        }
+        .modal-button-confirm:hover {
+            background-color: #c9302c;
+        }
+        .modal-button-cancel {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .modal-button-cancel:hover {
+            background-color: #e6e6e6;
+        }
+
+        .modal-close {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #888;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        #edit-post-form .form-group {
+            margin-bottom: 15px;
+        }
+        #edit-post-form label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            text-align: left; 
+        }
+        #edit-post-form textarea,
+        #edit-post-form input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        #edit-post-form textarea {
+            resize: vertical;
+        }
+        
+        #edit-post-image-current, 
+        #edit-post-new-image-preview {
+            width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            border-radius: 5px;
+            border: 1px solid var(--border-color);
+            margin-bottom: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+        .modal-footer button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .btn-save {
+            background-color: var(--success-color);
+            color: white;
+        }
+        .btn-save:hover {
+            background-color: #4cae4c;
+        }
+        .btn-cancel {
+            background-color: #f0f0f0;
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+        .btn-cancel:hover {
+            background-color: #e6e6e6;
+        }
+
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="honeycomb-logo">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <h1>Meus Posts</h1>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-filter"></i>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div id="posts-list-container">
+            </div>
+
+             <p class="empty-state-message" style="display: none;">
+             </p>
+        </main>
+        
+        <a href="CriarPostagens.html" class="fab-add-post" title="Adicionar Novo Post">
+            <i class="fas fa-plus"></i>
+        </a>
+
+        <nav class="bottom-nav">
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html" class="nav-item"><i class="fas fa-home"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item active"><i class="fas fa-image"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <div id="edit-modal-overlay" class="modal-overlay">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2>Editar Post</h2>
+                <span class="modal-close" title="Fechar">×</span>
+            </header>
+            <form id="edit-post-form" novalidate>
+                <input type="hidden" id="edit-post-id" name="postId">
+                <div class="form-group">
+                    <label for="edit-post-description">Descrição</label>
+                    <textarea id="edit-post-description" name="descricao" rows="6" required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Imagem Atual</label>
+                    <img id="edit-post-image-current" src="" alt="Imagem atual do post">
+                    
+                    <label id="edit-post-new-image-label" style="display: none; margin-top: 15px;">Nova Imagem (Preview)</label>
+                    <img id="edit-post-new-image-preview" src="" alt="Pré-visualização da nova imagem" style="display: none;">
+
+                    <label for="edit-post-image-input" style="margin-top:10px;">Trocar Imagem (opcional)</label>
+                    <input type="file" id="edit-post-image-input" name="imagem" accept="image/*">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-cancel">Cancelar</button>
+                    <button type="submit" class="btn-save">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="delete-confirmation-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content">
+            <h2>Confirmar Exclusão</h2>
+            <p>Tem certeza de que deseja excluir este post?</p>
+            <div class="modal-actions">
+                <button id="cancel-delete-btn" class="modal-button-cancel">Cancelar</button>
+                <button id="confirm-delete-btn" class="modal-button-confirm">Sim, Excluir</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const postsContainer = document.getElementById('posts-list-container');
+            const fabButton = document.querySelector('.fab-add-post');
+            const emptyStateMessage = document.querySelector('.empty-state-message');
+            const jwtToken = localStorage.getItem('jwtToken');
+            
+            const editModalOverlay = document.getElementById('edit-modal-overlay');
+            const editModalForm = document.getElementById('edit-post-form');
+            const editPostIdInput = document.getElementById('edit-post-id');
+            const editPostDescriptionTextarea = document.getElementById('edit-post-description');
+            
+            const editPostImageCurrent = document.getElementById('edit-post-image-current');
+            const editPostImageInput = document.getElementById('edit-post-image-input');
+            const editPostNewImageLabel = document.getElementById('edit-post-new-image-label');
+            const editPostNewImagePreview = document.getElementById('edit-post-new-image-preview');
+
+            const closeModalButton = document.querySelector('.modal-close');
+            const cancelModalButton = editModalForm.querySelector('.btn-cancel');
+
+            const deleteModalOverlay = document.getElementById('delete-confirmation-modal');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            let postIdToDelete = null; 
+            
+            editPostImageInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        editPostNewImagePreview.src = e.target.result;
+                        editPostNewImagePreview.style.display = 'block';
+                        editPostNewImageLabel.style.display = 'block';
+                    }
+                    reader.readAsDataURL(file);
+                } else {
+                    editPostNewImagePreview.style.display = 'none';
+                    editPostNewImageLabel.style.display = 'none';
+                }
+            });
+
+            const formatDateTime = (dateString) => {
+                if (!dateString) return 'Data indisponível';
+                try {
+                    const date = new Date(dateString);
+                    if (isNaN(date.getTime())) return 'Data inválida';
+                    return new Intl.DateTimeFormat('pt-BR', { dateStyle: 'short', timeStyle: 'short' }).format(date);
+                } catch (error) {
+                    console.error("Erro ao formatar data:", dateString, error);
+                    return 'Data indisponível';
+                }
+            };
+            
+            // ===================================================================================
+            // INÍCIO DA SEÇÃO 2: COMO ESTOU FORMATANDO OS DADOS NO FRONT-END
+            // ===================================================================================
+            // Esta função é o "molde" para cada post. Ela recebe um objeto 'post'
+            // (que veio da API) e retorna uma string de HTML com os dados desse post.
+            const createPostCardHTML = (post) => {
+                // Extrai os dados do objeto 'post' para variáveis locais para facilitar o uso.
+                const postId = post.id;
+                // Formata a data para um formato legível (ex: 25/07/2024, 15:30).
+                const formattedDateTime = formatDateTime(post.data_criacao);
+                // Cria um título dinâmico para o post usando a data formatada.
+                const postTitle = `Post - ${formattedDateTime}`;
+                // Define a imagem do post. Se a API não retornar uma imagem, usa uma imagem placeholder.
+                const postImage = post.imagem || "https://placehold.co/600x400/f0f2f5/333?text=Sem+Imagem";
+                const postDescription = post.descricao;
+                const likesCount = post.Contador_Curtida || 0;
+                // Conta o número de comentários. Garante que, se 'comentarios' não for um array, o resultado seja 0.
+                const commentsCount = Array.isArray(post.comentarios) ? post.comentarios.length : 0;
+
+                // Retorna o bloco HTML completo do card do post, preenchido com as variáveis.
+                // Usamos template literals (crases ``) para construir o HTML de forma mais limpa.
+                return `
+                    <article class="post-card" data-post-id="${postId}">
+                        <div class="post-header">
+                            <h2 class="post-title">${postTitle}</h2>
+                            <div class="post-actions-card">
+                                <i class="fas fa-edit edit-btn" title="Editar"></i>
+                                <i class="fas fa-trash-alt delete-btn" title="Excluir"></i>
+                            </div>
+                        </div>
+                        <img src="${postImage}" alt="Imagem do post" class="post-image">
+                        <div class="post-description">
+                            <p>${postDescription}</p>
+                        </div>
+                        <div class="post-social-actions">
+                            <div class="social-item"><i class="far fa-heart"></i> <span>${likesCount}</span></div>
+                            <div class="social-item"><i class="far fa-comment"></i> <span>${commentsCount}</span></div>
+                        </div>
+                    </article>
+                `;
+            };
+            // ===================================================================================
+            // FIM DA SEÇÃO 2
+            // ===================================================================================
+
+
+            // ===================================================================================
+            // INÍCIO DA SEÇÃO 1: PEGANDO OS POSTS DO USUÁRIO
+            // ===================================================================================
+            // Esta função assíncrona é responsável por buscar os posts do usuário na API.
+            const fetchUserPosts = async () => {
+                // Prepara a interface para o carregamento, mostrando uma mensagem de "Carregando...".
+                postsContainer.innerHTML = '';
+                postsContainer.style.display = 'none';
+                emptyStateMessage.innerText = "Carregando seus posts...";
+                emptyStateMessage.style.display = 'block';
+
+                try {
+                    // Faz a requisição (chamada) para o endpoint da API que lista as postagens.
+                    // O 'await' pausa a execução da função até que a API responda.
+                    const response = await fetch(`http://127.0.0.1:5000/postagem/ListarPostagens`, {
+                        method: 'GET', // Método GET é usado para solicitar dados.
+                        headers: {
+                            // Este cabeçalho é crucial para a autenticação. Ele envia o token JWT
+                            // para o backend, que o usará para identificar o usuário logado e
+                            // retornar apenas os posts pertencentes a ele.
+                            'Authorization': `Bearer ${jwtToken}`
+                        }
+                    });
+
+                    // Verifica se a resposta da API foi bem-sucedida (status 2xx).
+                    if (!response.ok) {
+                        if (response.status === 401) throw new Error('Sessão inválida ou expirada. Faça login novamente.');
+                        throw new Error(`Erro na API: ${response.statusText}`);
+                    }
+                    
+                    // Converte a resposta da API (que vem em formato JSON) para um objeto/array JavaScript.
+                    const posts = await response.json();
+                    
+                    // Verifica se a resposta contém um array de posts e se não está vazio.
+                    if (Array.isArray(posts) && posts.length > 0) {
+                        // Ordena os posts do mais recente para o mais antigo.
+                        posts.sort((a, b) => new Date(b.data_criacao) - new Date(a.data_criacao));
+                        
+                        // Aqui acontece a "mágica" de renderização:
+                        // 1. `posts.map(createPostCardHTML)`: Itera sobre cada item do array 'posts' e, para cada um,
+                        //    chama a função 'createPostCardHTML' (o nosso molde). Isso cria um novo array
+                        //    contendo as strings de HTML de cada card.
+                        // 2. `.join('')`: Concatena todos os HTMLs do array em uma única string gigante.
+                        // 3. `postsContainer.innerHTML = ...`: Insere essa string gigante no contêiner de posts,
+                        //    fazendo com que o navegador renderize todos os cards na tela de uma vez.
+                        postsContainer.innerHTML = posts.map(createPostCardHTML).join('');
+                        
+                        // Exibe o contêiner com os posts e esconde a mensagem de "carregando".
+                        postsContainer.style.display = 'block';
+                        emptyStateMessage.style.display = 'none';
+                    } else {
+                        // Se não houver posts, exibe uma mensagem amigável.
+                        postsContainer.style.display = 'none';
+                        emptyStateMessage.innerText = "Nenhum post encontrado. Clique no botão '+' para criar um.";
+                        emptyStateMessage.style.display = 'block';
+                    }
+                } catch (error) {
+                    // Se ocorrer qualquer erro durante o processo (rede, API, etc.),
+                    // exibe uma mensagem de erro para o usuário.
+                    console.error('Erro ao buscar posts:', error);
+                    postsContainer.style.display = 'none';
+                    emptyStateMessage.innerHTML = `Ocorreu um erro ao carregar seus posts.<br>${error.message}`;
+                    emptyStateMessage.style.display = 'block';
+                }
+            };
+            // ===================================================================================
+            // FIM DA SEÇÃO 1
+            // ===================================================================================
+
+            const closeEditModal = () => {
+                editModalOverlay.style.display = 'none';
+                editModalForm.reset(); 
+                editPostNewImagePreview.style.display = 'none';
+                editPostNewImageLabel.style.display = 'none';
+                editPostNewImagePreview.src = '';
+            };
+
+            const openEditModal = (postCard) => {
+                const postId = postCard.dataset.postId;
+                const currentDescription = postCard.querySelector('.post-description p').textContent;
+                const currentImageSrc = postCard.querySelector('.post-image').src;
+                
+                editPostIdInput.value = postId;
+                editPostDescriptionTextarea.value = currentDescription;
+                
+                editPostImageCurrent.src = currentImageSrc;
+                editPostNewImagePreview.style.display = 'none';
+                editPostNewImageLabel.style.display = 'none';
+                editPostNewImagePreview.src = '';
+                editPostImageInput.value = '';
+
+                editModalOverlay.style.display = 'flex';
+            };
+
+
+            if (jwtToken) {
+                fabButton.style.display = 'flex';
+                // Chama a função para buscar e exibir os posts assim que a página carrega.
+                fetchUserPosts();
+
+                postsContainer.addEventListener('click', (event) => {
+                    const editButton = event.target.closest('.edit-btn');
+                    const deleteButton = event.target.closest('.delete-btn');
+                    
+                    if (editButton) openEditModal(editButton.closest('.post-card'));
+
+                    if (deleteButton) {
+                        postIdToDelete = deleteButton.closest('.post-card').dataset.postId;
+                        deleteModalOverlay.style.display = 'flex';
+                    }
+                });
+
+                closeModalButton.addEventListener('click', closeEditModal);
+                cancelModalButton.addEventListener('click', closeEditModal);
+                editModalOverlay.addEventListener('click', (event) => {
+                    if (event.target === editModalOverlay) closeEditModal();
+                });
+
+                editModalForm.addEventListener('submit', async (event) => {
+                    event.preventDefault(); 
+                    
+                    const saveButton = editModalForm.querySelector('.btn-save');
+                    saveButton.disabled = true;
+                    saveButton.textContent = 'Salvando...';
+
+                    const formData = new FormData();
+                    formData.append('post_id', editPostIdInput.value);
+                    formData.append('descricao', editPostDescriptionTextarea.value);
+                    
+                    if (editPostImageInput.files.length > 0) {
+                        formData.append('imagem', editPostImageInput.files[0]);
+                    }
+
+                    try {
+                        const response = await fetch(`http://127.0.0.1:5000/postagem/EditarPostagem`, {
+                            method: 'PUT', 
+                            headers: {
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: formData 
+                        });
+
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(result.erro || 'Falha ao editar o post.');
+                        }
+
+                        console.log('Post editado com sucesso:', result);
+                        alert(result.mensagem || 'Post editado com sucesso!');
+
+                        closeEditModal();
+                        await fetchUserPosts();
+
+                    } catch (error) {
+                        console.error('Erro ao editar post:', error);
+                        alert(`Erro ao editar: ${error.message}`);
+                    } finally {
+                        saveButton.disabled = false;
+                        saveButton.textContent = 'Salvar Alterações';
+                    }
+                });
+
+                const closeDeleteModal = () => {
+                    deleteModalOverlay.style.display = 'none';
+                    postIdToDelete = null;
+                };
+
+                cancelDeleteBtn.addEventListener('click', closeDeleteModal);
+                deleteModalOverlay.addEventListener('click', (event) => {
+                    if (event.target === deleteModalOverlay) closeDeleteModal();
+                });
+
+                confirmDeleteBtn.addEventListener('click', async () => {
+                    if (!postIdToDelete) return;
+
+                    confirmDeleteBtn.disabled = true;
+                    confirmDeleteBtn.textContent = 'Excluindo...';
+
+                    try {
+                        const response = await fetch(`http://127.0.0.1:5000/postagem/ExcluirPostagem`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify({ postagem_id: postIdToDelete })
+                        });
+                        
+                        const result = await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(result.erro || 'Falha ao excluir o post.');
+                        }
+                        
+                        alert(result.mensagem || 'Post excluído com sucesso!');
+                        
+                        const postCard = postsContainer.querySelector(`.post-card[data-post-id="${postIdToDelete}"]`);
+                        if (postCard) postCard.remove();
+                        
+                        if (!postsContainer.querySelector('.post-card')) {
+                            fetchUserPosts();
+                        }
+
+                    } catch (error) {
+                        console.error('Erro ao excluir post:', error);
+                        alert(`Erro ao excluir: ${error.message}`);
+                    } finally {
+                        closeDeleteModal();
+                        confirmDeleteBtn.disabled = false;
+                        confirmDeleteBtn.textContent = 'Sim, Excluir';
+                    }
+                });
+
+            } else {
+                postsContainer.style.display = 'none';
+                fabButton.style.display = 'none';
+                emptyStateMessage.innerHTML = "Você precisa estar logado para ver seus posts.<br><a href='login.html'>Clique aqui para entrar</a>.";
+                emptyStateMessage.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

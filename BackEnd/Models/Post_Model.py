@@ -1,28 +1,28 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Postagem:
-    def __init__(self, usuario_id, conteudo,  esporte_praticado,
-                 imagem='', status_postagem='ativo',comentarios=[],contador_curtidas=0):
+    def __init__(self, usuario_id, descricao, 
+                 imagem='', status_postagem='ativo', comentarios=None, contador_curtidas=0):
         
         self.id = str(uuid.uuid4())
         self.usuario_id = usuario_id
-        self.conteudo = conteudo
+        self.descricao = descricao
         self.imagem = imagem
-        self.data_criacao = datetime.utcnow()
+        self.data_criacao = datetime.now(timezone.utc)
         self.contador_curtidas = contador_curtidas
         self.status_postagem = status_postagem
-        self.comentarios = comentarios
-        self.esporte_praticado = esporte_praticado
+        self.comentarios = comentarios if comentarios is not None else []
+
 
     def to_dict(self):
         return {
             'id': self.id,
             'usuario_id': self.usuario_id,
-            'conteudo': self.conteudo,
+            'descricao': self.descricao,
             'imagem': self.imagem,
             'data_criacao': self.data_criacao.isoformat(),
             'contador_curtidas': self.contador_curtidas,
             'status_postagem': self.status_postagem,
-            'esporte_praticado': self.esporte_praticado
+            'comentarios' : self.comentarios
         }

@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 class Usuario:
     def __init__(self, email, senha,    
@@ -14,6 +14,7 @@ class Usuario:
                  tipo_usuario='comum', 
                  pontos = 0,
                  status_usuario='ativo',
+                 post_criados = None,
                  eventos_criados=None, 
                  eventos_participando=None,
                  seguidores=None,
@@ -30,10 +31,11 @@ class Usuario:
         self.estado = estado
         self.cidade = cidade
         self.data_nascimento = data_nascimento 
-        self.data_criacao = datetime.utcnow()
+        self.data_criacao = datetime.now(timezone.utc)
         self.tipo_usuario = tipo_usuario
         self.pontos = pontos
         self.status_usuario = status_usuario
+        self.post_criados = post_criados if post_criados is not None else []
         self.seguidores = seguidores if seguidores is not None else []
         self.seguindo = seguindo if seguindo is not None else []
         self.esportes_praticados = esportes_praticados if esportes_praticados is not None else {}
@@ -58,6 +60,7 @@ class Usuario:
             'tipo_usuario': self.tipo_usuario,
             'pontos' : self.pontos,
             'status_usuario': self.status_usuario,
+            'post_criados' : self.post_criados,
             'esportes_praticados': self.esportes_praticados,
             'eventos_criados': self.eventos_criados,
             'eventos_participando': self.eventos_participando,

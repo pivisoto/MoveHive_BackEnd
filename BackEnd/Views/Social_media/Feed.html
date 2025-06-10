@@ -298,6 +298,18 @@
             cursor: pointer;
             color: #333;
         }
+        
+        .post-likes {
+            padding: 0 15px 5px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        
+        .post-timestamp {
+            font-size: 0.75rem;
+            color: #8e8e8e;
+            padding: 0 15px 10px;
+        }
 
         .post-caption {
             padding: 0 15px 10px;
@@ -309,10 +321,10 @@
         }
 
         .post-comments-summary {
-            padding: 0 15px 10px;
+            padding: 0 15px 5px; /* Ajuste no padding */
         }
 
-        .post-comments-summary a {
+        .post-comments-summary a, .post-comments-summary span {
             color: #8e8e8e;
             text-decoration: none;
             font-size: 0.85rem;
@@ -390,6 +402,30 @@
             line-height: 1.5;
         }
 
+        .create-post-widget {
+            position: fixed; /* Mantém o botão no mesmo lugar da tela, mesmo com a rolagem */
+            bottom: 85px;    /* Distância da parte inferior (suficiente para ficar acima da barra de navegação) */
+            right: 25px;     /* Distância da direita */
+            background-color: var(--accent-color); /* Usa a cor de destaque do seu site */
+            color: #333;     /* Cor do ícone '+' */
+            width: 56px;     /* Largura do botão */
+            height: 56px;    /* Altura do botão */
+            border-radius: 50%; /* Deixa o botão perfeitamente redondo */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.5rem; /* Tamanho do ícone '+' */
+            text-decoration: none; /* Remove o sublinhado do link */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Sombra para dar profundidade */
+            z-index: 101;    /* Garante que ele fique acima da maioria dos outros elementos */
+            transition: transform 0.2s ease, background-color 0.2s ease; /* Animação suave */
+        }
+
+        .create-post-widget:hover {
+            background-color: #e6c300; /* Cor de hover que já existe no seu CSS */
+            transform: scale(1.05);   /* Aumenta um pouco de tamanho ao passar o mouse */
+        }
+
 
         @media (min-width: 601px) {
             .app-container {
@@ -412,6 +448,8 @@
             <button class="modal-button" id="startProfileSetupButton">Entendi, Vamos Lá!</button>
         </div>
     </div>
+
+    
 
     <div class="modal-overlay hidden" id="profileSetupModalOverlay">
         <div class="modal-content">
@@ -494,62 +532,152 @@
             </div>
         </header>
         <main class="feed">
-            <article class="post">
-                <div class="post-header">
-                    <img src="https://via.placeholder.com/40" alt="Avatar yuri_alberto" class="post-avatar"> <!-- Placeholder -->
-                    <span class="post-username">yuri_alberto</span>
-                </div>
-                <img src="https://via.placeholder.com/600x400" alt="Campeonato de Tênis de Mesa" class="post-image"> <!-- Placeholder -->
-                <div class="post-actions">
-                    <i class="far fa-heart"></i>
-                    <i class="far fa-comment"></i>
-                    <i class="far fa-paper-plane"></i>
-                </div>
-                <div class="post-caption">
-                    <p><strong>yuri_alberto</strong> Torneio de Tenis</p>
-                </div>
-                <div class="post-comments-summary"><a href="#">Comentários</a></div>
-                <div class="post-add-comment">
-                     <img src="https://via.placeholder.com/30" alt="Avatar yuri_alberto" class="comment-avatar"> <!-- Placeholder -->
-                     <span>yuri_alberto</span>
-                </div>
-            </article>
-             <article class="post">
-                <div class="post-header">
-                    <img src="https://via.placeholder.com/40/FF0000/FFFFFF?Text=GS" alt="Avatar gabigol_sem_gol" class="post-avatar"> <!-- Placeholder -->
-                    <span class="post-username">gabigol_sem_gol</span>
-                </div>
-                <img src="https://via.placeholder.com/600x450/0000FF/FFFFFF?Text=Futebol" alt="Partida de Futebol Amistosa" class="post-image"> <!-- Placeholder -->
-                <div class="post-actions">
-                    <i class="far fa-heart"></i>
-                    <i class="far fa-comment"></i>
-                    <i class="far fa-paper-plane"></i>
-                </div>
-                <div class="post-caption">
-                    <p><strong>gabigol_sem_gol</strong> Aquele futebol de lei no fim de semana! ⚽️ #futebol #amigos #esporte</p>
-                </div>
-                <div class="post-comments-summary"><a href="#">Ver todos os 12 comentários</a></div>
-                <div class="post-add-comment">
-                     <img src="https://via.placeholder.com/30/FF0000/FFFFFF?Text=GS" alt="Avatar gabigol_sem_gol" class="comment-avatar"> <!-- Placeholder -->
-                     <span>Adicionar um comentário...</span>
-                </div>
-            </article>
+            <!-- Os posts serão inseridos aqui dinamicamente pelo JavaScript -->
         </main>
         <nav class="bottom-nav">
             <a href="#" class="nav-item active"><i class="fas fa-home"></i></a>
             <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
-            <a href="#" class="nav-item"><i class="fas fa-award"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item"><i class="fas fa-image"></i></a>
             <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
             <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
         </nav>
     </div>
 
+    <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/CriarPostagens.html" class="create-post-widget" title="Criar Nova Postagem">
+        <i class="fas fa-plus"></i>
+    </a>
+
     <script>
         const baseUrl = 'http://127.0.0.1:5000'; 
         const usuarioApiUrl = `${baseUrl}/usuario`;
         const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
+        const postagemApiUrl = `${baseUrl}/postagem`; // Nova URL base para postagens
 
         let _availableSports = [];
+
+        // ============================ LÓGICA DO FEED ============================
+
+        /**
+         * Converte um timestamp ou string de data para um formato "tempo atrás".
+         * Ex: HÁ 5 MINUTOS, HÁ 2 HORAS, HÁ 3 DIAS
+         */
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '';
+            
+            // Lida com timestamps do Firebase (objeto com _seconds) ou strings de data ISO
+            let date;
+            if (typeof timestamp === 'object' && timestamp._seconds) {
+                date = new Date(timestamp._seconds * 1000);
+            } else {
+                date = new Date(timestamp);
+            }
+
+            if (isNaN(date.getTime())) return ''; // Data inválida
+
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            let interval = seconds / 31536000;
+            if (interval > 1) return `HÁ ${Math.floor(interval)} ANOS`;
+            interval = seconds / 2592000;
+            if (interval > 1) return `HÁ ${Math.floor(interval)} MESES`;
+            interval = seconds / 86400;
+            if (interval > 1) return `HÁ ${Math.floor(interval)} DIAS`;
+            interval = seconds / 3600;
+            if (interval > 1) return `HÁ ${Math.floor(interval)} HORAS`;
+            interval = seconds / 60;
+            if (interval > 1) return `HÁ ${Math.floor(interval)} MINUTOS`;
+            return `HÁ POUCOS SEGUNDOS`;
+        }
+        
+        /**
+         * Cria o elemento HTML de um post com base nos dados da API.
+         */
+        function createPostElement(item) {
+            const { postagem, usuario } = item;
+
+            // Valores padrão para evitar erros se algum campo estiver faltando
+            const userAvatar = usuario.foto_perfil || 'https://via.placeholder.com/40/cccccc/FFFFFF?Text=U';
+            const postImage = postagem.imagem || 'https://via.placeholder.com/600x400/cccccc/FFFFFF?Text=Sem+Imagem';
+            const userName = usuario.username || 'usuário_anônimo';
+            const postDescription = postagem.descricao || '';
+            const likeCount = postagem.contador_curtidas || 0;
+            const commentCount = Array.isArray(postagem.comentarios) ? postagem.comentarios.length : 0;
+            const timeAgo = formatTimeAgo(postagem.data_criacao);
+
+            const postElement = document.createElement('article');
+            postElement.className = 'post';
+
+            postElement.innerHTML = `
+                <div class="post-header">
+                    <img src="${userAvatar}" alt="Avatar ${userName}" class="post-avatar">
+                    <span class="post-username">${userName}</span>
+                </div>
+                <img src="${postImage}" alt="Postagem de ${userName}" class="post-image">
+                <div class="post-actions">
+                    <i class="far fa-heart"></i>
+                    <i class="far fa-comment"></i>
+                    <i class="far fa-paper-plane"></i>
+                </div>
+                <div class="post-likes">
+                    ${likeCount} curtidas
+                </div>
+                <div class="post-caption">
+                    <p><strong>${userName}</strong> ${postDescription}</p>
+                </div>
+                <div class="post-comments-summary">
+                    ${commentCount > 0 ? `<a href="#">Ver todos os ${commentCount} comentários</a>` : '<span>Nenhum comentário ainda</span>'}
+                </div>
+                <div class="post-timestamp">
+                    ${timeAgo}
+                </div>
+                <div class="post-add-comment">
+                     <img src="${userAvatar}" alt="Avatar ${userName}" class="comment-avatar">
+                     <span>Adicionar um comentário...</span>
+                </div>
+            `;
+            return postElement;
+        }
+
+        /**
+         * Busca os posts da API e os exibe na página.
+         */
+        async function fetchAndDisplayFeed(token) {
+            const feedContainer = document.querySelector('.feed');
+            feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Carregando feed...</p>';
+
+            try {
+                const response = await fetch(`${postagemApiUrl}/FeedSemFiltro`, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.statusText}`);
+                }
+
+                const feedData = await response.json();
+                
+                // Limpa o container antes de adicionar os novos posts
+                feedContainer.innerHTML = ''; 
+
+                if (Array.isArray(feedData) && feedData.length > 0) {
+                    feedData.forEach(item => {
+                        const postElement = createPostElement(item);
+                        feedContainer.appendChild(postElement);
+                    });
+                } else {
+                    feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Ainda não há nenhuma postagem no feed. Que tal criar a primeira?</p>';
+                }
+
+            } catch (error) {
+                console.error("Falha ao carregar o feed:", error);
+                feedContainer.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Não foi possível carregar o feed. Por favor, tente recarregar a página.</p>';
+            }
+        }
 
 
         // ============================ REQUISIÇÂO ============================
@@ -576,18 +704,16 @@
         }
 
         function populateSportSelect(selectElement, sportsList) {
-            // Clear existing options except the first placeholder
             while (selectElement.options.length > 1) {
                 selectElement.remove(1);
             }
             sportsList.forEach(sport => {
                 const option = document.createElement('option');
-                // Assuming sport objects have a 'nome' property as seen in earlier context
-                if (typeof sport === 'string') { // Fallback if it's just an array of strings
+                if (typeof sport === 'string') {
                     option.value = sport;
                     option.textContent = sport;
                 } else if (typeof sport === 'object' && sport !== null && sport.hasOwnProperty('nome')) {
-                    option.value = sport.nome; // Use 'nome' for value and text
+                    option.value = sport.nome; 
                     option.textContent = sport.nome;
                 }
                 selectElement.appendChild(option);
@@ -618,7 +744,7 @@
             }
             statesList.forEach(state => {
                 const option = document.createElement('option');
-                option.value = state.sigla; // Use sigla as value
+                option.value = state.sigla;
                 option.textContent = state.nome;
                 selectElement.appendChild(option);
             });
@@ -650,10 +776,10 @@
                 selectElement.options[0].textContent = 'Nenhuma cidade encontrada';
                 return;
             }
-            selectElement.options[0].textContent = 'Selecione a Cidade'; // Reset placeholder
+            selectElement.options[0].textContent = 'Selecione a Cidade';
             citiesList.forEach(city => {
                 const option = document.createElement('option');
-                option.value = city.nome; // Use nome as value
+                option.value = city.nome;
                 option.textContent = city.nome;
                 selectElement.appendChild(option);
             });
@@ -666,12 +792,11 @@
 
             if (!token) {
                 alert("Autenticação necessária. Redirecionando para o login.");
-                // Replace with your actual login page if different
                 window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-                return; // Stop further execution if not authenticated
+                return;
             }
 
-            await fetchSports(); // Fetch sports early
+            await fetchSports();
 
             const introModalOverlay = document.getElementById('introModalOverlay');
             const profileSetupModalOverlay = document.getElementById('profileSetupModalOverlay');
@@ -694,15 +819,13 @@
             let currentStep = 1;
             const totalSteps = modalSteps.length;
 
-            profilePicPreview.style.display = 'none'; // Hide preview initially
+            profilePicPreview.style.display = 'none';
 
-            // Populate the initial sport select dropdown
             const initialSportSelect = sportsContainer.querySelector('.sport-select');
             if (initialSportSelect) {
                 populateSportSelect(initialSportSelect, _availableSports);
             }
 
-            // Fetch and populate states
             const ibgeStates = await fetchIBGEStates();
             if (stateSelect && ibgeStates.length > 0) {
                 populateStatesDropdown(stateSelect, ibgeStates);
@@ -712,25 +835,23 @@
                 if (citySelect) citySelect.disabled = true;
             }
 
-            // Event listener for state change to populate cities
             if (stateSelect && citySelect) {
                 stateSelect.addEventListener('change', async function() {
                     const selectedStateUF = this.value;
-                    citySelect.innerHTML = '<option value="">Selecione a Cidade</option>'; // Reset cities
+                    citySelect.innerHTML = '<option value="">Selecione a Cidade</option>';
 
                     if (selectedStateUF) {
-                        citySelect.disabled = true; // Disable while loading
+                        citySelect.disabled = true;
                         citySelect.options[0].textContent = 'Carregando cidades...';
                         const ibgeCities = await fetchIBGECities(selectedStateUF);
                         populateCitiesDropdown(citySelect, ibgeCities);
-                        citySelect.disabled = false; // Enable after loading
+                        citySelect.disabled = false;
                     } else {
-                        citySelect.disabled = true; // Disable if no state selected
+                        citySelect.disabled = true;
                     }
                 });
             }
 
-            // Determine if onboarding modal should be shown
             const shouldShowOnboarding = sessionStorage.getItem('showProfileModal') === 'true';
 
             if (shouldShowOnboarding) {
@@ -741,8 +862,10 @@
             } else {
                 introModalOverlay.classList.add('hidden');
                 profileSetupModalOverlay.classList.add('hidden');
-                appContainer.style.display = 'block'; // Or 'flex' if it's a flex container
+                appContainer.style.display = 'block';
                 if (bottomNav) bottomNav.style.display = 'flex';
+                // CARREGA O FEED SE O MODAL NÃO FOR EXIBIDO
+                fetchAndDisplayFeed(token);
             }
 
             if (startProfileSetupButton) {
@@ -763,14 +886,14 @@
 
             function validateStep(stepNumber) {
                 if (stepNumber === 1) {
-                    // Bio is optional, no specific validation here
+                    // Bio is optional
                 } else if (stepNumber === 2) {
                     const sportEntries = sportsContainer.querySelectorAll('.sport-entry');
                     let validSportFound = false;
                     sportEntries.forEach(entry => {
                         const sport = entry.querySelector('.sport-select').value;
                         const level = entry.querySelector('.level-select').value;
-                        if (sport && level) { // Both sport and level must be selected
+                        if (sport && level) {
                             validSportFound = true;
                         }
                     });
@@ -788,7 +911,6 @@
                         return false;
                     }
                 }
-                // Step 4 (profile pic) is optional, so no specific validation here unless made mandatory.
                 return true;
             }
 
@@ -815,37 +937,34 @@
             if (addSportButton) {
                 addSportButton.addEventListener('click', () => {
                     const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
-                    newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0); // Reset selections
+                    newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
 
                     const sportSelect = newSportEntry.querySelector('.sport-select');
                     if (sportSelect) {
-                         populateSportSelect(sportSelect, _availableSports); // Repopulate with fetched sports
+                         populateSportSelect(sportSelect, _availableSports);
                     }
 
-                    // Ensure a remove button exists or add one
                     let removeButton = newSportEntry.querySelector('.remove-sport-button');
                     if (!removeButton) {
                         removeButton = document.createElement('button');
                         removeButton.type = 'button';
                         removeButton.classList.add('remove-sport-button');
-                        removeButton.innerHTML = '×'; // Using a multiplication sign for 'x'
+                        removeButton.innerHTML = '×';
                         newSportEntry.appendChild(removeButton);
                     }
-                    removeButton.onclick = () => newSportEntry.remove(); // Add remove functionality
+                    removeButton.onclick = () => newSportEntry.remove();
 
                     sportsContainer.appendChild(newSportEntry);
                 });
             }
 
-            // Add remove button to the first sport entry if it doesn't have one
-            // and ensure it cannot be removed if it's the only one.
             if (sportsContainer.children.length > 0 && sportsContainer.firstElementChild.querySelectorAll('.remove-sport-button').length === 0) {
                 const firstRemoveButton = document.createElement('button');
                 firstRemoveButton.type = 'button';
                 firstRemoveButton.classList.add('remove-sport-button');
                 firstRemoveButton.innerHTML = '×';
                 firstRemoveButton.onclick = () => {
-                    if(sportsContainer.children.length > 1) { // Only remove if more than one entry exists
+                    if(sportsContainer.children.length > 1) {
                         sportsContainer.firstElementChild.remove();
                     } else {
                         alert("Pelo menos um esporte deve ser mantido.");
@@ -866,7 +985,7 @@
                         }
                         reader.readAsDataURL(file);
                     } else {
-                        profilePicPreview.src = "#"; // Clear preview
+                        profilePicPreview.src = "#";
                         profilePicPreview.style.display = 'none';
                     }
                 });
@@ -902,7 +1021,6 @@
                     });
 
                     const formData = new FormData();
-
                     formData.append('dados', JSON.stringify(textualData));
 
                     const profilePicFile = profilePicInput.files[0];
@@ -913,8 +1031,6 @@
                     const endpointURL = `${usuarioApiUrl}/DadosModal`;
 
                     try {
-                        console.log("Sending FormData to server (backend-compatible)...");
-
                         const response = await fetch(endpointURL, {
                             method: 'POST',
                             headers: {
@@ -925,8 +1041,6 @@
                         });
 
                         const responseData = await response.json(); 
-                        console.log("Server response:", responseData);
-
                         if (!response.ok) {
                             const errorMsg = responseData.erro || responseData.message || `HTTP error ${response.status}`;
                             throw new Error(errorMsg);
@@ -935,6 +1049,9 @@
                         profileSetupModalOverlay.classList.add('hidden');
                         appContainer.style.display = 'block'; 
                         if (bottomNav) bottomNav.style.display = 'flex';
+                        
+                        // CARREGA O FEED APÓS COMPLETAR O MODAL
+                        fetchAndDisplayFeed(token);
 
                         sessionStorage.setItem('showProfileModal', 'false'); 
                         alert("Perfil atualizado com sucesso!"); 
