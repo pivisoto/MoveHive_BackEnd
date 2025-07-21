@@ -1,3 +1,8 @@
 python3 -m venv venv
+--------------------------
+#MAC/LINUX
 source venv/bin/activate
+#WINDOWS
+.\venv\Scripts\Activate
+--------------------------
 python app.py

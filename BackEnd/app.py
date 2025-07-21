@@ -1,11 +1,12 @@
 from flask import Flask, render_template
 from flask_cors import CORS  
 from flask_swagger_ui import get_swaggerui_blueprint
+from flask_caching import Cache
+from utils.cache import set_cache_instance
 
 # Inicialize o Firebase antes de qualquer outro import que dependa dele
 from firebase_init import initialize_firebase
 firebase_app = initialize_firebase()
-
 # Agora sim, pode importar os Controllers
 from Controllers.Usuario_Controller import usuario_bp
 from Controllers.Esporte_Controller import esporte_bp
@@ -20,14 +21,11 @@ CORS(app)
 SWAGGER_URL = '/swagger'  
 API_URL = '/static/swagger.yaml' 
 
-swaggerui_blueprint = get_swaggerui_blueprint(
-    SWAGGER_URL,
-    API_URL,
-    config={ 'app_name': "MoveHive APIs" }
-)
+swaggerui_blueprint = get_swaggerui_blueprint(SWAGGER_URL,API_URL,config={ 'app_name': "MoveHive APIs" })
 
+cache = Cache(app, config={'CACHE_TYPE': 'redis', 'CACHE_REDIS_URL': f'redis://localhost:6379'})
+set_cache_instance(cache)
 app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
-
 app.register_blueprint(usuario_bp)
 app.register_blueprint(esporte_bp)
 app.register_blueprint(evento_bp)

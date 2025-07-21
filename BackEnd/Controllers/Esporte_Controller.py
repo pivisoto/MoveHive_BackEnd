@@ -36,8 +36,7 @@ def adicionar():
 def listar():
     try:
         esportes = listar_esportes()
-        return jsonify(esportes), 200
-    
+        return jsonify(esportes), 200    
     except Exception as e:
         print(f"Erro na rota listar_eventos_route: {e}")
         return jsonify({"erro": "Erro interno ao listar eventos"}), 500
