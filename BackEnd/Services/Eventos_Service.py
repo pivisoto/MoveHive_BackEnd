@@ -30,7 +30,6 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
     usuario_id = g.user_id
     user_ref = db.collection('Usuarios').document(usuario_id)
 
-    # Buscar esporte
     esportes_ref = db.collection('Esportes')
     esporte_query = esportes_ref.where('nome', '==', esporte_nome).limit(1).stream()
     esporte_doc = next(esporte_query, None)
@@ -38,8 +37,15 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
     if esporte_doc is None:
         return {"erro": f"Esporte '{esporte_nome}' não encontrado."}, 404
 
+
     try:
         data_hora = datetime.strptime(data_hora_str, "%Y-%m-%dT%H:%M:%S")
+        data_hora = data_hora.replace(tzinfo=timezone.utc)  
+        agora = datetime.now(timezone.utc)
+    
+        if data_hora <= agora:
+            return {"erro": "A data e hora do evento devem ser no futuro."}, 400
+
     except ValueError:
         return {"erro": "Formato de data_hora inválido. Use: YYYY-MM-DDTHH:MM:SS"}, 400
 
@@ -57,9 +63,10 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
         torneio=torneio,
         premiacao=premiacao,
         foto=None,  
-        participantes=[],
+        participantes=[usuario_id],
         privado=privado,
-        observacoes=observacoes
+        observacoes=observacoes,
+        status="Inscricoes_abertas"
     )
 
     # Upload da imagem
@@ -73,7 +80,6 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
     eventos_ref = db.collection('Eventos')
     eventos_ref.document(evento.id).set(evento.to_dict())
 
-    # Atualizar referência do usuário com o novo evento
     user_ref.update({
         'eventos_criados': ArrayUnion([evento.id])
     })
@@ -159,7 +165,6 @@ def deletar_evento(evento_id):
 
     user_ref = db.collection('Usuarios').document(usuario_id)
     evento_ref = db.collection('Eventos').document(evento_id)
-
     evento_doc = evento_ref.get()
 
     if not evento_doc.exists:
@@ -171,6 +176,7 @@ def deletar_evento(evento_id):
         return {"erro": "Você não tem permissão para excluir este evento."}, 403
 
     try:
+        # Excluir imagem do Storage, se existir
         caminho = f"Usuarios/{usuario_id}/Fotos/evento_{evento_id}.jpg"
         blob = bucket.blob(caminho)
         if blob.exists():
@@ -181,10 +187,142 @@ def deletar_evento(evento_id):
     except Exception as e:
         print(f"Erro ao excluir a imagem: {e}")
 
-    evento_ref.delete()
+    try:
+        # Remover o evento do campo "eventos_participando" de cada usuário participante
+        participantes = evento_data.get('participantes', [])
+        for participante_id in participantes:
+            participante_ref = db.collection('Usuarios').document(participante_id)
+            participante_ref.update({
+                'eventos_participando': firestore.ArrayRemove([evento_id])
+            })
 
-    user_ref.update({
-        'eventos_criados': firestore.ArrayRemove([evento_id])
-    })
+        # Deletar o evento
+        evento_ref.delete()
 
-    return {"mensagem": "Evento excluído com sucesso."}, 200
+        # Remover o evento da lista de eventos criados pelo usuário
+        user_ref.update({
+            'eventos_criados': firestore.ArrayRemove([evento_id])
+        })
+
+        return {"mensagem": "Evento excluído com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao excluir o evento: {str(e)}"}, 500
+
+
+@token_required
+def listar_eventos():
+    usuario_id = g.user_id  
+
+    eventos_ref = db.collection('Eventos')
+    query = eventos_ref.where('torneio', '==', False)
+    eventos = query.stream()
+
+    lista_eventos = []
+    for doc in eventos:
+        evento = doc.to_dict()
+        evento['id'] = doc.id
+        lista_eventos.append(evento)
+
+    return jsonify(lista_eventos), 200
+
+
+@token_required
+def listar_torneios():
+    usuario_id = g.user_id  
+
+    eventos_ref = db.collection('Eventos')
+    query = eventos_ref.where('torneio', '==', True)
+    eventos = query.stream()
+
+    lista_eventos = []
+    for doc in eventos:
+        evento = doc.to_dict()
+        evento['id'] = doc.id
+        lista_eventos.append(evento)
+
+    return jsonify(lista_eventos), 200
+
+
+@token_required
+def participar_evento(evento_id):
+    usuario_id = g.user_id
+
+    evento_ref = db.collection('Eventos').document(evento_id)
+    evento_doc = evento_ref.get()
+
+    if not evento_doc.exists:
+        return {"erro": "Evento não encontrado."}, 404
+
+    evento_data = evento_doc.to_dict()
+
+    # Não pode participar do próprio evento
+    if evento_data.get("usuario_id") == usuario_id:
+        return {"erro": "Você é o criador deste evento e já está participando."}, 400
+
+    participantes = evento_data.get("participantes", [])
+
+    # Verifica se já está participando
+    if usuario_id in participantes:
+        return {"erro": "Você já está participando deste evento."}, 400
+
+    # Verifica se há vagas
+    max_participantes = evento_data.get("max_participantes", 0)
+    if len(participantes) >= max_participantes:
+        return {"erro": "Limite de participantes atingido."}, 400
+
+    try:
+        # Adiciona o usuário aos participantes
+        evento_ref.update({
+            'participantes': ArrayUnion([usuario_id])
+        })
+
+        # (Opcional) Registrar evento no perfil do usuário
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_ref.update({
+            'eventos_participando': ArrayUnion([evento_id])
+        })
+
+        return {"mensagem": "Participação confirmada com sucesso!"}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao participar do evento: {str(e)}"}, 500
+
+
+@token_required
+def cancelar_participacao(evento_id):
+    usuario_id = g.user_id
+
+    evento_ref = db.collection('Eventos').document(evento_id)
+    evento_doc = evento_ref.get()
+
+    if not evento_doc.exists:
+        return {"erro": "Evento não encontrado."}, 404
+
+    evento_data = evento_doc.to_dict()
+    participantes = evento_data.get("participantes", [])
+
+    # Verifica se está participando
+    if usuario_id not in participantes:
+        return {"erro": "Você não está participando deste evento."}, 400
+
+    # Criador do evento não pode sair
+    if evento_data.get("usuario_id") == usuario_id:
+        return {"erro": "O criador do evento não pode cancelar a própria participação."}, 400
+
+    try:
+        # Remove usuário dos participantes
+        evento_ref.update({
+            'participantes': firestore.ArrayRemove([usuario_id])
+        })
+
+        # (Opcional) remove evento da lista do usuário
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_ref.update({
+            'eventos_participando': firestore.ArrayRemove([evento_id])
+        })
+
+        return {"mensagem": "Participação cancelada com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao cancelar participação: {str(e)}"}, 500

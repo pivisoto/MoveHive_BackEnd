@@ -37,6 +37,17 @@
             position: relative;
         }
 
+        .btn-danger {
+            background-color: #ef4444; /* Vermelho */
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* Vermelho mais escuro */
+            border-color: #dc2626;
+        }
+
         .main-header {
             display: flex;
             justify-content: space-between;
@@ -392,8 +403,8 @@
                         <input type="file" id="arquivo_foto" name="arquivo_foto" accept="image/*">
                     </div>
                     <div class="form-group">
-                        <label for="data_hora">Data e Hora</label>
-                        <input type="datetime-local" id="data_hora" name="data_hora" required>
+                        <label for="data_hora_str">Data e Hora</label>
+                        <input type="datetime-local" id="data_hora_str" name="data_hora_str" required>
                     </div>
                     
                     <div class="form-group">
@@ -446,7 +457,7 @@
                                 <span class="switch-label">Evento Privado?</span>
                                  <div class="tooltip">
                                     <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-text">Eventos privados só são vistos por pessoas que você convidar diretamente através de um link.</span>
+                                    <span class="tooltip-text">Eventos privados só podem participar pessoas que te seguem.</span>
                                 </div>
                             </div>
                             <label class="switch">
@@ -496,8 +507,8 @@
                         <input type="file" id="edit-arquivo_foto" name="arquivo_foto" accept="image/*">
                     </div>
                     <div class="form-group">
-                        <label for="edit-data_hora">Data e Hora</label>
-                        <input type="datetime-local" id="edit-data_hora" name="data_hora" required>
+                        <label for="edit-data_hora_str">Data e Hora</label>
+                        <input type="datetime-local" id="edit-data_hora_str" name="data_hora_str" required>
                     </div>
                     
                     <div class="form-group">
@@ -577,7 +588,8 @@
                 </div>
                 <div class="details-action-buttons">
                     <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
-                    <button class="action-btn btn-primary">Participar</button>
+                    <!-- NOVO: Adicionado ID ao botão -->
+                    <button id="participate-btn" class="action-btn btn-primary">Participar</button>
                 </div>
             </main>
         </div>
@@ -585,20 +597,48 @@
 
 
     <script>
+  const token = localStorage.getItem('jwtToken');
+
+    // --- NOVA FUNÇÃO HELPER ---
+    // Função para decodificar o token JWT e pegar o ID do usuário
+    function getUserIdFromToken() {
+        if (!token) return null;
+        try {
+            // O payload do JWT está na segunda parte, codificado em Base64
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.user_id; // Certifique-se de que a chave é 'user_id' no seu token
+        } catch (e) {
+            console.error("Erro ao decodificar o token:", e);
+            return null;
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function () {
         const mainContent = document.getElementById('main-content');
         const filterButtons = document.querySelectorAll('.filter-btn');
         let currentEvents = []; 
         let activeFilter = 'events'; 
-        let allSports = []; // Armazenar a lista de esportes
+        let allSports = [];
+        
+        // Pega o ID do usuário logado uma vez
+        const currentUserId = getUserIdFromToken();
 
-        // --- FUNÇÕES DE EXIBIÇÃO ---
+        // --- FUNÇÕES DE EXIBIÇÃO (sem alterações, exceto displayEventDetails) ---
 
-        function showEmptyMessage() {
+        function showEmptyMessage(filterType = 'events') {
+            let message = "Nenhum evento encontrado.";
+            let suggestion = "Que tal criar um novo evento no botão '+'?";
+            if (filterType === 'my-events') {
+                 message = "Você ainda não criou nenhum evento.";
+                 suggestion = "Clique no botão '+' para criar seu primeiro evento!";
+            } else if (filterType === 'tournaments') {
+                 message = "Nenhum torneio encontrado no momento.";
+            }
+            
             mainContent.innerHTML = `
                 <div class="text-center">
-                    <p>Nenhum evento encontrado.</p>
-                    <p>Clique no botão '+' para criar seu primeiro evento!</p>
+                    <p>${message}</p>
+                    <p>${suggestion}</p>
                 </div>
             `;
              mainContent.classList.add('text-center');
@@ -645,7 +685,6 @@
                 infoHtml += `<div class="event-info"><i class="fas fa-info-circle"></i><span>${event.observacoes}</span></div>`;
             }
 
-            // MODIFICADO: Ação do botão de deletar foi atualizada
             const actionsHtml = isMyEvent ? `
                 <div class="card-actions">
                     <button class="action-icon" onclick="event.stopPropagation(); window.openEditModal(${index});" title="Editar Evento">
@@ -677,9 +716,52 @@
             return card;
         }
 
+        async function displayPublicEvents(filter) {
+            showLoading();
+            let endpoint = '';
+
+            if (filter === 'events') {
+                endpoint = 'http://127.0.0.1:5000/evento/listarEventos';
+            } else if (filter === 'tournaments') {
+                endpoint = 'http://127.0.0.1:5000/evento/listarTorneios'; 
+            } else {
+                mainContent.innerHTML = `<p>Filtro desconhecido.</p>`;
+                mainContent.classList.add('text-center');
+                return;
+            }
+
+            try {
+                const response = await fetch(endpoint, { 
+                    method: 'GET' ,
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
+                
+                const events = await response.json();
+                currentEvents = events;
+                mainContent.innerHTML = '';
+                mainContent.classList.remove('text-center');
+
+                if (events && events.length > 0) {
+                     events.forEach((event, index) => {
+                        const eventCard = createEventCard(event, index, false);
+                        mainContent.appendChild(eventCard);
+                    });
+                } else {
+                    showEmptyMessage(filter);
+                }
+
+            } catch (error) {
+                console.error(`Falha ao buscar eventos para o filtro '${filter}':`, error);
+                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar os eventos. Tente novamente.</p>`;
+                mainContent.classList.add('text-center');
+            }
+        }
+
+
         async function displayMyEvents() {
             showLoading();
-            const token = localStorage.getItem('jwtToken');
             if (!token) {
                 mainContent.innerHTML = '<p>Erro de autenticação. Faça o login novamente.</p>';
                 mainContent.classList.add('text-center');
@@ -693,7 +775,7 @@
                 });
 
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
-
+                
                 const events = await response.json();
                 currentEvents = events;
                 mainContent.innerHTML = '';
@@ -705,7 +787,7 @@
                         mainContent.appendChild(eventCard);
                     });
                 } else {
-                    showEmptyMessage();
+                    showEmptyMessage('my-events');
                 }
 
             } catch (error) {
@@ -720,10 +802,11 @@
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 activeFilter = button.getAttribute('data-filter');
+
                 if (activeFilter === 'my-events') {
                     displayMyEvents();
                 } else {
-                    showEmptyMessage();
+                    displayPublicEvents(activeFilter);
                 }
             });
         });
@@ -756,6 +839,7 @@
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
         
+        // --- FUNÇÃO displayEventDetails ATUALIZADA ---
         function displayEventDetails(event) {
             document.getElementById('details-image').src = event.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
             document.getElementById('details-title').textContent = event.titulo;
@@ -790,17 +874,44 @@
                 infoContainer.appendChild(infoDiv);
             });
 
+            // --- LÓGICA DE VERIFICAÇÃO DO BOTÃO ---
+            const actionButton = document.getElementById('participate-btn');
+            actionButton.dataset.eventId = event.id;
+
+            // Verifica se o ID do usuário está na lista de participantes
+            const isParticipating = currentUserId && participants.includes(currentUserId);
+            // Verifica se o usuário é o criador do evento
+            const isCreator = currentUserId && event.usuario_id === currentUserId;
+
+            if (isCreator) {
+                actionButton.style.display = 'none'; // Esconde o botão se o usuário for o criador
+            } else {
+                 actionButton.style.display = 'block'; // Garante que o botão esteja visível para não-criadores
+                 if (isParticipating) {
+                    actionButton.textContent = 'Cancelar Inscrição';
+                    actionButton.classList.remove('btn-primary');
+                    actionButton.classList.add('btn-danger');
+                    actionButton.dataset.action = 'cancel';
+                } else {
+                    actionButton.textContent = 'Participar';
+                    actionButton.classList.remove('btn-danger');
+                    actionButton.classList.add('btn-primary');
+                    actionButton.dataset.action = 'participate';
+                }
+            }
+           
             openModal('event-details-modal');
         }
 
         window.openEditModal = async function(index) {
+            // (Esta função permanece sem alterações)
             const event = currentEvents[index];
             if (!event) return;
 
             document.getElementById('edit-event-id').value = event.id;
             document.getElementById('edit-titulo').value = event.titulo;
             document.getElementById('edit-descricao').value = event.descricao;
-            document.getElementById('edit-data_hora').value = formatISODateToInput(event.data_hora);
+            document.getElementById('edit-data_hora_str').value = formatISODateToInput(event.data_hora_str);
             document.getElementById('edit-observacoes').value = event.observacoes || '';
             document.getElementById('edit-max_participantes').value = event.max_participantes;
 
@@ -836,20 +947,18 @@
             openModal('edit-event-modal');
         }
 
-        // NOVO: Função para deletar o evento
         window.deleteEvent = async function(eventId) {
+            // (Esta função permanece sem alterações)
             if (!eventId) {
                 alert('ID do evento não encontrado.');
                 return;
             }
 
-            const token = localStorage.getItem('jwtToken');
             if (!token) {
                 alert('Erro de autenticação. Por favor, faça login novamente.');
                 return;
             }
 
-            // O controller espera 'evento_id' em um FormData
             const bodyData = { evento_id: eventId };
 
             try {
@@ -870,22 +979,82 @@
 
                 alert('Evento excluído com sucesso!');
                 
-                // Atualiza a visualização de "Meus Eventos" se ela estiver ativa
-                if (activeFilter === 'my-events') {
-                    displayMyEvents();
-                }
+                document.querySelector('.filter-btn.active').click();
 
             } catch (error) {
                 console.error('Erro ao excluir evento:', error);
                 alert(`Falha ao excluir o evento: ${error.message}`);
             }
         }
+        
+        // --- FUNÇÃO DE CLIQUE ATUALIZADA ---
+        // Lida com ambas as ações: participar e cancelar
+        async function handleEventActionClick(event) {
+            const button = event.target;
+            const eventId = button.dataset.eventId;
+            const action = button.dataset.action; // 'participate' ou 'cancel'
+
+            if (!eventId || !action) {
+                alert('Erro: Ação ou ID do evento não encontrados.');
+                return;
+            }
+
+            if (!token) {
+                alert('Erro de autenticação. Por favor, faça login novamente.');
+                return;
+            }
+            
+            // Define a URL e a mensagem de sucesso com base na ação
+            // AJUSTE REALIZADO AQUI: a URL para cancelar foi atualizada
+            const endpoint = action === 'participate' 
+                ? 'http://127.0.0.1:5000/evento/participarEvento' 
+                : 'http://127.0.0.1:5000/evento/cancelarParticipacao'; // <- URL CORRIGIDA
+            
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Processando...';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ evento_id: eventId })
+                });
+
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.erro || 'Ocorreu um erro na solicitação.');
+                }
+
+                alert(result.mensagem); // Exibe a mensagem de sucesso da API
+                closeModal('event-details-modal');
+                
+                // Atualiza a lista de eventos para refletir a mudança
+                document.querySelector('.filter-btn.active').click();
+
+            } catch (error) {
+                console.error(`Erro ao ${action} do evento:`, error);
+                alert(`Falha ao processar a solicitação: ${error.message}`);
+            } finally {
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+
+        // Garanta que o listener de clique utilize a função atualizada
+        document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
+
+        // Renomeei o listener para refletir a nova função genérica
+        document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
 
 
-        // --- LÓGICA DO FORMULÁRIO ---
+        // --- LÓGICA DO FORMULÁRIO (sem alterações) ---
         async function populateSportsDropdown(selectElement, selectedValue = null) {
             if (allSports.length === 0) {
-                 const token = localStorage.getItem('jwtToken');
                 if (!token) { console.error('Erro de autenticação: Token não encontrado.'); selectElement.innerHTML = '<option value="" disabled selected>Falha ao carregar</option>'; return; }
                 try {
                     const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', { method: 'GET', headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
@@ -905,6 +1074,7 @@
         }
         
         populateSportsDropdown(document.getElementById('nome_esporte'));
+        populateSportsDropdown(document.getElementById('edit-nome_esporte'));
 
         async function loadStates(selectElement) {
              try {
@@ -968,14 +1138,13 @@
         setupImagePreview('edit-upload-area', 'edit-arquivo_foto', 'edit-image-preview');
 
 
-        // --- LÓGICA DE SUBMISSÃO ---
+        // --- LÓGICA DE SUBMISSÃO (sem alterações) ---
         document.getElementById('eventForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const submitButton = event.target.querySelector('.submit-btn');
             submitButton.disabled = true;
             submitButton.textContent = 'Enviando...';
             
-            const token = localStorage.getItem('jwtToken');
             if (!token) { alert('Erro de autenticação. Por favor, faça login novamente.'); submitButton.disabled = false; submitButton.textContent = 'Criar Evento'; return; }
             
             const formData = new FormData(event.target);
@@ -987,8 +1156,8 @@
                 formData.delete('premiacao');
             }
 
-            const dataHoraInput = formData.get('data_hora');
-            if (dataHoraInput) { formData.set('data_hora', `${dataHoraInput}:00`); }
+            const dataHoraInput = formData.get('data_hora_str');
+            if (dataHoraInput) { formData.set('data_hora_str', `${dataHoraInput}:00`); }
             
             const cidadeSelect = document.getElementById('cidade');
             const estadoSelect = document.getElementById('estado');
@@ -1003,8 +1172,11 @@
                 if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro desconhecido.'); }
                 alert('Evento criado com sucesso!');
                 closeModal('create-event-modal');
-                if (activeFilter === 'my-events') { displayMyEvents(); }
-                 event.target.reset();
+                document.querySelector('.filter-btn.active').click();
+                event.target.reset();
+                document.getElementById('create-image-preview').style.display = 'none';
+                document.querySelector('#create-upload-area span').style.display = 'block';
+
             } catch (error) {
                 console.error('Erro ao criar evento:', error);
                 alert(`Falha ao criar evento: ${error.message}`);
@@ -1020,12 +1192,26 @@
             submitButton.disabled = true;
             submitButton.textContent = 'Salvando...';
 
-            const token = localStorage.getItem('jwtToken');
-            if (!token) { alert('Erro de autenticação. Por favor, faça login novamente.'); submitButton.disabled = false; submitButton.textContent = 'Salvar Alterações'; return; }
+            if (!token) { 
+                alert('Erro de autenticação. Por favor, faça login novamente.'); 
+                submitButton.disabled = false; 
+                submitButton.textContent = 'Salvar Alterações'; 
+                return; 
+            }
 
             const formData = new FormData(event.target);
+            
+            const dataHoraInput = formData.get('data_hora_str');
+            if (!dataHoraInput) {
+                alert('O campo de Data e Hora é obrigatório.');
+                submitButton.disabled = false;
+                submitButton.textContent = 'Salvar Alterações';
+                return;
+            }
+            formData.set('data_hora_str', `${dataHoraInput}:00`);
+            
             const isTournament = document.getElementById('edit-torneio-checkbox').checked;
-            formData.set('torneio', isTournament);
+            formData.set('torneio', isTournament); 
 
             if (isTournament) {
                 if (!formData.get('premiacao')) {
@@ -1034,9 +1220,6 @@
             } else {
                 formData.delete('premiacao');
             }
-
-            const dataHoraInput = formData.get('data_hora');
-            if (dataHoraInput) { formData.set('data_hora', `${dataHoraInput}:00`); }
             
             const cidadeSelect = document.getElementById('edit-cidade');
             const estadoSelect = document.getElementById('edit-estado');
@@ -1057,7 +1240,7 @@
                 }
                 alert('Evento atualizado com sucesso!');
                 closeModal('edit-event-modal');
-                displayMyEvents();
+                document.querySelector('.filter-btn.active').click();
             } catch (error) {
                 console.error('Erro ao atualizar evento:', error);
                 alert(`Falha ao atualizar evento: ${error.message}`);

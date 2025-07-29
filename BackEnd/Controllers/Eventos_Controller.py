@@ -17,7 +17,10 @@ def criar_evento():
     privado = request.form.get("privado", "false").lower() == "true"
     observacoes = request.form.get("observacoes", "")
 
-    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes, torneio, privado]):
+    print(titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes, torneio, premiacao, privado, observacoes)
+    print("oiii")
+    
+    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes]):
         return {"erro": "Todos os campos obrigatórios devem ser preenchidos."}, 400
 
     try:
@@ -90,3 +93,37 @@ def deletar_evento_controller():
     # Converte para string para garantir compatibilidade, se necessário
     resposta, status = Eventos_Service.deletar_evento(str(evento_id))
     return jsonify(resposta), status
+
+
+@evento_bp.route('/listarEventos', methods=['GET'])
+def listar_eventos():
+    return Eventos_Service.listar_eventos()
+
+
+@evento_bp.route('/listarTorneios', methods=['GET'])
+def listar_torneios():
+    return Eventos_Service.listar_torneios()
+
+
+@evento_bp.route('/participarEvento', methods=['POST'])
+def participar_evento():
+    dados = request.get_json()
+    
+    if not dados or 'evento_id' not in dados:
+        return jsonify({"erro": "O campo 'evento_id' é obrigatório."}), 400
+
+    evento_id = dados['evento_id']
+    
+    return Eventos_Service.participar_evento(evento_id)
+
+
+@evento_bp.route('/cancelarParticipacao', methods=['POST'])
+def cancelar_participacao_evento():
+    dados = request.get_json()
+    
+    if not dados or 'evento_id' not in dados:
+        return jsonify({"erro": "O campo 'evento_id' é obrigatório."}), 400
+
+    evento_id = dados['evento_id']
+    
+    return Eventos_Service.cancelar_participacao(evento_id)
