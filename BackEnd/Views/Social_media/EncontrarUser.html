@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encontrar Usuários - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --button-followed-bg: #e0e0e0;
+            --button-followed-text: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--primary-color);
+            min-height: 100vh;
+        }
+
+        .app-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .honeycomb-logo {
+            width: 30px;
+            height: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .honeycomb-logo div {
+            width: 10px;
+            height: 11.54px;
+            background-color: var(--accent-color);
+            margin: 0.5px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+
+        .honeycomb-logo div:nth-child(4),
+        .honeycomb-logo div:nth-child(5),
+        .honeycomb-logo div:nth-child(6),
+        .honeycomb-logo div:nth-child(7) {
+            transform: translateX(5px);
+        }
+
+        .header-actions i {
+            font-size: 1.5rem;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .user-list-container {
+            padding: 15px;
+            padding-bottom: 80px;
+        }
+        
+        .page-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--text-color);
+        }
+
+        .user-entry {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .user-entry:hover {
+            background-color: #fafafa;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--border-color);
+        }
+
+        .user-details h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .user-details p {
+            font-size: 0.85rem;
+            color: #8e8e8e;
+            margin: 0;
+        }
+
+        .follow-button {
+            background-color: var(--accent-color);
+            color: #333;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: bold;
+            transition: background-color 0.2s ease, color 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .follow-button:hover {
+            background-color: #e6c300;
+        }
+        
+        .follow-button.followed {
+            background-color: var(--button-followed-bg);
+            color: var(--button-followed-text);
+            border: 1px solid var(--border-color);
+        }
+
+        .follow-button.followed:hover {
+            background-color: #dcdcdc;
+        }
+        
+        .follow-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .loading-message, .error-message, .empty-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8e8e8e;
+        }
+
+        .error-message {
+            color: #d9534f;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: var(--secondary-color);
+            margin: auto;
+            padding: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            position: relative;
+            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 10px;
+            border: 3px solid var(--border-color);
+        }
+        
+        .modal-username {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .modal-fullname {
+            font-size: 1rem;
+            color: #8e8e8e;
+            margin-top: 2px;
+        }
+
+        .modal-body p {
+            font-size: 0.95rem;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+        
+        .modal-body strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1rem;
+        }
+        
+        .sports-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .sports-list li {
+            background-color: var(--primary-color);
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+        
+        .sports-list span {
+            font-weight: bold;
+            color: var(--text-color);
+            text-transform: capitalize;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300;
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000;
+            font-weight: bold;
+        }
+        
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="honeycomb-logo">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <h1>Feed Claro</h1>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-bell"></i>
+                <i class="fas fa-comment-alt"></i>
+            </div>
+        </header>
+
+        <main class="user-list-container" id="userListContainer">
+            <h2 class="page-title">Sugestões para você</h2>
+        </main>
+        
+        <nav class="bottom-nav">
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html" class="nav-item"><i class="fas fa-home"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item"><i class="fas fa-image"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/AdicionarEvento.html" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/EncontrarUser.html" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <div id="userModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <div id="modalUserDetails">
+                <input type="hidden" id="modalUserId" />
+                <div class="modal-header">
+                    <img src="" alt="Avatar do usuário" id="modalUserAvatar" class="modal-avatar">
+                    <h2 id="modalUsername" class="modal-username"></h2>
+                    <p id="modalUserFullName" class="modal-fullname"></p>
+                </div>
+                <div class="modal-body">
+                    <p id="modalUserBio"></p>
+                    <strong>Esportes Praticados:</strong>
+                    <ul id="modalUserSports" class="sports-list"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        const baseUrl = 'http://127.0.0.1:5000';
+        const usuariosApiUrl = `${baseUrl}/usuario/usuarios`;
+        const followApiUrl = `${baseUrl}/usuario/follow`;
+        const unfollowApiUrl = `${baseUrl}/usuario/unfollow`;
+
+        function createUserEntryElement(user) {
+            const userEntry = document.createElement('div');
+            userEntry.className = 'user-entry';
+            userEntry.dataset.userId = user.id;
+
+            const userName = user.username || 'usuário';
+            const fullName = user.nome_completo || 'Nome não informado';
+            const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=45&background=e0e0e0&color=333`;
+            
+            // --> AQUI ESTÁ A LÓGICA <--
+            // 1. Lê o campo `is_followed_by_me` que o backend agora envia.
+            const isFollowed = user.is_followed_by_me || false;
+
+            // 2. Usa a variável `isFollowed` para definir o estado inicial do botão.
+            userEntry.innerHTML = `
+                <div class="user-info">
+                    <img src="${userAvatar}" alt="Avatar de ${userName}" class="user-avatar">
+                    <div class="user-details">
+                        <h3>${userName}</h3>
+                        <p>${fullName}</p>
+                    </div>
+                </div>
+                <button class="follow-button ${isFollowed ? 'followed' : ''}">${isFollowed ? 'Seguindo' : 'Seguir'}</button>
+            `;
+
+            const followButton = userEntry.querySelector('.follow-button');
+            
+            // 3. O evento de clique continua funcionando para inverter o estado atual.
+            followButton.addEventListener('click', async (e) => {
+                e.stopPropagation();
+                const token = localStorage.getItem('jwtToken');
+                if (!token) return;
+
+                const isCurrentlyFollowed = followButton.classList.contains('followed');
+                followButton.disabled = true; 
+
+                try {
+                    await toggleFollowState(user.id, !isCurrentlyFollowed, token);
+                    
+                    followButton.classList.toggle('followed');
+                    followButton.textContent = isCurrentlyFollowed ? 'Seguir' : 'Seguindo';
+
+                } catch (error) {
+                    console.error('Falha ao atualizar status de "seguir":', error);
+                    alert(`Não foi possível ${isCurrentlyFollowed ? 'deixar de seguir' : 'seguir'} o usuário. Tente novamente.`);
+                } finally {
+                    followButton.disabled = false;
+                }
+            });
+
+            userEntry.addEventListener('click', (e) => {
+                if (!e.target.classList.contains('follow-button')) {
+                    showUserDetailsModal(user);
+                }
+            });
+
+            return userEntry;
+        }
+
+        async function toggleFollowState(userId, follow, token) {
+            const url = follow ? followApiUrl : unfollowApiUrl;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ seguido_id: userId })
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.erro || 'Ocorreu um erro na requisição.');
+            }
+
+            const result = await response.json();
+            console.log(result.mensagem);
+            return result;
+        }
+        
+        function showUserDetailsModal(user) {
+            const modal = document.getElementById('userModal');
+            const userName = user.username || 'usuário';
+            
+            const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=90&background=e0e0e0&color=333`;
+
+            document.getElementById('modalUserId').value = user.id;
+            document.getElementById('modalUserAvatar').src = userAvatar;
+            document.getElementById('modalUserAvatar').alt = `Avatar de ${userName}`;
+            document.getElementById('modalUsername').textContent = userName;
+            document.getElementById('modalUserFullName').textContent = user.nome_completo || 'Nome não informado';
+            document.getElementById('modalUserBio').textContent = user.biografia || 'Nenhuma biografia informada.';
+
+            const sportsList = document.getElementById('modalUserSports');
+            sportsList.innerHTML = ''; 
+
+            if (user.esportes_praticados && typeof user.esportes_praticados === 'object' && Object.keys(user.esportes_praticados).length > 0) {
+                for (const [esporte, nivel] of Object.entries(user.esportes_praticados)) {
+                    const li = document.createElement('li');
+                    li.innerHTML = `<span>${esporte}:</span> ${nivel}`;
+                    sportsList.appendChild(li);
+                }
+            } else {
+                const li = document.createElement('li');
+                li.textContent = 'Nenhum esporte informado.';
+                sportsList.appendChild(li);
+            }
+
+            modal.style.display = 'flex';
+        }
+
+        async function fetchAndDisplayUsers(token) {
+            const container = document.getElementById('userListContainer');
+            
+            const pageTitle = container.querySelector('.page-title');
+            container.innerHTML = ''; 
+            container.appendChild(pageTitle); 
+            const loadingMessage = document.createElement('p');
+            loadingMessage.className = 'loading-message';
+            loadingMessage.textContent = 'Carregando usuários...';
+            container.appendChild(loadingMessage);
+
+            try {
+                const response = await fetch(usuariosApiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                container.removeChild(loadingMessage);
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
+                }
+
+                const data = await response.json();
+                const users = data.usuarios;
+
+                if (Array.isArray(users) && users.length > 0) {
+                    users.forEach(user => {
+                        const userElement = createUserEntryElement(user);
+                        container.appendChild(userElement);
+                    });
+                } else {
+                    const emptyMessage = document.createElement('p');
+                    emptyMessage.className = 'empty-message';
+                    emptyMessage.textContent = 'Nenhum usuário encontrado para sugerir.';
+                    container.appendChild(emptyMessage);
+                }
+
+            } catch (error) {
+                console.error("Falha ao carregar a lista de usuários:", error);
+                
+                container.innerHTML = '';
+                container.appendChild(pageTitle);
+                const errorMessage = document.createElement('p');
+                errorMessage.className = 'error-message';
+                errorMessage.textContent = `Não foi possível carregar as sugestões. ${error.message}`;
+                container.appendChild(errorMessage);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwtToken');
+            const modal = document.getElementById('userModal');
+            const closeButton = document.querySelector('.close-button');
+
+            if (!token) {
+                alert("Autenticação necessária. Redirecionando para o login.");
+                window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+                return;
+            }
+
+            fetchAndDisplayUsers(token);
+            
+            closeButton.onclick = () => {
+                modal.style.display = 'none';
+            }
+
+            window.onclick = (event) => {
+                if (event.target == modal) {
+                    modal.style.display = 'none';
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

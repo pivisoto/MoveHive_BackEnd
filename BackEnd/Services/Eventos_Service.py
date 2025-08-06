@@ -21,7 +21,7 @@ import firebase_admin
 bucket = storage.bucket()
 db = firestore.client()
 
-
+# Implementado
 @token_required
 def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao,
                      max_participantes, torneio=False, premiacao=0, privado=False,
@@ -87,6 +87,8 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
     return evento.to_dict(), 201
 
 
+
+# Implementado
 @token_required
 def listar_eventos_usuario():
     usuario_id = g.user_id
@@ -103,6 +105,8 @@ def listar_eventos_usuario():
     return jsonify(eventos), 200
 
 
+
+# Implementado
 @token_required
 def editar_evento_por_id(evento_id, dados, imagem=None):
     usuario_id = g.user_id
@@ -159,6 +163,8 @@ def editar_evento_por_id(evento_id, dados, imagem=None):
     return {"mensagem": "Evento atualizado com sucesso."}, 200
 
 
+
+# Implementado
 @token_required
 def deletar_evento(evento_id):
     usuario_id = g.user_id
@@ -210,6 +216,8 @@ def deletar_evento(evento_id):
         return {"erro": f"Erro ao excluir o evento: {str(e)}"}, 500
 
 
+
+# Implementado
 @token_required
 def listar_eventos():
     usuario_id = g.user_id  
@@ -227,6 +235,8 @@ def listar_eventos():
     return jsonify(lista_eventos), 200
 
 
+
+# Implementado
 @token_required
 def listar_torneios():
     usuario_id = g.user_id  
@@ -244,6 +254,8 @@ def listar_torneios():
     return jsonify(lista_eventos), 200
 
 
+
+# Implementado
 @token_required
 def participar_evento(evento_id):
     usuario_id = g.user_id
@@ -289,6 +301,8 @@ def participar_evento(evento_id):
         return {"erro": f"Erro ao participar do evento: {str(e)}"}, 500
 
 
+
+# Implementado
 @token_required
 def cancelar_participacao(evento_id):
     usuario_id = g.user_id
@@ -302,21 +316,17 @@ def cancelar_participacao(evento_id):
     evento_data = evento_doc.to_dict()
     participantes = evento_data.get("participantes", [])
 
-    # Verifica se está participando
     if usuario_id not in participantes:
         return {"erro": "Você não está participando deste evento."}, 400
 
-    # Criador do evento não pode sair
     if evento_data.get("usuario_id") == usuario_id:
         return {"erro": "O criador do evento não pode cancelar a própria participação."}, 400
 
     try:
-        # Remove usuário dos participantes
         evento_ref.update({
             'participantes': firestore.ArrayRemove([usuario_id])
         })
 
-        # (Opcional) remove evento da lista do usuário
         user_ref = db.collection('Usuarios').document(usuario_id)
         user_ref.update({
             'eventos_participando': firestore.ArrayRemove([evento_id])

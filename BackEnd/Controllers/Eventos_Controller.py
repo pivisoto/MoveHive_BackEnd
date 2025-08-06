@@ -3,7 +3,7 @@ from Services import Eventos_Service
 
 evento_bp = Blueprint('evento_bp', __name__, url_prefix="/evento")
 
-
+# Implementado
 @evento_bp.route('/AdicionarEvento', methods=['POST'])
 def criar_evento():
     titulo = request.form.get("titulo")
@@ -47,11 +47,15 @@ def criar_evento():
     return evento_dict, status
 
 
+
+# Implementado
 @evento_bp.route('/meusEventos', methods=['GET'])
 def meus_eventos():
     return Eventos_Service.listar_eventos_usuario()
 
 
+
+# Implementado
 @evento_bp.route('/editarEvento', methods=['PUT'])
 def EditarEvento():
 
@@ -79,6 +83,8 @@ def EditarEvento():
     return jsonify(resposta), status
 
 
+
+# Implementado
 @evento_bp.route('/deletarEvento', methods=['DELETE'])
 def deletar_evento_controller():
     # Obtém os dados do corpo da requisição JSON
@@ -95,16 +101,22 @@ def deletar_evento_controller():
     return jsonify(resposta), status
 
 
+
+# Implementado
 @evento_bp.route('/listarEventos', methods=['GET'])
 def listar_eventos():
     return Eventos_Service.listar_eventos()
 
 
+
+# Implementado
 @evento_bp.route('/listarTorneios', methods=['GET'])
 def listar_torneios():
     return Eventos_Service.listar_torneios()
 
 
+
+# Implementado
 @evento_bp.route('/participarEvento', methods=['POST'])
 def participar_evento():
     dados = request.get_json()
@@ -117,6 +129,8 @@ def participar_evento():
     return Eventos_Service.participar_evento(evento_id)
 
 
+
+# Implementado
 @evento_bp.route('/cancelarParticipacao', methods=['POST'])
 def cancelar_participacao_evento():
     dados = request.get_json()

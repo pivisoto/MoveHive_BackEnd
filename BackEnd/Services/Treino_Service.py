@@ -11,7 +11,7 @@ import firebase_admin
 bucket = storage.bucket()
 db = firestore.client()
 
-
+# Implementado
 @token_required
 def adicionar_treino(titulo, descricao, nome_esporte, data_hora_str, lugar, tempo_treinado, arquivo_imagem=None):
     usuario_id = g.user_id
@@ -78,6 +78,7 @@ def adicionar_treino(titulo, descricao, nome_esporte, data_hora_str, lugar, temp
     return treino.to_dict(), 201
 
 
+# Implementado
 @token_required
 def listar_treino_por_userID():
     usuario_id = g.user_id
@@ -107,7 +108,7 @@ def listar_treino_por_userID():
     return jsonify(treinos), 200
 
 
-
+# Implementado
 @token_required
 def excluir_treino_por_treinoID(treino_id):
     usuario_id = g.user_id
@@ -157,6 +158,7 @@ def excluir_treino_por_treinoID(treino_id):
     return {"mensagem": "Treino excluído com sucesso."}, 200
 
 
+# Implementado
 @token_required
 def atualizar_treino_por_treinoID(
     treino_id,
@@ -278,6 +280,7 @@ def atualizar_treino_por_treinoID(
     return treino_atualizado, 200
 
 
+# Implementado
 @token_required
 def listar_treino_por_treinoID(treino_id):
     usuario_id = g.user_id

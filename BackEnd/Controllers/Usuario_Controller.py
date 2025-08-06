@@ -6,6 +6,7 @@ import Services.Usuario_Service as usuario_service
 usuario_bp = Blueprint('usuario_bp', __name__, url_prefix="/usuario" )
 
 
+# Implementado
 @usuario_bp.route('/RegistrarUsuario', methods=['POST'])
 def registrarUsuario():
     data = request.get_json()
@@ -29,6 +30,7 @@ def registrarUsuario():
     return jsonify(resultado), 400
 
 
+# Implementado
 @usuario_bp.route('/LoginUsuario', methods=['POST'])
 def loginUsuario():
     data = request.get_json()
@@ -42,7 +44,7 @@ def loginUsuario():
     return jsonify(resposta), status
 
 
-
+# Implementado
 @usuario_bp.route('/DadosModal', methods=['POST'])
 def adicionar_informacoes():
     try:
@@ -54,7 +56,6 @@ def adicionar_informacoes():
 
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
-
 
 
 @usuario_bp.route('/MeuPerfil', methods=['GET'])
@@ -70,48 +71,6 @@ def meu_perfil():
         return jsonify({"erro": str(e)}), 500
 
 
-
-@usuario_bp.route('/ListarUsuarios', methods=['GET'])
-def listarUsuarios():
-    try:
-        usuarios = usuario_service.listar_usuarios()
-        return jsonify(usuarios), 200
-    except Exception as e:
-        print(f"Erro na rota listarUsuarios: {e}")
-        return jsonify({"erro": "Erro interno ao listarUsuarios"}), 500
-
-
-#exemplo http://localhost:5000/ListarSeguindo?username=joao
-@usuario_bp.route('/ListarSeguindo', methods=['GET'])
-def listarSeguidores():
-    try:
-        solicitacao = request.args.get('username')
-        seguindo = usuario_service.listar_seguindo(solicitacao)
-        return jsonify(seguindo), 200
-    except Exception as e:
-        print(f"Erro na rota listarUsuarios: {e}")
-        return jsonify({"erro": "Erro interno ao listarSeguindo"}), 500
-
-
-@usuario_bp.route('/ListarSeguidores', methods=['GET'])
-def listarSeguindo():
-    try:
-        solicitacao = request.args.get('username')
-        seguindo = usuario_service.listar_seguidores(solicitacao)
-        return jsonify(seguindo), 200
-    except Exception as e:
-        print(f"Erro na rota listarUsuarios: {e}")
-        return jsonify({"erro": "Erro interno ao listarSeguidores"}), 500
-
-
-@usuario_bp.route('/ExcluirUsuario/<usuario_id>', methods=['DELETE'])  
-def deletar_por_ID(usuario_id):
-    resposta, status = usuario_service.deletar_usuario_por_id(usuario_id)
-    return jsonify(resposta), status
-
-
-
-
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
 def editar():
     novos_dados = request.get_json()
@@ -124,24 +83,33 @@ def editar():
     return jsonify(resposta), status
 
 
-#exemplo http://127.0.0.1:5000/usuario/ToggleSeguir
-# utiliza, username de quem a pessoa quer seguir {"username":"pivisoto"}
-@usuario_bp.route('/ToggleSeguir', methods=['PUT'])
-def toggle_seguir():
-    solicitacao = request.get_json()
-    if not solicitacao:
-        return jsonify({"erro": "Nenhum usuario para seguir"}), 400
-    resposta, status = usuario_service.toggle_seguir_usuario(solicitacao)
+# Implementado
+@usuario_bp.route('/follow', methods=['POST'])
+def seguir_usuario():
+    dados = request.get_json()
+    seguido_id = dados.get('seguido_id')
 
+    if not seguido_id:
+        return jsonify({'erro': 'ID do usuário a ser seguido é obrigatório'}), 400
+
+    resposta, status = usuario_service.seguir_usuario(seguido_id)
+    return jsonify(resposta), status
+
+# Implementado
+@usuario_bp.route('/unfollow', methods=['POST'])
+def deixar_de_seguir_usuario():
+    dados = request.get_json()
+    seguido_id = dados.get('seguido_id')
+
+    if not seguido_id:
+        return jsonify({'erro': 'ID do usuário a ser removido é obrigatório'}), 400
+
+    resposta, status = usuario_service.deixar_de_seguir_usuario(seguido_id)
     return jsonify(resposta), status
 
 
-@usuario_bp.route('/BuscarUsuarioID', methods=['GET'])
-def buscar_usuario_por_id():
-
-    dados_usuario = usuario_service.buscar_usuario_por_id()
-
-    if not dados_usuario:
-        return jsonify({'erro': 'Usuário não encontrado!'}), 404
-
-    return jsonify(dados_usuario), 200
+# Implementado
+@usuario_bp.route('/usuarios', methods=['GET'])
+def listar_usuarios():
+    resposta, status = usuario_service.listar_usuarios()
+    return jsonify(resposta), status

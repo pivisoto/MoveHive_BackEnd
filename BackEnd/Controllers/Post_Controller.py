@@ -6,6 +6,7 @@ postagem_bp = Blueprint('postagem_bp', __name__, url_prefix="/postagem")
 
 
 # Rota para Criar Postagem
+# Implementado
 @postagem_bp.route('/CriarPostagem', methods=['POST'])
 def criarPostagem():
 
@@ -20,12 +21,16 @@ def criarPostagem():
     return post_dict, status
 
 
+
 # Rota para Listar Postagens
+# Implementado
 @postagem_bp.route('/ListarPostagens', methods=['GET'])
 def listarPostagensPorUserID():
     return Post_Service.listar_postagens_UserID()
 
 
+
+# Implementado
 @postagem_bp.route('/ExcluirPostagem', methods=['POST'])
 def ExcluirPostagem():
     dados = request.get_json()
@@ -38,6 +43,8 @@ def ExcluirPostagem():
     return Post_Service.deletar_postagem_por_Postid(postagem_id)
 
 
+
+# Implementado
 @postagem_bp.route('/EditarPostagem', methods=['PUT'])
 def EditarPostagem():
     post_id = request.form.get("post_id")
@@ -58,6 +65,8 @@ def EditarPostagem():
     return jsonify(post_dict), status
 
 
+
+# Implementado
 @postagem_bp.route('/FeedSemFiltro', methods=['GET'])
 def FeedSemFiltro():
     resultado = Post_Service.feed_sem_filtro()

@@ -4,7 +4,7 @@ from Services import Treino_Service
 
 treino_bp = Blueprint('treino_bp', __name__, url_prefix="/treino" )
 
-
+# Implementado
 @treino_bp.route('/AdicionarTreino', methods=['POST'])
 def criar_treino():
     titulo = request.form.get("titulo")
@@ -38,12 +38,15 @@ def criar_treino():
 
 
 
+# Implementado
 @treino_bp.route('/ListarTreino', methods=['GET'])
 def listar_treino():
     treino_list, status = Treino_Service.listar_treino_por_userID()
     return treino_list, status
 
 
+
+# Implementado
 @treino_bp.route('/ExcluirTreino', methods=['DELETE'])
 def excluir_treino():
     data = request.get_json()
@@ -57,6 +60,8 @@ def excluir_treino():
     return response, status
 
 
+
+# Implementado
 @treino_bp.route('/AtualizarTreino', methods=['PUT'])
 def atualizar_treino():
     treino_id = request.form.get('treino_id')
@@ -87,6 +92,8 @@ def atualizar_treino():
     return jsonify(response), status
 
 
+
+# Implementado
 @treino_bp.route('/ListarTreinoPorID', methods=['GET'])
 def listar_treino_por_id():
     treino_id = request.args.get('treino_id')

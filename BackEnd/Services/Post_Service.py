@@ -10,6 +10,7 @@ bucket = storage.bucket()
 
 
 # Função para Criar Postagem
+# Implementado
 @token_required
 def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0):
     usuario_id = g.user_id
@@ -40,7 +41,9 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
     return postagem.to_dict(), 201
 
 
+
 # Função para Listar Postagens
+# Implementado
 @token_required
 def listar_postagens_UserID():
     usuario_id = g.user_id
@@ -61,7 +64,9 @@ def listar_postagens_UserID():
         return jsonify({'mensagem': 'Erro ao buscar postagens.', 'erro': str(e)}), 500
 
 
+
 # Função para Deletar Postagem por ID
+# Implementado
 @token_required
 def deletar_postagem_por_Postid(postagem_id):
     usuario_id = g.user_id
@@ -99,7 +104,9 @@ def deletar_postagem_por_Postid(postagem_id):
     return {"mensagem": "Postagem excluída com sucesso."}, 200
 
 
+
 # Função para Editar Postagem por ID
+# Implementado
 @token_required
 def editar_postagem_por_id(post_id, descricao=None, imagem=None):
     usuario_id = g.user_id
@@ -146,6 +153,8 @@ def editar_postagem_por_id(post_id, descricao=None, imagem=None):
     return {"mensagem": "Postagem atualizada com sucesso."}, 200
 
 
+
+# Implementado
 @token_required
 def feed_sem_filtro():
     # Buscar as 10 últimas postagens (ordem decrescente por data_criacao)

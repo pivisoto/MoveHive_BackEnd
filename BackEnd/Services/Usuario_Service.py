@@ -11,14 +11,16 @@ import firebase_admin
 bucket = storage.bucket()
 db = firestore.client()
 
+
+# Implementado
 def calcular_idade(data_nascimento):
     hoje = date.today()
     idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
     return idade
 
 
-
 # Função para Registar Usuario
+# Implementado
 def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha):
     usuarios_ref = db.collection('Usuarios')
 
@@ -67,6 +69,7 @@ def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha
 
 
 # Função para Logar Usuario
+# Implementado
 def login_usuario(email, senha):
     usuarios_ref = db.collection('Usuarios')
     docs = usuarios_ref.where('email', '==', email).limit(1).stream()
@@ -84,7 +87,7 @@ def login_usuario(email, senha):
     return {"token": token}, 200
 
 
-
+# Implementado
 @token_required
 def adicionar_dados_modal(dados_modal, arquivo_foto=None):
     usuario_id = g.user_id
@@ -113,32 +116,9 @@ def adicionar_dados_modal(dados_modal, arquivo_foto=None):
     return {"status": "sucesso", "mensagem": "Informações atualizadas com sucesso"}, 200
 
 
-
-# Função para Listar Usuarios
-@token_required  
-def listar_usuarios():
-    usuarios = db.collection('Usuarios').stream()
-    lista = []
-    for doc in usuarios:
-        dados = doc.to_dict()
-        dados['id'] = doc.id  
-        lista.append(dados)   
-    return lista
-
-
-# Função para Deletar Usuario por ID
-@token_required  
-def deletar_usuario_por_id(usuario_id):
-    doc_ref = db.collection('Usuarios').document(usuario_id)
-    if not doc_ref.get().exists:
-        return {"erro": "Usuário não encontrado"}, 404
-
-    doc_ref.delete()
-    return {"status": "sucesso", "mensagem": "Usuário deletado com sucesso"}, 200
-
-
-
 # Função para Editar Usuario por ID
+# Implementado
+@token_required  
 def editar_usuario_por_id(novos_dados):
     usuario_id = g.user_id
     doc_ref = db.collection('Usuarios').document(usuario_id)
@@ -156,75 +136,7 @@ def editar_usuario_por_id(novos_dados):
     return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
 
 
-
-def toggle_seguir_usuario(solicitacao):
-    usuario_pedindo_id = '24873626-9b10-480e-b8e6-6cf661eebb6e'
-    username_seguido = solicitacao['username']
-
-    doc_ref_solicitante = db.collection('Usuarios').document(usuario_pedindo_id)
-    snapshot_solicitante = doc_ref_solicitante.get()
-
-    if not snapshot_solicitante.exists:
-        return {"erro": "Usuário solicitante não encontrado"}, 404
-
-    dados_solicitante = snapshot_solicitante.to_dict()
-    username_solicitante = dados_solicitante.get('username')
-
-    if not username_solicitante:
-        return {"erro": "Username do solicitante não encontrado"}, 400
-
-    usuarios_ref = db.collection('Usuarios')
-    query_seguido = usuarios_ref.where('username', '==', username_seguido).limit(1)
-    resultado_seguido = list(query_seguido.stream())
-
-    if not resultado_seguido:
-        return {"erro": "Usuário a ser seguido não encontrado"}, 404
-
-    doc_snapshot_seguido = resultado_seguido[0]
-    doc_ref_seguido = doc_snapshot_seguido.reference
-    dados_seguido = doc_snapshot_seguido.to_dict()
-
-    seguindo_solicitante = dados_solicitante.get('seguindo', [])
-    seguidores_seguido = dados_seguido.get('seguidores', [])
-
-    if username_seguido in seguindo_solicitante:
-        seguindo_solicitante.remove(username_seguido)
-        seguidores_seguido.remove(username_solicitante)
-        mensagem = "Você deixou de seguir o usuário"
-        status_code = 201
-    else:
-        seguindo_solicitante.append(username_seguido)
-        seguidores_seguido.append(username_solicitante)
-        mensagem = "Você começou a seguir o usuário"
-        status_code = 200
-
-    doc_ref_solicitante.update({"seguindo": seguindo_solicitante})
-    doc_ref_seguido.update({"seguidores": seguidores_seguido})
-    return {"status": "sucesso", "mensagem": "Lista de seguidores e seguindo atualizadas com sucesso"}, 200 
-
-
-def listar_seguindo(username):
-    usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('username', '==', username).limit(1)
-    resultados = query.stream()
-    for doc in resultados:
-        dados_usuario = doc.to_dict()
-        seguindo = dados_usuario.get('seguindo', [])
-        return seguindo
-    return {"erro": "Usuário não encontrado"}, 404
-     
-
-def listar_seguidores(username):
-    usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('username', '==', username).limit(1)
-    resultados = query.stream()
-    for doc in resultados:
-        dados_usuario = doc.to_dict()
-        seguidores = dados_usuario.get('seguidores', [])
-        return seguidores
-    return {"erro": "Usuário não encontrado"}, 404
-
-   
+# Implementado
 @token_required 
 def buscar_usuario_por_id():
     usuario_id = g.user_id
@@ -235,3 +147,104 @@ def buscar_usuario_por_id():
         return jsonify({'erro': 'Usuário não encontrado!'}), 404
 
     return usuario.to_dict()
+
+
+# Implementado
+@token_required
+def seguir_usuario(seguido_id):
+    try:
+        usuario_id = g.user_id
+
+        if seguido_id == usuario_id:
+            return {'erro': 'Você não pode seguir a si mesmo'}, 400
+
+        usuario_ref = db.collection('Usuarios').document(usuario_id)
+        seguido_ref = db.collection('Usuarios').document(seguido_id)
+
+        if not usuario_ref.get().exists or not seguido_ref.get().exists:
+            return {'erro': 'Usuário(s) não encontrado(s)'}, 404
+
+        usuario_ref.update({
+            'seguindo': firestore.ArrayUnion([seguido_id])
+        })
+
+        seguido_ref.update({
+            'seguidores': firestore.ArrayUnion([usuario_id])
+        })
+
+        return {'mensagem': 'Usuário seguido com sucesso!'}, 200
+
+    except Exception as e:
+        return {'erro': str(e)}, 500
+    
+
+# Implementado
+@token_required
+def deixar_de_seguir_usuario(seguido_id):
+    try:
+        usuario_id = g.user_id
+
+        if seguido_id == usuario_id:
+            return {'erro': 'Você não pode deixar de seguir a si mesmo'}, 400
+
+        usuario_ref = db.collection('Usuarios').document(usuario_id)
+        seguido_ref = db.collection('Usuarios').document(seguido_id)
+
+        if not usuario_ref.get().exists or not seguido_ref.get().exists:
+            return {'erro': 'Usuário(s) não encontrado(s)'}, 404
+
+        usuario_ref.update({
+            'seguindo': firestore.ArrayRemove([seguido_id])
+        })
+
+        seguido_ref.update({
+            'seguidores': firestore.ArrayRemove([usuario_id])
+        })
+
+        return {'mensagem': 'Usuário deixado de seguir com sucesso!'}, 200
+
+    except Exception as e:
+        return {'erro': str(e)}, 500
+    
+
+# Implementado
+@token_required
+def listar_usuarios():
+    try:
+        usuario_logado_id = g.user_id
+
+        usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
+        usuario_logado_doc = usuario_logado_ref.get()
+
+        if not usuario_logado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
+        
+        todos_os_usuarios_ref = db.collection('Usuarios').stream()
+
+        usuarios_sugeridos = []
+        for doc in todos_os_usuarios_ref:
+            
+            if doc.id == usuario_logado_id:
+                continue 
+
+            dados = doc.to_dict()
+            
+            is_followed = doc.id in lista_seguindo
+
+            usuarios_sugeridos.append({
+                'id': doc.id, 
+                'username': dados.get('username'),
+                'nome_completo': dados.get('nome_completo'),
+                'foto_perfil': dados.get('foto_perfil'),
+                'biografia': dados.get('biografia', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {}),
+                'is_followed_by_me': is_followed  
+            })
+
+        return {'usuarios': usuarios_sugeridos}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_usuarios: {e}") 
+        return {'erro': str(e)}, 500
