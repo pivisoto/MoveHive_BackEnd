@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import random
 import bcrypt
 from firebase_admin import firestore, credentials, storage
 from flask import g, jsonify
@@ -209,7 +210,7 @@ def deixar_de_seguir_usuario(seguido_id):
 
 # Implementado
 @token_required
-def listar_usuarios():
+def listar_usuarios_sem_filtro():
     try:
         usuario_logado_id = g.user_id
 
@@ -220,18 +221,19 @@ def listar_usuarios():
             return {'erro': 'Usuário autenticado não encontrado'}, 404
 
         lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
-        
+
         todos_os_usuarios_ref = db.collection('Usuarios').stream()
 
         usuarios_sugeridos = []
         for doc in todos_os_usuarios_ref:
             
             if doc.id == usuario_logado_id:
-                continue 
+                continue  # não incluir eu mesmo
+            
+            if doc.id in lista_seguindo:
+                continue  # não incluir quem já sigo
 
             dados = doc.to_dict()
-            
-            is_followed = doc.id in lista_seguindo
 
             usuarios_sugeridos.append({
                 'id': doc.id, 
@@ -239,12 +241,144 @@ def listar_usuarios():
                 'nome_completo': dados.get('nome_completo'),
                 'foto_perfil': dados.get('foto_perfil'),
                 'biografia': dados.get('biografia', ''),
-                'esportes_praticados': dados.get('esportes_praticados', {}),
-                'is_followed_by_me': is_followed  
+                'cidade': dados.get('cidade', ''),
+                'estado': dados.get('estado', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {})
             })
 
         return {'usuarios': usuarios_sugeridos}, 200
 
     except Exception as e:
         print(f"Erro em listar_usuarios: {e}") 
+        return {'erro': str(e)}, 500
+    
+    
+# Implementado
+@token_required
+def listar_usuarios_com_filtro():
+    try:
+        usuario_logado_id = g.user_id
+        usuario_logado_doc = db.collection('Usuarios').document(usuario_logado_id).get()
+
+        if not usuario_logado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        usuario_logado = usuario_logado_doc.to_dict()
+        lista_seguindo = set(usuario_logado.get('seguindo', []))
+        meus_esportes = set(usuario_logado.get('esportes_praticados', {}))
+        minha_cidade = usuario_logado.get('cidade', '')
+        meu_estado = usuario_logado.get('estado', '')
+
+        def buscar_usuarios(criterio_relaxado=False):
+            usuarios = []
+            for doc in db.collection('Usuarios').stream():
+                if doc.id == usuario_logado_id:
+                    continue
+                if doc.id in lista_seguindo:
+                    continue
+
+                dados = doc.to_dict()
+                esportes_usuario = set(dados.get('esportes_praticados', {}))
+                mesma_cidade = dados.get('cidade') == minha_cidade and minha_cidade != ''
+                mesmo_estado = dados.get('estado') == meu_estado and meu_estado != ''
+
+                # Se não for busca relaxada, exige pelo menos um critério
+                if not criterio_relaxado:
+                    if not (mesma_cidade or mesmo_estado or len(meus_esportes.intersection(esportes_usuario)) > 0):
+                        continue
+
+                score = 0
+                score += 3 * len(meus_esportes.intersection(esportes_usuario))
+                if mesma_cidade:
+                    score += 5
+                elif mesmo_estado:
+                    score += 3
+
+                seguindo_do_outro = set(dados.get('seguindo', []))
+                if lista_seguindo.intersection(seguindo_do_outro):
+                    score += 2
+
+                score += random.choice([0, 1])
+
+                usuarios.append({
+                    'id': doc.id,
+                    'username': dados.get('username'),
+                    'nome_completo': dados.get('nome_completo'),
+                    'foto_perfil': dados.get('foto_perfil'),
+                    'biografia': dados.get('biografia', ''),
+                    'cidade': dados.get('cidade', ''),
+                    'estado': dados.get('estado', ''),
+                    'esportes_praticados': dados.get('esportes_praticados', {}),
+                    'is_followed_by_me': False,
+                    'score': score
+                })
+            return usuarios
+
+        # 1️⃣ Tenta com o filtro normal
+        usuarios_sugeridos = buscar_usuarios()
+
+        # 2️⃣ Se não achar nada, relaxa o critério
+        if not usuarios_sugeridos:
+            usuarios_sugeridos = buscar_usuarios(criterio_relaxado=True)
+
+        # 3️⃣ Se ainda não achar, pega usuários aleatórios
+        if not usuarios_sugeridos:
+            todos = list(db.collection('Usuarios').stream())
+            usuarios_sugeridos = [{
+                'id': doc.id,
+                'username': doc.to_dict().get('username'),
+                'nome_completo': doc.to_dict().get('nome_completo'),
+                'foto_perfil': doc.to_dict().get('foto_perfil'),
+                'biografia': doc.to_dict().get('biografia', ''),
+                'cidade': doc.to_dict().get('cidade', ''),
+                'estado': doc.to_dict().get('estado', ''),
+                'esportes_praticados': doc.to_dict().get('esportes_praticados', {}),
+                'is_followed_by_me': False,
+                'score': 0
+            } for doc in todos if doc.id != usuario_logado_id and doc.id not in lista_seguindo]
+
+        # Ordena pela pontuação
+        usuarios_sugeridos.sort(key=lambda x: x['score'], reverse=True)
+
+        return {'usuarios': usuarios_sugeridos[:15]}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_usuarios_por_score: {e}")
+        return {'erro': str(e)}, 500
+    
+
+@token_required
+def listar_usuarios_seguindo():
+    try:
+        usuario_logado_id = g.user_id
+        usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
+        usuario_logado_doc = usuario_logado_ref.get()
+
+        if not usuario_logado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
+
+        usuarios_seguindo = []
+        for user_id in lista_seguindo:
+            user_doc = db.collection('Usuarios').document(user_id).get()
+            if not user_doc.exists:
+                continue  # pula caso o usuário não exista mais
+
+            dados = user_doc.to_dict()
+            usuarios_seguindo.append({
+                'id': user_id,
+                'username': dados.get('username'),
+                'nome_completo': dados.get('nome_completo'),
+                'foto_perfil': dados.get('foto_perfil'),
+                'biografia': dados.get('biografia', ''),
+                'cidade': dados.get('cidade', ''),
+                'estado': dados.get('estado', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {})
+            })
+
+        return {'usuarios_seguindo': usuarios_seguindo}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_usuarios_seguindo: {e}")
         return {'erro': str(e)}, 500

@@ -100,8 +100,39 @@
         .page-title {
             font-size: 1.2rem;
             font-weight: 600;
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             color: var(--text-color);
+        }
+        
+        .filter-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .filter-button {
+            flex: 1;
+            padding: 8px 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid var(--border-color);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s;
+            text-align: center;
+        }
+
+        .filter-button:hover {
+            background-color: #f5f5f5;
+        }
+        
+        .filter-button.active {
+            background-color: var(--accent-color);
+            border-color: #e6c300;
+            color: #333;
         }
 
         .user-entry {
@@ -145,6 +176,11 @@
             font-size: 0.85rem;
             color: #8e8e8e;
             margin: 0;
+            line-height: 1.3;
+        }
+
+        .user-location i {
+            margin-right: 4px;
         }
 
         .follow-button {
@@ -263,6 +299,15 @@
             margin-top: 2px;
         }
 
+        .modal-location {
+            font-size: 0.9rem;
+            color: #8e8e8e;
+            margin-top: 5px;
+        }
+        .modal-location i {
+            margin-right: 5px;
+        }
+
         .modal-body p {
             font-size: 0.95rem;
             margin-bottom: 15px;
@@ -350,6 +395,11 @@
 
         <main class="user-list-container" id="userListContainer">
             <h2 class="page-title">Sugestões para você</h2>
+            <div class="filter-container">
+                <button class="filter-button" id="filter-random">Aleatório</button>
+                <button class="filter-button" id="filter-suggestions">Sugestões</button>
+                <button class="filter-button" id="filter-following">Seguindo</button>
+            </div>
         </main>
         
         <nav class="bottom-nav">
@@ -370,6 +420,7 @@
                     <img src="" alt="Avatar do usuário" id="modalUserAvatar" class="modal-avatar">
                     <h2 id="modalUsername" class="modal-username"></h2>
                     <p id="modalUserFullName" class="modal-fullname"></p>
+                    <p id="modalUserLocation" class="modal-location"></p>
                 </div>
                 <div class="modal-body">
                     <p id="modalUserBio"></p>
@@ -380,14 +431,17 @@
         </div>
     </div>
 
-
     <script>
         const baseUrl = 'http://127.0.0.1:5000';
-        const usuariosApiUrl = `${baseUrl}/usuario/usuarios`;
+        
+        const randomUsersApiUrl = `${baseUrl}/usuario/usuariosSemFiltro`;
+        const suggestionsApiUrl = `${baseUrl}/usuario/usuariosComFiltro`; 
+        const followingApiUrl = `${baseUrl}/usuario/usuariosSeguidos`; // NOVA URL
+        
         const followApiUrl = `${baseUrl}/usuario/follow`;
         const unfollowApiUrl = `${baseUrl}/usuario/unfollow`;
 
-        function createUserEntryElement(user) {
+        function createUserEntryElement(user, options = {}) {
             const userEntry = document.createElement('div');
             userEntry.className = 'user-entry';
             userEntry.dataset.userId = user.id;
@@ -396,17 +450,29 @@
             const fullName = user.nome_completo || 'Nome não informado';
             const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=45&background=e0e0e0&color=333`;
             
-            // --> AQUI ESTÁ A LÓGICA <--
-            // 1. Lê o campo `is_followed_by_me` que o backend agora envia.
-            const isFollowed = user.is_followed_by_me || false;
+            // Se a lista for de pessoas que eu sigo, todos já vêm como "seguindo"
+            const isFollowed = options.isFollowingList ? true : (user.is_followed_by_me || false);
+            
+            let locationString = '';
+            if (user.cidade && user.estado) {
+                locationString = `${user.cidade}, ${user.estado}`;
+            } else if (user.cidade) {
+                locationString = user.cidade;
+            } else if (user.estado) {
+                locationString = user.estado;
+            }
+            
+            const locationElement = locationString 
+                ? `<p class="user-location"><i class="fas fa-map-marker-alt"></i>${locationString}</p>`
+                : '<p class="user-location">&nbsp;</p>';
 
-            // 2. Usa a variável `isFollowed` para definir o estado inicial do botão.
             userEntry.innerHTML = `
                 <div class="user-info">
                     <img src="${userAvatar}" alt="Avatar de ${userName}" class="user-avatar">
                     <div class="user-details">
                         <h3>${userName}</h3>
                         <p>${fullName}</p>
+                        ${locationElement}
                     </div>
                 </div>
                 <button class="follow-button ${isFollowed ? 'followed' : ''}">${isFollowed ? 'Seguindo' : 'Seguir'}</button>
@@ -414,7 +480,6 @@
 
             const followButton = userEntry.querySelector('.follow-button');
             
-            // 3. O evento de clique continua funcionando para inverter o estado atual.
             followButton.addEventListener('click', async (e) => {
                 e.stopPropagation();
                 const token = localStorage.getItem('jwtToken');
@@ -428,6 +493,19 @@
                     
                     followButton.classList.toggle('followed');
                     followButton.textContent = isCurrentlyFollowed ? 'Seguir' : 'Seguindo';
+                    
+                    // Se estivermos na aba "Seguindo" e o usuário der unfollow, removemos o item da lista.
+                    if (isCurrentlyFollowed && options.isFollowingList) {
+                        userEntry.remove();
+                         // Verifica se a lista ficou vazia
+                        const container = document.getElementById('userListContainer');
+                        if (!container.querySelector('.user-entry')) {
+                             const emptyMessage = document.createElement('p');
+                             emptyMessage.className = 'empty-message';
+                             emptyMessage.textContent = 'Você não está seguindo ninguém.';
+                             container.appendChild(emptyMessage);
+                        }
+                    }
 
                 } catch (error) {
                     console.error('Falha ao atualizar status de "seguir":', error);
@@ -463,22 +541,36 @@
                 throw new Error(errorData.erro || 'Ocorreu um erro na requisição.');
             }
 
-            const result = await response.json();
-            console.log(result.mensagem);
-            return result;
+            return await response.json();
         }
         
         function showUserDetailsModal(user) {
             const modal = document.getElementById('userModal');
             const userName = user.username || 'usuário';
-            
             const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=90&background=e0e0e0&color=333`;
+
+            let locationString = '';
+            if (user.cidade && user.estado) {
+                locationString = `${user.cidade}, ${user.estado}`;
+            } else if (user.cidade) {
+                locationString = user.cidade;
+            } else if (user.estado) {
+                locationString = user.estado;
+            }
 
             document.getElementById('modalUserId').value = user.id;
             document.getElementById('modalUserAvatar').src = userAvatar;
             document.getElementById('modalUserAvatar').alt = `Avatar de ${userName}`;
             document.getElementById('modalUsername').textContent = userName;
             document.getElementById('modalUserFullName').textContent = user.nome_completo || 'Nome não informado';
+            
+            const modalLocation = document.getElementById('modalUserLocation');
+            if (locationString) {
+                modalLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i>${locationString}`;
+            } else {
+                modalLocation.innerHTML = '';
+            }
+
             document.getElementById('modalUserBio').textContent = user.biografia || 'Nenhuma biografia informada.';
 
             const sportsList = document.getElementById('modalUserSports');
@@ -499,19 +591,21 @@
             modal.style.display = 'flex';
         }
 
-        async function fetchAndDisplayUsers(token) {
+        async function fetchAndDisplayUsers(token, apiUrl, options = {}) {
             const container = document.getElementById('userListContainer');
-            
-            const pageTitle = container.querySelector('.page-title');
-            container.innerHTML = ''; 
-            container.appendChild(pageTitle); 
+            const pageTitle = document.querySelector('.page-title');
+            pageTitle.textContent = options.title || 'Sugestões para você';
+
+            const oldEntries = container.querySelectorAll('.user-entry, .loading-message, .error-message, .empty-message');
+            oldEntries.forEach(entry => entry.remove());
+
             const loadingMessage = document.createElement('p');
             loadingMessage.className = 'loading-message';
             loadingMessage.textContent = 'Carregando usuários...';
             container.appendChild(loadingMessage);
 
             try {
-                const response = await fetch(usuariosApiUrl, {
+                const response = await fetch(apiUrl, {
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -527,28 +621,31 @@
                 }
 
                 const data = await response.json();
-                const users = data.usuarios;
+                // ALTERAÇÃO: Adicionado suporte para a chave 'usuarios_seguindo'
+                const users = data.usuarios || data.seguidores || data.usuarios_seguindo; 
 
                 if (Array.isArray(users) && users.length > 0) {
                     users.forEach(user => {
-                        const userElement = createUserEntryElement(user);
+                        // Passa a opção para a função de criação do elemento
+                        const userElement = createUserEntryElement(user, { isFollowingList: (apiUrl === followingApiUrl) });
                         container.appendChild(userElement);
                     });
                 } else {
                     const emptyMessage = document.createElement('p');
                     emptyMessage.className = 'empty-message';
-                    emptyMessage.textContent = 'Nenhum usuário encontrado para sugerir.';
+                    emptyMessage.textContent = options.emptyText || 'Nenhum usuário encontrado.';
                     container.appendChild(emptyMessage);
                 }
 
             } catch (error) {
                 console.error("Falha ao carregar a lista de usuários:", error);
                 
-                container.innerHTML = '';
-                container.appendChild(pageTitle);
+                const oldError = container.querySelector('.error-message');
+                if(oldError) oldError.remove();
+
                 const errorMessage = document.createElement('p');
                 errorMessage.className = 'error-message';
-                errorMessage.textContent = `Não foi possível carregar as sugestões. ${error.message}`;
+                errorMessage.textContent = `Não foi possível carregar os usuários. ${error.message}`;
                 container.appendChild(errorMessage);
             }
         }
@@ -557,14 +654,43 @@
             const token = localStorage.getItem('jwtToken');
             const modal = document.getElementById('userModal');
             const closeButton = document.querySelector('.close-button');
+            
+            const filterRandomBtn = document.getElementById('filter-random');
+            const filterSuggestionsBtn = document.getElementById('filter-suggestions');
+            const filterFollowingBtn = document.getElementById('filter-following'); // ID ATUALIZADO
+            const filterButtons = [filterRandomBtn, filterSuggestionsBtn, filterFollowingBtn];
 
             if (!token) {
                 alert("Autenticação necessária. Redirecionando para o login.");
                 window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
                 return;
             }
+            
+            const setActiveFilter = (activeButton) => {
+                filterButtons.forEach(button => {
+                    button.classList.remove('active');
+                });
+                activeButton.classList.add('active');
+            };
 
-            fetchAndDisplayUsers(token);
+            filterRandomBtn.addEventListener('click', () => {
+                setActiveFilter(filterRandomBtn);
+                fetchAndDisplayUsers(token, randomUsersApiUrl, { title: 'Sugestões para você (Aleatório)', emptyText: 'Nenhum usuário encontrado.' });
+            });
+
+            filterSuggestionsBtn.addEventListener('click', () => {
+                setActiveFilter(filterSuggestionsBtn);
+                fetchAndDisplayUsers(token, suggestionsApiUrl, { title: 'Sugestões para você (Com Filtro)', emptyText: 'Nenhuma sugestão encontrada.' });
+            });
+            
+            // EVENTO ATUALIZADO
+            filterFollowingBtn.addEventListener('click', () => {
+                setActiveFilter(filterFollowingBtn);
+                fetchAndDisplayUsers(token, followingApiUrl, { title: 'Quem você segue', emptyText: 'Você ainda não segue ninguém.' });
+            });
+            
+            setActiveFilter(filterRandomBtn);
+            fetchAndDisplayUsers(token, randomUsersApiUrl, { title: 'Sugestões para você (Aleatório)' });
             
             closeButton.onclick = () => {
                 modal.style.display = 'none';
