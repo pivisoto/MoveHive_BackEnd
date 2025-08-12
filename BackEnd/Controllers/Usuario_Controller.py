@@ -107,21 +107,19 @@ def deixar_de_seguir_usuario():
     resposta, status = usuario_service.deixar_de_seguir_usuario(seguido_id)
     return jsonify(resposta), status
 
-
 # Implementado
 @usuario_bp.route('/usuariosSemFiltro', methods=['GET'])
 def listar_usuarios_sem_filtro():
     resposta, status = usuario_service.listar_usuarios_sem_filtro()
     return jsonify(resposta), status
 
-
+# Implementado
 @usuario_bp.route('/usuariosComFiltro', methods=['GET'])
 def listar_usuarios_com_filtro():
     resposta, status = usuario_service.listar_usuarios_com_filtro()
     return jsonify(resposta), status
 
-
-
+# Implementado
 @usuario_bp.route('/usuariosSeguidos', methods=['GET'])
 def listar_usuarios_seguidos():
     resposta, status = usuario_service.listar_usuarios_seguindo()

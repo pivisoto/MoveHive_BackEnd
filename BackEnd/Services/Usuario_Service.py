@@ -251,8 +251,7 @@ def listar_usuarios_sem_filtro():
     except Exception as e:
         print(f"Erro em listar_usuarios: {e}") 
         return {'erro': str(e)}, 500
-    
-    
+        
 # Implementado
 @token_required
 def listar_usuarios_com_filtro():
@@ -282,23 +281,9 @@ def listar_usuarios_com_filtro():
                 mesma_cidade = dados.get('cidade') == minha_cidade and minha_cidade != ''
                 mesmo_estado = dados.get('estado') == meu_estado and meu_estado != ''
 
-                # Se não for busca relaxada, exige pelo menos um critério
                 if not criterio_relaxado:
                     if not (mesma_cidade or mesmo_estado or len(meus_esportes.intersection(esportes_usuario)) > 0):
                         continue
-
-                score = 0
-                score += 3 * len(meus_esportes.intersection(esportes_usuario))
-                if mesma_cidade:
-                    score += 5
-                elif mesmo_estado:
-                    score += 3
-
-                seguindo_do_outro = set(dados.get('seguindo', []))
-                if lista_seguindo.intersection(seguindo_do_outro):
-                    score += 2
-
-                score += random.choice([0, 1])
 
                 usuarios.append({
                     'id': doc.id,
@@ -308,20 +293,15 @@ def listar_usuarios_com_filtro():
                     'biografia': dados.get('biografia', ''),
                     'cidade': dados.get('cidade', ''),
                     'estado': dados.get('estado', ''),
-                    'esportes_praticados': dados.get('esportes_praticados', {}),
-                    'is_followed_by_me': False,
-                    'score': score
+                    'esportes_praticados': dados.get('esportes_praticados', {})
                 })
             return usuarios
 
-        # 1️⃣ Tenta com o filtro normal
         usuarios_sugeridos = buscar_usuarios()
 
-        # 2️⃣ Se não achar nada, relaxa o critério
         if not usuarios_sugeridos:
             usuarios_sugeridos = buscar_usuarios(criterio_relaxado=True)
 
-        # 3️⃣ Se ainda não achar, pega usuários aleatórios
         if not usuarios_sugeridos:
             todos = list(db.collection('Usuarios').stream())
             usuarios_sugeridos = [{
@@ -332,21 +312,17 @@ def listar_usuarios_com_filtro():
                 'biografia': doc.to_dict().get('biografia', ''),
                 'cidade': doc.to_dict().get('cidade', ''),
                 'estado': doc.to_dict().get('estado', ''),
-                'esportes_praticados': doc.to_dict().get('esportes_praticados', {}),
-                'is_followed_by_me': False,
-                'score': 0
+                'esportes_praticados': doc.to_dict().get('esportes_praticados', {})
             } for doc in todos if doc.id != usuario_logado_id and doc.id not in lista_seguindo]
 
-        # Ordena pela pontuação
-        usuarios_sugeridos.sort(key=lambda x: x['score'], reverse=True)
-
-        return {'usuarios': usuarios_sugeridos[:15]}, 200
+        return {'usuarios': usuarios_sugeridos}, 200
 
     except Exception as e:
-        print(f"Erro em listar_usuarios_por_score: {e}")
+        print(f"Erro em listar_usuarios_com_filtro: {e}")
         return {'erro': str(e)}, 500
-    
 
+    
+# Implementado
 @token_required
 def listar_usuarios_seguindo():
     try:
