@@ -581,6 +581,125 @@ paths:
                     type: string
                     example: "Descrição do erro interno"
 
+  /usuario/rankingTodos:
+    get:
+      summary: Lista o ranking de usuários
+      description: Retorna a lista de usuários com pontos maiores que zero, ordenados do maior para o menor.
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuários no ranking
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nome_completo:
+                      type: string
+                      example: João Silva
+                    username:
+                      type: string
+                      example: joaosilva
+                    pontos:
+                      type: integer
+                      example: 120
+                    foto_perfil:
+                      type: string
+                      format: uri
+                      example: https://exemplo.com/imagem.jpg
+        '401':
+          description: Token de autenticação inválido ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro inesperado no servidor.
+  
+  /usuario/rankingSeguindo:
+    get:
+      summary: Lista o ranking dos usuários seguidos
+      description: >
+        Retorna a lista de usuários que o usuário autenticado está seguindo, incluindo ele próprio,
+        ordenados do maior para o menor número de pontos.
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de usuários no ranking dos seguidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    nome_completo:
+                      type: string
+                      example: Maria Oliveira
+                    username:
+                      type: string
+                      example: mariaoliveira
+                    pontos:
+                      type: integer
+                      example: 95
+                    foto_perfil:
+                      type: string
+                      format: uri
+                      example: https://exemplo.com/imagem_maria.jpg
+        '401':
+          description: Token de autenticação inválido ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
+        '404':
+          description: Usuário autenticado não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Usuário autenticado não encontrado no banco de dados
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro inesperado no servidor.
+
+    
+
+
 # Esporte
  
   /esportes/ListarEsportes:
@@ -945,7 +1064,7 @@ paths:
                     type: string
                     example: "Evento não encontrado."
 
-  /evento/listarEvento:
+  /evento/listarEventos:
     get:
       tags:
         - Eventos
@@ -1021,7 +1140,7 @@ paths:
         '500':
           description: Erro interno do servidor
 
-  /evento/listarTorneio:
+  /evento/listarTorneios:
     get:
       tags:
         - Eventos

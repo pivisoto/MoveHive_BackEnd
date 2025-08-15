@@ -7,6 +7,9 @@ from Models.Usuario_Model import Usuario
 from middlewares.generate_token import generate_token
 from middlewares.auth_token import token_required
 import firebase_admin
+import logging
+from firebase_admin import firestore
+
 
 
 bucket = storage.bucket()
@@ -358,3 +361,77 @@ def listar_usuarios_seguindo():
     except Exception as e:
         print(f"Erro em listar_usuarios_seguindo: {e}")
         return {'erro': str(e)}, 500
+    
+
+# Implementado
+@token_required
+def competicao_usuarios_todos():
+    try:
+        # Filtra apenas usuários com pontos > 0
+        usuarios_ref = (
+            db.collection('Usuarios')
+            .where('pontos', '>', 0)
+            .order_by('pontos', direction=firestore.Query.DESCENDING)
+            .stream()
+        )
+
+        usuarios = []
+        for doc in usuarios_ref:
+            dados = doc.to_dict()
+
+            usuario_filtrado = {
+                'nome_completo': dados.get('nome_completo'),
+                'username': dados.get('username'),
+                'pontos': dados.get('pontos'),
+                'foto_perfil': dados.get('foto_perfil')
+            }
+            usuarios.append(usuario_filtrado)
+
+        return jsonify(usuarios), 200
+
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500
+    
+    
+    
+# Implementado
+@token_required
+def competicao_usuarios_seguindo():
+    try:
+        
+        usuario_atual_id = g.user_id
+
+        usuario_doc_ref = db.collection('Usuarios').document(usuario_atual_id)
+        usuario_doc = usuario_doc_ref.get()
+
+        if not usuario_doc.exists:
+            return jsonify({'erro': 'Usuário autenticado não encontrado no banco de dados'}), 404
+            
+        dados_usuario_atual = usuario_doc.to_dict()
+
+
+        ids_seguindo = dados_usuario_atual.get('seguindo', [])
+
+
+        ids_para_buscar = set(ids_seguindo)
+        ids_para_buscar.add(usuario_atual_id)
+
+        usuarios = []
+        for user_id in ids_para_buscar:
+            doc_ref = db.collection('Usuarios').document(user_id).get()
+            if doc_ref.exists:
+                dados = doc_ref.to_dict()
+                
+                usuario_filtrado = {
+                    'nome_completo': dados.get('nome_completo'),
+                    'username': dados.get('username'),
+                    'pontos': dados.get('pontos', 0), 
+                    'foto_perfil': dados.get('foto_perfil')
+                }
+                usuarios.append(usuario_filtrado)
+
+        usuarios_ordenados = sorted(usuarios, key=lambda u: u['pontos'], reverse=True)
+
+        return jsonify(usuarios_ordenados), 200
+    except Exception as e:
+        return jsonify({'erro': str(e)}), 500

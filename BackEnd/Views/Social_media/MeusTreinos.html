@@ -413,6 +413,33 @@
             border-radius: 4px;
         }
 
+        /* --- ESTILO PARA O BOTÃO DE COMPETIÇÃO --- */
+        .competition-button-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .competition-button {
+            display: inline-block;
+            text-decoration: none;
+            background-color: var(--accent-color);
+            color: #333;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+        }
+
+        .competition-button:hover {
+            background-color: #e6c300;
+            transform: translateY(-2px);
+        }
+        /* --- FIM DO ESTILO --- */
+
 
         @media (min-width: 601px) {
             .app-container {
@@ -439,6 +466,13 @@
         </header>
 
         <main class="page-content">
+            
+            <!-- BOTÃO ADICIONADO -->
+            <div class="competition-button-container">
+                <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Competicao.html" class="competition-button">Ir para Competição</a>
+            </div>
+            <!-- FIM DO BOTÃO ADICIONADO -->
+
             <div id="treinos-list-container">
                 <p class="loading-indicator">Carregando treinos...</p>
             </div>

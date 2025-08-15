@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Competição - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --success-color: #5cb85c;
+            --danger-color: #d9534f;
+            --info-color: #5bc0de;
+            --podium-blue: #3A8DFF; /* Cor principal do pódio */
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 600px;
+            background-color: var(--secondary-color); /* Fundo branco para a área do ranking */
+            position: relative;
+            min-height: 100vh;
+        }
+
+        .app-header {
+            background-color: var(--secondary-color);
+            padding: 10px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo-area h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .honeycomb-logo {
+            width: 30px;
+            height: 26px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .honeycomb-logo div {
+            width: 10px;
+            height: 11.54px;
+            background-color: var(--accent-color);
+            margin: 0.5px;
+            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+        }
+        .honeycomb-logo div:nth-child(4),
+        .honeycomb-logo div:nth-child(5),
+        .honeycomb-logo div:nth-child(6),
+        .honeycomb-logo div:nth-child(7) {
+            transform: translateX(5px);
+        }
+
+        .header-actions i {
+            font-size: 1.5rem;
+            margin-left: 20px;
+            cursor: pointer;
+            color: #555;
+        }
+
+        .page-content {
+            padding: 0 0 140px 0; /* Removido padding superior e lateral */
+        }
+
+        /* --- ESTILOS DO RANKING --- */
+        .ranking-header {
+            padding: 20px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ranking-header h2 {
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        /* ======== INÍCIO DAS ALTERAÇÕES DE ESTILO ======== */
+        .ranking-toggle-button {
+            background-color: #e4e6eb;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: var(--text-color);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .ranking-toggle-button:hover {
+            background-color: #d8dbdf;
+        }
+        /* ======== FIM DAS ALTERAÇÕES DE ESTILO ======== */
+
+
+        .podium-section {
+            background: linear-gradient(180deg, var(--podium-blue) 0%, #69aaff 100%);
+            padding: 30px 15px 0 15px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 5px; /* Espaçamento entre os pódios */
+            position: relative;
+            min-height: 228px; /* Altura mínima para evitar colapso enquanto carrega */
+        }
+
+        .podium-place {
+            text-align: center;
+            width: 30%;
+        }
+
+        .podium-place .podium-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            border: 3px solid white;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            object-fit: cover;
+            margin: 0 auto 10px auto;
+            display: block;
+            background-color: #eee; /* Cor de fundo para o placeholder da imagem */
+        }
+
+        .podium-place .podium-name {
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+        }
+
+        .podium-place .podium-score {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.8rem;
+            margin-bottom: 15px;
+        }
+
+        .podium-rank-bar {
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.5rem;
+        }
+
+        @keyframes floatAnimation {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
+
+        .podium-place.first {
+            animation: floatAnimation 3s ease-in-out infinite;
+        }
+
+        .podium-place.first .podium-rank-bar {
+            height: 100px;
+            background-color: #FFB800; /* Dourado */
+        }
+        .podium-place.second .podium-rank-bar {
+            height: 70px;
+            background-color: #C0C0C0; /* Prata */
+        }
+        .podium-place.third .podium-rank-bar {
+            height: 50px;
+            background-color: #CD7F32; /* Bronze */
+        }
+
+        .podium-place.first .podium-avatar {
+             width: 80px;
+             height: 80px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            padding: 10px 15px;
+            background-color: var(--secondary-color);
+        }
+
+        .leaderboard-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 1px solid var(--border-color); /* Adicionado contorno */
+            border-radius: 12px; /* Bordas arredondadas */
+            margin-bottom: 8px; /* Espaçamento entre os itens */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04); /* Sombra suave */
+        }
+
+        .leaderboard-item:last-child {
+            margin-bottom: 0; /* Remove a margem do último item */
+        }
+
+        .avatar-initials {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #dfe3ee; /* Um cinza-azulado suave */
+            color: #3f51b5; /* Um azul para o texto */
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-transform: uppercase;
+        }
+        
+        .podium-avatar.avatar-initials {
+            font-size: 1.6rem;
+        }
+        
+        .podium-place.first .podium-avatar.avatar-initials {
+            font-size: 2rem;
+        }
+
+        .leaderboard-item .rank {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #777;
+            width: 30px;
+            text-align: center;
+        }
+
+        .leaderboard-item .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 0 15px;
+            background-color: #eee;
+        }
+
+        .leaderboard-item .user-name {
+            font-weight: 500;
+            color: var(--text-color);
+            flex-grow: 1;
+            word-wrap: break-word;
+        }
+
+        .leaderboard-item .score {
+            font-weight: 600;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+        .leaderboard-item .score i {
+            color: var(--accent-color);
+            margin-right: 4px;
+        }
+
+        .action-button-container {
+            padding: 20px 15px;
+            background-color: var(--secondary-color);
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            text-decoration: none;
+            background-color: var(--podium-blue);
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            transition: background-color 0.2s ease;
+        }
+        .action-button:hover {
+            background-color: #2e73d4;
+        }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            max-width: 600px;
+            margin: 0 auto;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: var(--accent-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300;
+            z-index: 100;
+        }
+
+        .nav-item {
+            color: #333;
+            font-size: 1.6rem;
+            text-decoration: none;
+            padding: 5px 15px;
+        }
+
+        .nav-item.active {
+            color: #000;
+            font-weight: bold;
+        }
+        .nav-item.active i.fas {
+            font-weight: 900;
+        }
+
+        @media (min-width: 601px) {
+            .app-container {
+                border-left: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area">
+                <div class="honeycomb-logo">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div><div></div>
+                </div>
+                <h1>Competição</h1>
+            </div>
+            <div class="header-actions">
+                <i class="fas fa-search"></i>
+                <i class="fas fa-filter"></i>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div class="ranking-header">
+                <h2 id="ranking-title">Ranking de Pontos - Geral</h2>
+                <!-- O ícone de três pontos foi substituído por este botão -->
+                <button id="ranking-toggle-button" class="ranking-toggle-button">Seguidores</button>
+            </div>
+
+            <section class="podium-section">
+                 <!-- Conteúdo gerado via JavaScript -->
+            </section>
+
+            <ul class="leaderboard-list">
+                 <!-- Conteúdo gerado via JavaScript -->
+            </ul>
+
+        </main>
+
+        <nav class="bottom-nav">
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html" class="nav-item"><i class="fas fa-home"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item"><i class="fas fa-image"></i></a>
+            <a href="#" class="nav-item active"><i class="fas fa-trophy"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/EncontrarUser.html" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <!-- SCRIPT PARA BUSCAR E RENDERIZAR O RANKING -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+
+            const loginUrl = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
+            const jwtToken = localStorage.getItem('jwtToken');
+
+            if (!jwtToken) {
+                console.log('Nenhum token encontrado. Redirecionando para o login.');
+                window.location.href = loginUrl;
+                return;
+            }
+
+            // ======== INÍCIO DAS ALTERAÇÕES DE SCRIPT ========
+
+            const podiumSection = document.querySelector('.podium-section');
+            const leaderboardList = document.querySelector('.leaderboard-list');
+            const rankingTitle = document.getElementById('ranking-title');
+            const toggleButton = document.getElementById('ranking-toggle-button');
+
+            // Definição das URLs das APIs
+            const apiBaseUrl = 'http://127.0.0.1:5000/usuario/';
+            const rankingUrls = {
+                geral: `${apiBaseUrl}rankingTodos`,
+                seguidores: `${apiBaseUrl}rankingSeguindo` // Assumindo que esta é a nova API
+            };
+
+            let currentRankingType = 'geral'; // Estado inicial
+
+            /**
+             * Formata a pontuação para o formato 'k' se for maior ou igual a 1000.
+             * @param {number} points - A pontuação a ser formatada.
+             * @returns {string} A pontuação formatada.
+             */
+            function formatScore(points) {
+                if (points >= 1000) {
+                    return (points / 1000).toFixed(1).replace('.0', '') + 'k';
+                }
+                return points.toString();
+            }
+
+            /**
+             * Gera o HTML para o avatar do usuário (imagem ou iniciais).
+             * @param {object} user - O objeto do usuário.
+             * @param {string} className - A classe CSS base para o elemento do avatar.
+             * @returns {string} O HTML do avatar.
+             */
+            function generateAvatarHTML(user, className) {
+                const displayName = user.nome || user.username;
+                if (user.foto_perfil) {
+                    return `<img src="${user.foto_perfil}" alt="Avatar de ${displayName}" class="${className}">`;
+                } else {
+                    const initials = displayName.substring(0, 2).toUpperCase();
+                    return `<div class="${className} avatar-initials">${initials}</div>`;
+                }
+            }
+
+            /**
+             * Busca os dados do ranking e renderiza na página.
+             * @param {string} type - O tipo de ranking a ser buscado ('geral' ou 'seguidores').
+             */
+            function fetchAndRenderRanking(type) {
+                const apiUrl = rankingUrls[type];
+                
+                // ======== DEBUG ADICIONADO AQUI ========
+                console.log('DEBUG: Usando a API:', apiUrl);
+                // =======================================
+
+                if (!apiUrl) {
+                    console.error('Tipo de ranking inválido:', type);
+                    return;
+                }
+
+                // Limpa o conteúdo atual para dar feedback de carregamento
+                podiumSection.innerHTML = '<p style="color:white; text-align:center; width:100%;">Carregando...</p>';
+                leaderboardList.innerHTML = '';
+
+                fetch(apiUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${jwtToken}`,
+                        'Content-Type': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (response.status === 401 || response.status === 403) {
+                        console.log('Token inválido ou expirado. Redirecionando para o login.');
+                        localStorage.removeItem('jwtToken');
+                        window.location.href = loginUrl;
+                        throw new Error('Não autorizado');
+                    }
+                    if (!response.ok) {
+                        throw new Error(`Erro na rede: ${response.statusText}`);
+                    }
+                    return response.json();
+                })
+                .then(users => {
+                    console.log(users)
+                    podiumSection.innerHTML = '';
+                    leaderboardList.innerHTML = '';
+
+                    if (!users || users.length === 0) {
+                        podiumSection.innerHTML = '<p style="color:white; text-align:center; width:100%;">Ninguém pontuou ainda. Seja o primeiro!</p>';
+                        return;
+                    }
+
+                    // Renderiza Pódio
+                    const podiumUsers = users.slice(0, 3);
+                    const podiumOrder = [1, 0, 2]; // 2º, 1º, 3º
+                    const podiumElements = { 0: { class: 'first', rank: '1' }, 1: { class: 'second', rank: '2' }, 2: { class: 'third', rank: '3' } };
+                    let podiumHTML = '';
+                    podiumOrder.forEach(index => {
+                        const user = podiumUsers[index];
+                        if (user) {
+                            const position = podiumElements[index];
+                            const displayName = user.nome || user.username;
+                            const avatarHTML = generateAvatarHTML(user, 'podium-avatar');
+                            podiumHTML += `
+                                <div class="podium-place ${position.class}">
+                                    ${avatarHTML}
+                                    <p class="podium-name">${displayName}</p>
+                                    <p class="podium-score">${user.pontos} pontos</p>
+                                    <div class="podium-rank-bar">${position.rank}</div>
+                                </div>`;
+                        }
+                    });
+                    podiumSection.innerHTML = podiumHTML;
+
+                    // Renderiza Lista
+                    const listUsers = users.slice(3);
+                    let listHTML = '';
+                    listUsers.forEach((user, index) => {
+                        const rank = index + 4;
+                        const displayName = user.nome || user.username;
+                        const avatarHTML = generateAvatarHTML(user, 'user-avatar');
+                        listHTML += `
+                            <li class="leaderboard-item">
+                                <span class="rank">${rank}</span>
+                                ${avatarHTML}
+                                <span class="user-name">${displayName}</span>
+                                <span class="score"><i class="fas fa-star"></i>${formatScore(user.pontos)}</span>
+                            </li>`;
+                    });
+                    leaderboardList.innerHTML = listHTML;
+                })
+                .catch(error => {
+                    console.error('Erro ao buscar dados do ranking:', error);
+                    if (error.message !== 'Não autorizado') {
+                        podiumSection.innerHTML = '';
+                        leaderboardList.innerHTML = `<li class="leaderboard-item" style="justify-content: center;">Não foi possível carregar o ranking.</li>`;
+                    }
+                });
+            }
+
+            // Event listener para o botão de alternância
+            toggleButton.addEventListener('click', () => {
+                if (currentRankingType === 'geral') {
+                    currentRankingType = 'seguidores';
+                    rankingTitle.textContent = 'Ranking de Pontos - Seguidores';
+                    toggleButton.textContent = 'Geral';
+                } else {
+                    currentRankingType = 'geral';
+                    rankingTitle.textContent = 'Ranking de Pontos - Geral';
+                    toggleButton.textContent = 'Seguidores';
+                }
+                fetchAndRenderRanking(currentRankingType);
+            });
+
+            // Carrega o ranking inicial (Geral)
+            fetchAndRenderRanking('geral');
+            
+            // ======== FIM DAS ALTERAÇÕES DE SCRIPT ========
+        });
+    </script>
+</body>
+</html> 

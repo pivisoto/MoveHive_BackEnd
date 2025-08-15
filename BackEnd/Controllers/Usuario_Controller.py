@@ -124,3 +124,14 @@ def listar_usuarios_com_filtro():
 def listar_usuarios_seguidos():
     resposta, status = usuario_service.listar_usuarios_seguindo()
     return jsonify(resposta), status
+
+# Implementado
+@usuario_bp.route('/rankingTodos', methods=['GET'])
+def ranking_usuario_todos():
+    return usuario_service.competicao_usuarios_todos()
+
+# Implementado
+@usuario_bp.route('/rankingSeguindo', methods=['GET'])
+def ranking_usuarios_seguindo():
+    return usuario_service.competicao_usuarios_seguindo()
+
