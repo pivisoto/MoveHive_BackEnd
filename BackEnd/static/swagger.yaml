@@ -697,8 +697,127 @@ paths:
                     type: string
                     example: Erro inesperado no servidor.
 
-    
+  /usuario/esqueciSenha:
+    post:
+      summary: Solicitar redefinição de senha
+      description: >
+        Endpoint para iniciar o processo de redefinição de senha.  
+        O sistema verifica se o e-mail existe na base e, caso positivo, envia um e-mail com um link contendo um token de reset de senha válido por **1 hora**.  
+        Para segurança, a resposta é sempre a mesma, mesmo que o e-mail não esteja cadastrado.
+      tags:
+        - Usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@exemplo.com
+      responses:
+        "200":
+          description: Solicitação processada (resposta genérica para segurança).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Se o email existir, você receberá instruções para resetar a senha.
+        "400":
+          description: Erro de requisição (JSON inválido ou campo obrigatório ausente).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Formato de e-mail inválido ou ausente.
+        "500":
+          description: Erro interno no servidor (falha ao enviar e-mail, problema de banco, etc.).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Falha ao processar solicitação de redefinição de senha.
 
+  /usuario/resetarSenha:
+    post:
+      summary: Redefinir senha do usuário
+      description: >
+        Endpoint que finaliza o processo de redefinição de senha.  
+        O usuário deve informar o **token** recebido por e-mail e a **nova senha** desejada.  
+        O token expira em **1 hora** e só pode ser utilizado uma vez.
+      tags:
+        - Usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - nova_senha
+              properties:
+                token:
+                  type: string
+                  example: "550e8400-e29b-41d4-a716-446655440000"
+                nova_senha:
+                  type: string
+                  format: password
+                  example: "NovaSenhaSegura123!"
+      responses:
+        "200":
+          description: Senha redefinida com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  msg:
+                    type: string
+                    example: Senha alterada com sucesso.
+        "400":
+          description: Erro de requisição (dados ausentes, token expirado ou formato inválido).
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: O token de redefinição de senha expirou.
+        "404":
+          description: Token inválido ou já utilizado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token de redefinição inválido ou já utilizado.
+        "500":
+          description: Erro interno no servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Ocorreu um erro interno no servidor.
 
 # Esporte
  

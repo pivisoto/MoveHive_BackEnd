@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redefinir Senha - Move Hive</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1e1e1e;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #f0f0f0;
+        }
+
+        .login-container {
+            background-color: #2c2c2c;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            width: 380px;
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo-move {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+            line-height: 1;
+            margin-bottom: -5px;
+        }
+
+        .logo-hive {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #facc15;
+            display: block;
+            line-height: 1;
+        }
+
+        .page-title {
+            color: #d0d0d0;
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+
+        .page-description {
+            color: #a0a0a0;
+            font-size: 0.9em;
+            margin-bottom: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.9em;
+            margin-bottom: 8px;
+            color: #d0d0d0;
+            font-weight: bold;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: #3a3a3a;
+            border: 1px solid #4a4a4a;
+            border-radius: 6px;
+            color: #f0f0f0;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .form-group input::placeholder {
+            color: #888888;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            box-sizing: border-box;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-primary {
+            background-color: #facc15;
+            color: #1e1e1e;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            background-color: #eab308;
+        }
+
+        .back-link {
+            display: block;
+            font-size: 0.9em;
+            color: #b0b0b0;
+            text-decoration: none;
+            margin-top: 20px;
+        }
+
+        .back-link:hover {
+            text-decoration: underline;
+        }
+
+        .message-area {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 0.9em;
+            text-align: center;
+            min-height: 1.2em;
+            color: white;
+        }
+        .message-success {
+            background-color: #28a745; 
+        }
+        .message-error {
+            background-color: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <span class="logo-move">MOVE</span>
+            <span class="logo-hive">HIVE</span>
+        </div>
+        
+        <h2 class="page-title">Esqueceu sua senha?</h2>
+        <p class="page-description">Não se preocupe! Digite seu e-mail abaixo e enviaremos um link para você redefinir sua senha.</p>
+        
+        <form id="formEsqueciSenha">
+            <div class="form-group">
+                <label for="email">E-mail</label>
+                <input type="email" id="email" placeholder="Digite seu e-mail de cadastro" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Enviar link de redefinição</button>
+            <div id="messageArea" class="message-area"></div>
+        </form>
+
+        <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html" class="back-link">Voltar para o Login</a>
+    </div>
+
+    <script>
+    document.getElementById('formEsqueciSenha').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value;
+        const messageArea = document.getElementById('messageArea');
+        
+        // Limpa a área de mensagem e define um estado de "carregando"
+        messageArea.textContent = 'Enviando...';
+        messageArea.className = 'message-area';
+
+        try {
+            const apiEndpoint = 'http://127.0.0.1:5000/usuario/esqueciSenha';
+            const requestData = { email };
+
+            // --- DEBUG ADICIONADO AQUI ---
+            console.log("--- DEBUG: Enviando requisição para a API ---");
+            console.log("Endpoint:", apiEndpoint);
+            console.log("Dados enviados:", requestData);
+            // --- FIM DO DEBUG ---
+
+            const res = await fetch(apiEndpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(requestData)
+            });
+
+            const data = await res.json();
+
+            // Verifica se a resposta foi bem-sucedida (status 2xx)
+            if (res.ok) {
+                messageArea.textContent = data.msg;
+                messageArea.classList.add('message-success');
+            } else {
+                messageArea.textContent = data.erro || 'Ocorreu um erro desconhecido.';
+                messageArea.classList.add('message-error');
+            }
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            messageArea.textContent = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
+            messageArea.classList.add('message-error');
+        }
+    });
+    </script>
+</body>
+</html>

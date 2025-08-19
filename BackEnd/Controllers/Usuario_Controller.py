@@ -135,3 +135,45 @@ def ranking_usuario_todos():
 def ranking_usuarios_seguindo():
     return usuario_service.competicao_usuarios_seguindo()
 
+# Implementado
+@usuario_bp.route('/esqueciSenha', methods=['POST'])
+def esqueci_senha():
+    try:
+        data = request.get_json(force=True)
+        if not data:
+            return jsonify({"erro": "Corpo da requisição não pode ser vazio."}), 400
+    except Exception:
+        return jsonify({"erro": "Formato de requisição inválido. Esperado um JSON."}), 400
+
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"erro": "Formato de e-mail inválido ou ausente."}), 400
+
+    resultado = usuario_service.solicitar_reset_senha(email)
+
+    return jsonify(resultado), 200
+
+# Implementado
+@usuario_bp.route('/resetarSenha', methods=['POST'])
+def resetar():
+    data = request.json
+    token = data.get('token')
+    nova_senha = data.get('nova_senha')
+
+    if not token or not nova_senha:
+        return jsonify({"erro": "Token e nova senha são obrigatórios."}), 400
+
+    status, mensagem = usuario_service.resetar_senha(token, nova_senha)
+
+    if status == 'SUCESSO':
+        return jsonify({"msg": mensagem}), 200
+        
+    elif status == 'TOKEN_INVALIDO':
+        return jsonify({"erro": mensagem}), 404  # Not Found
+        
+    elif status == 'TOKEN_EXPIRADO':
+        return jsonify({"erro": mensagem}), 400  # Bad Request
+           
+    else:
+        return jsonify({"erro": "Ocorreu um erro interno no servidor."}), 500

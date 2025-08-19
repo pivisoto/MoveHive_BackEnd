@@ -597,21 +597,24 @@
 
 
     <script>
-  const token = localStorage.getItem('jwtToken');
+    const token = localStorage.getItem('jwtToken');
 
-    // --- NOVA FUNÇÃO HELPER ---
-    // Função para decodificar o token JWT e pegar o ID do usuário
+
     function getUserIdFromToken() {
         if (!token) return null;
         try {
-            // O payload do JWT está na segunda parte, codificado em Base64
             const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.user_id; // Certifique-se de que a chave é 'user_id' no seu token
+            console.log(payload)
+            return payload.user_id; 
         } catch (e) {
             console.error("Erro ao decodificar o token:", e);
             return null;
         }
     }
+    
+    //exemplo
+    const currentUserId = getUserIdFromToken();
+
 
     document.addEventListener('DOMContentLoaded', function () {
         const mainContent = document.getElementById('main-content');
@@ -723,7 +726,7 @@
             if (filter === 'events') {
                 endpoint = 'http://127.0.0.1:5000/evento/listarEventos';
             } else if (filter === 'tournaments') {
-                endpoint = 'http://127.0.0.1:5000/evento/listarTorneios'; 
+                endpoint = 'http://127.0.0.1:5000/evento/listarEventos'; 
             } else {
                 mainContent.innerHTML = `<p>Filtro desconhecido.</p>`;
                 mainContent.classList.add('text-center');
@@ -739,6 +742,7 @@
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
                 
                 const events = await response.json();
+                console.log(events)
                 currentEvents = events;
                 mainContent.innerHTML = '';
                 mainContent.classList.remove('text-center');
@@ -777,6 +781,7 @@
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
                 
                 const events = await response.json();
+                console.log(events)
                 currentEvents = events;
                 mainContent.innerHTML = '';
                 mainContent.classList.remove('text-center');

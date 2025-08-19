@@ -1,5 +1,7 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
+import os
 import random
+import uuid
 import bcrypt
 from firebase_admin import firestore, credentials, storage
 from flask import g, jsonify
@@ -9,9 +11,13 @@ from middlewares.auth_token import token_required
 import firebase_admin
 import logging
 from firebase_admin import firestore
+import smtplib
+from email.mime.text import MIMEText
 
 
 
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 bucket = storage.bucket()
 db = firestore.client()
 
@@ -21,6 +27,20 @@ def calcular_idade(data_nascimento):
     hoje = date.today()
     idade = hoje.year - data_nascimento.year - ((hoje.month, hoje.day) < (data_nascimento.month, data_nascimento.day))
     return idade
+
+
+def enviar_email(destinatario, assunto, corpo):
+    remetente = os.getenv("EMAIL_USER")
+    senha = os.getenv("EMAIL_PASS")
+
+    msg = MIMEText(corpo)
+    msg['Subject'] = assunto
+    msg['From'] = remetente
+    msg['To'] = destinatario
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        server.login(remetente, senha)
+        server.sendmail(remetente, destinatario, msg.as_string())
 
 
 # Função para Registar Usuario
@@ -324,7 +344,6 @@ def listar_usuarios_com_filtro():
         print(f"Erro em listar_usuarios_com_filtro: {e}")
         return {'erro': str(e)}, 500
 
-    
 # Implementado
 @token_required
 def listar_usuarios_seguindo():
@@ -361,7 +380,6 @@ def listar_usuarios_seguindo():
     except Exception as e:
         print(f"Erro em listar_usuarios_seguindo: {e}")
         return {'erro': str(e)}, 500
-    
 
 # Implementado
 @token_required
@@ -391,9 +409,7 @@ def competicao_usuarios_todos():
 
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
-    
-    
-    
+      
 # Implementado
 @token_required
 def competicao_usuarios_seguindo():
@@ -435,3 +451,66 @@ def competicao_usuarios_seguindo():
         return jsonify(usuarios_ordenados), 200
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
+
+# Implementado
+def solicitar_reset_senha(email):
+    usuarios_ref = db.collection('Usuarios')
+    query = usuarios_ref.where('email', '==', email).limit(1).get()
+
+    msg_retorno = {"msg": "Se o email existir, você receberá instruções para resetar a senha."}
+
+    if not query:
+        logger.info(f"Solicitação de reset para e-mail não cadastrado: {email}")
+        return msg_retorno
+
+    usuario_doc = query[0]
+    usuario_id = usuario_doc.id
+
+    token = str(uuid.uuid4())
+    exp = datetime.now(timezone.utc) + timedelta(hours=1)
+
+    try:
+        usuarios_ref.document(usuario_id).update({
+            "reset_token": token,
+            "reset_token_exp": exp
+        })
+
+        # ATENÇÃO: Mude a URL abaixo para o endereço da sua página de "resetar senha" no front-end.
+        link_reset = f"http://127.0.0.1:5000/usuario/resetar-senha?token={token}"
+        assunto = "Redefinição de senha"
+        corpo = f"Olá! Clique no link para redefinir sua senha:\n{link_reset}\nO link expira em 1 hora."
+
+        enviar_email(destinatario=email, assunto=assunto, corpo=corpo)
+
+    except Exception as e:
+        logger.error(f"Falha ao enviar e-mail de reset para {email}. Erro: {e}")
+        
+        usuarios_ref.document(usuario_id).update({
+             "reset_token": firestore.DELETE_FIELD,
+             "reset_token_exp": firestore.DELETE_FIELD
+        })
+    return msg_retorno
+
+# Implementado
+def resetar_senha(token, nova_senha):
+    usuarios_ref = db.collection('Usuarios')
+    query = usuarios_ref.where('reset_token', '==', token).limit(1).get()
+
+    if not query:
+        return ('TOKEN_INVALIDO', "Token de redefinição inválido ou já utilizado.")
+
+    usuario_doc = query[0]
+    usuario_data = usuario_doc.to_dict()
+
+    if 'reset_token_exp' not in usuario_data or usuario_data['reset_token_exp'] < datetime.now(timezone.utc):
+        return ('TOKEN_EXPIRADO', "O token de redefinição de senha expirou.")
+
+    senha_hash = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    
+    usuarios_ref.document(usuario_doc.id).update({
+        "senha": senha_hash,
+        "reset_token": firestore.DELETE_FIELD,
+        "reset_token_exp": firestore.DELETE_FIELD
+    })
+    
+    return ('SUCESSO', "Senha alterada com sucesso.")

@@ -66,5 +66,5 @@ class Usuario:
             'eventos_participando': self.eventos_participando,
             'seguidores': self.seguidores,
             'seguindo': self.seguindo,
-            'treinos_id': self.treinos_id
+            'treinos_id': self.treinos_id,
         }

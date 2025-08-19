@@ -1,4 +1,4 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from flask_cors import CORS  
 from flask_swagger_ui import get_swaggerui_blueprint
 from flask_caching import Cache
@@ -16,7 +16,7 @@ from Controllers.Comentario_Controller import comentario_bp
 from Controllers.Treino_Controller import treino_bp
 
 
-app = Flask(__name__, template_folder='Views')
+app = Flask(__name__, template_folder='Views/Social_media')
 CORS(app)
 
 SWAGGER_URL = '/swagger'  
@@ -39,6 +39,13 @@ app.register_blueprint(treino_bp)
 @app.route('/')
 def index():
     return "Conectado! Inicie o Live Server em um View para testar"
+
+
+
+@app.route('/usuario/resetar-senha', methods=['GET'])
+def pagina_reset_senha():
+    token = request.args.get('token')  # pega o token da URL
+    return render_template('resetSenha.html', token=token)
 
 if __name__ == '__main__':
     app.run(debug=True, host="0.0.0.0", port=5000)
