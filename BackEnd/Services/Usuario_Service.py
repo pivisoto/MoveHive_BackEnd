@@ -1,6 +1,8 @@
 from datetime import date, datetime, timedelta, timezone
+from email import utils
 import os
 import random
+import string
 import uuid
 import bcrypt
 from firebase_admin import firestore, credentials, storage
@@ -13,6 +15,7 @@ import logging
 from firebase_admin import firestore
 import smtplib
 from email.mime.text import MIMEText
+from utils import enviar_email
 
 
 
@@ -29,18 +32,18 @@ def calcular_idade(data_nascimento):
     return idade
 
 
-def enviar_email(destinatario, assunto, corpo):
-    remetente = os.getenv("EMAIL_USER")
-    senha = os.getenv("EMAIL_PASS")
+# def enviar_email(destinatario, assunto, corpo):
+#     remetente = os.getenv("EMAIL_USER")
+#     senha = os.getenv("EMAIL_PASS")
 
-    msg = MIMEText(corpo)
-    msg['Subject'] = assunto
-    msg['From'] = remetente
-    msg['To'] = destinatario
+#     msg = MIMEText(corpo)
+#     msg['Subject'] = assunto
+#     msg['From'] = remetente
+#     msg['To'] = destinatario
 
-    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-        server.login(remetente, senha)
-        server.sendmail(remetente, destinatario, msg.as_string())
+#     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+#         server.login(remetente, senha)
+#         server.sendmail(remetente, destinatario, msg.as_string())
 
 
 # Função para Registar Usuario
@@ -512,65 +515,98 @@ def competicao_usuarios_seguindo():
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
+
 # Implementado
 def solicitar_reset_senha(email):
     usuarios_ref = db.collection('Usuarios')
     query = usuarios_ref.where('email', '==', email).limit(1).get()
 
-    msg_retorno = {"msg": "Se o email existir, você receberá instruções para resetar a senha."}
+    msg_retorno = {"msg": "Se o e-mail estiver em nossa base, você receberá um código para redefinir sua senha."}
 
     if not query:
         logger.info(f"Solicitação de reset para e-mail não cadastrado: {email}")
         return msg_retorno
 
-    usuario_doc = query[0]
-    usuario_id = usuario_doc.id
-
-    token = str(uuid.uuid4())
-    exp = datetime.now(timezone.utc) + timedelta(hours=1)
-
     try:
+        usuario_doc = query[0]
+        usuario_id = usuario_doc.id
+
+        codigo = ''.join(random.choices(string.digits, k=6))
+        
+        codigo_hash = bcrypt.hashpw(codigo.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        exp = datetime.now(timezone.utc) + timedelta(minutes=10)  
+
         usuarios_ref.document(usuario_id).update({
-            "reset_token": token,
-            "reset_token_exp": exp
+            "reset_code_hash": codigo_hash,
+            "reset_code_exp": exp
         })
 
-        # ATENÇÃO: Mude a URL abaixo para o endereço da sua página de "resetar senha" no front-end.
-        link_reset = f"http://127.0.0.1:5000/usuario/resetar-senha?token={token}"
-        assunto = "Redefinição de senha"
-        corpo = f"Olá! Clique no link para redefinir sua senha:\n{link_reset}\nO link expira em 1 hora."
+        enviar_email.enviar_email_reset(destinatario=email, codigo=codigo)
 
-        enviar_email(destinatario=email, assunto=assunto, corpo=corpo)
+        
+        logger.info(f"E-mail de reset enviado com sucesso para {email}.")
 
     except Exception as e:
-        logger.error(f"Falha ao enviar e-mail de reset para {email}. Erro: {e}")
-        
-        usuarios_ref.document(usuario_id).update({
-             "reset_token": firestore.DELETE_FIELD,
-             "reset_token_exp": firestore.DELETE_FIELD
-        })
+        logger.error(f"Falha ao processar a solicitação de reset para {email}. Erro: {e}")
+        if 'usuario_id' in locals():
+            usuarios_ref.document(usuario_id).update({
+                "reset_code_hash": firestore.DELETE_FIELD,
+                "reset_code_exp": firestore.DELETE_FIELD
+            })
+            
     return msg_retorno
 
+
 # Implementado
-def resetar_senha(token, nova_senha):
+def verificar_codigo_reset(email, codigo):
     usuarios_ref = db.collection('Usuarios')
-    query = usuarios_ref.where('reset_token', '==', token).limit(1).get()
+    query = usuarios_ref.where('email', '==', email).limit(1).get()
 
     if not query:
-        return ('TOKEN_INVALIDO', "Token de redefinição inválido ou já utilizado.")
+        return {"valido": False, "msg": "Código inválido ou expirado."}
 
-    usuario_doc = query[0]
-    usuario_data = usuario_doc.to_dict()
+    usuario_doc = query[0].to_dict()
 
-    if 'reset_token_exp' not in usuario_data or usuario_data['reset_token_exp'] < datetime.now(timezone.utc):
-        return ('TOKEN_EXPIRADO', "O token de redefinição de senha expirou.")
+    if "reset_code_hash" not in usuario_doc or "reset_code_exp" not in usuario_doc:
+        return {"valido": False, "msg": "Código inválido ou expirado."}
+        
+    if datetime.now(timezone.utc) > usuario_doc["reset_code_exp"]:
+        return {"valido": False, "msg": "Código expirado. Solicite um novo."}
 
-    senha_hash = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    codigo_valido = bcrypt.checkpw(codigo.encode('utf-8'), usuario_doc["reset_code_hash"].encode('utf-8'))
+
+    if not codigo_valido:
+        return {"valido": False, "msg": "Código inválido ou expirado."}
+
+    return {"valido": True, "msg": "Código verificado com sucesso."}
+
+
+# Implementado
+def redefinir_senha(email, codigo, nova_senha):
+    verificacao = verificar_codigo_reset(email, codigo)
+    if not verificacao["valido"]:
+        return {"sucesso": False, "msg": verificacao["msg"]}
+
+    usuarios_ref = db.collection('Usuarios')
+    query = usuarios_ref.where('email', '==', email).limit(1).get()
     
-    usuarios_ref.document(usuario_doc.id).update({
-        "senha": senha_hash,
-        "reset_token": firestore.DELETE_FIELD,
-        "reset_token_exp": firestore.DELETE_FIELD
-    })
-    
-    return ('SUCESSO', "Senha alterada com sucesso.")
+    if not query:
+         return {"sucesso": False, "msg": "Usuário não encontrado."}
+
+    try:
+        usuario_id = query[0].id
+        
+        nova_senha_hash = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+        usuarios_ref.document(usuario_id).update({
+            "senha": nova_senha_hash,
+            "reset_code_hash": firestore.DELETE_FIELD,
+            "reset_code_exp": firestore.DELETE_FIELD
+        })
+        
+        logger.info(f"Senha para o e-mail {email} alterada com sucesso.")
+        return {"sucesso": True, "msg": "Sua senha foi alterada com sucesso!"}
+
+    except Exception as e:
+        logger.error(f"Erro ao redefinir a senha para {email}. Erro: {e}")
+        return {"sucesso": False, "msg": "Ocorreu um erro ao tentar alterar sua senha. Tente novamente."}

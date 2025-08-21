@@ -153,25 +153,33 @@ def esqueci_senha():
     return jsonify(resultado), 200
 
 # Implementado
+@usuario_bp.route('/verificarCodigo', methods=['POST'])
+def endpoint_verificar_codigo():
+    data = request.get_json()
+    email = data.get('email')
+    codigo = data.get('codigo')
+    if not email or not codigo:
+        return jsonify({"msg": "E-mail e código são obrigatórios."}), 400
+        
+    resultado = usuario_service.verificar_codigo_reset(email, codigo)
+    if resultado["valido"]:
+        return jsonify(resultado), 200
+    else:
+        return jsonify(resultado), 400
+
+# Implementado
 @usuario_bp.route('/resetarSenha', methods=['POST'])
 def resetar():
-    data = request.json
-    token = data.get('token')
+    data = request.get_json()
+    email = data.get('email')
+    codigo = data.get('codigo')
     nova_senha = data.get('nova_senha')
 
-    if not token or not nova_senha:
-        return jsonify({"erro": "Token e nova senha são obrigatórios."}), 400
-
-    status, mensagem = usuario_service.resetar_senha(token, nova_senha)
-
-    if status == 'SUCESSO':
-        return jsonify({"msg": mensagem}), 200
+    if not all([email, codigo, nova_senha]):
+        return jsonify({"msg": "Todos os campos são obrigatórios."}), 400
         
-    elif status == 'TOKEN_INVALIDO':
-        return jsonify({"erro": mensagem}), 404  # Not Found
-        
-    elif status == 'TOKEN_EXPIRADO':
-        return jsonify({"erro": mensagem}), 400  # Bad Request
-           
+    resultado = usuario_service.redefinir_senha(email, codigo, nova_senha)
+    if resultado["sucesso"]:
+        return jsonify(resultado), 200
     else:
-        return jsonify({"erro": "Ocorreu um erro interno no servidor."}), 500
+        return jsonify(resultado), 400

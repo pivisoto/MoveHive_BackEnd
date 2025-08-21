@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Redefinir Senha - Move Hive</title>
+    <title>Recuperação de Senha - Move Hive</title>
     <style>
         body {
             margin: 0;
@@ -15,195 +15,236 @@
             min-height: 100vh;
             color: #f0f0f0;
         }
-
-        .login-container {
+        .container {
             background-color: #2c2c2c;
             padding: 40px;
             border-radius: 8px;
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             width: 380px;
-            position: relative;
-            overflow: hidden;
             text-align: center;
         }
-
-        .logo {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .logo-move {
-            font-size: 3.5em;
-            font-weight: bold;
-            color: #ffffff;
-            display: block;
-            line-height: 1;
-            margin-bottom: -5px;
-        }
-
-        .logo-hive {
-            font-size: 3.5em;
-            font-weight: bold;
-            color: #facc15;
-            display: block;
-            line-height: 1;
-        }
-
-        .page-title {
-            color: #d0d0d0;
-            margin-bottom: 10px;
-            font-size: 1.2em;
-        }
-
-        .page-description {
-            color: #a0a0a0;
-            font-size: 0.9em;
-            margin-bottom: 30px;
-        }
-        
-        .form-group {
-            margin-bottom: 25px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 0.9em;
-            margin-bottom: 8px;
-            color: #d0d0d0;
-            font-weight: bold;
-        }
-
-        .form-group input {
-            width: 100%;
-            padding: 12px 15px;
-            background-color: #3a3a3a;
-            border: 1px solid #4a4a4a;
-            border-radius: 6px;
-            color: #f0f0f0;
-            font-size: 1em;
-            box-sizing: border-box;
-        }
-
-        .form-group input::placeholder {
-            color: #888888;
-        }
-
-        .btn {
-            width: 100%;
-            padding: 14px;
-            border-radius: 6px;
-            font-size: 1.1em;
-            font-weight: bold;
-            cursor: pointer;
-            border: none;
-            box-sizing: border-box;
-            transition: background-color 0.2s ease;
-        }
-
-        .btn-primary {
-            background-color: #facc15;
-            color: #1e1e1e;
-            margin-bottom: 15px;
-        }
-
-        .btn-primary:hover {
-            background-color: #eab308;
-        }
-
-        .back-link {
-            display: block;
-            font-size: 0.9em;
-            color: #b0b0b0;
-            text-decoration: none;
-            margin-top: 20px;
-        }
-
-        .back-link:hover {
-            text-decoration: underline;
-        }
-
-        .message-area {
-            margin-top: 15px;
-            padding: 10px;
-            border-radius: 4px;
-            font-size: 0.9em;
-            text-align: center;
-            min-height: 1.2em;
-            color: white;
-        }
-        .message-success {
-            background-color: #28a745; 
-        }
-        .message-error {
-            background-color: #dc3545;
-        }
+        .logo { margin-bottom: 20px; }
+        .logo-move { font-size: 3.5em; font-weight: bold; color: #ffffff; display: block; line-height: 1; margin-bottom: -5px; }
+        .logo-hive { font-size: 3.5em; font-weight: bold; color: #facc15; display: block; line-height: 1; }
+        .page-title { color: #d0d0d0; margin-bottom: 10px; font-size: 1.2em; }
+        .page-description { color: #a0a0a0; font-size: 0.9em; margin-bottom: 30px; }
+        .form-group { margin-bottom: 20px; text-align: left; }
+        .form-group label { display: block; font-size: 0.9em; margin-bottom: 8px; color: #d0d0d0; font-weight: bold; }
+        .form-group input { width: 100%; padding: 12px 15px; background-color: #3a3a3a; border: 1px solid #4a4a4a; border-radius: 6px; color: #f0f0f0; font-size: 1em; box-sizing: border-box; }
+        .form-group input::placeholder { color: #888888; }
+        .btn { width: 100%; padding: 14px; border-radius: 6px; font-size: 1.1em; font-weight: bold; cursor: pointer; border: none; box-sizing: border-box; transition: background-color 0.2s ease; }
+        .btn-primary { background-color: #facc15; color: #1e1e1e; margin-bottom: 15px; }
+        .btn-primary:hover { background-color: #eab308; }
+        .btn-primary:disabled { background-color: #555; cursor: not-allowed; }
+        .login-link { display: none; font-size: 0.9em; color: #facc15; text-decoration: none; margin-top: 20px; padding: 10px; border: 1px solid #facc15; border-radius: 6px; }
+        .login-link:hover { background-color: #facc15; color: #1e1e1e; }
+        .message-area { margin-top: 15px; padding: 10px; border-radius: 4px; font-size: 0.9em; text-align: center; min-height: 1.2em; color: white; display: none; }
+        .message-success { background-color: #28a745; display: block; }
+        .message-error { background-color: #dc3545; display: block; }
+        .back-link { font-size: 0.8em; color: #aaa; text-decoration: none; cursor: pointer; }
+        .back-link:hover { color: #facc15; }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="container" id="reset-container">
         <div class="logo">
             <span class="logo-move">MOVE</span>
             <span class="logo-hive">HIVE</span>
         </div>
         
-        <h2 class="page-title">Esqueceu sua senha?</h2>
-        <p class="page-description">Não se preocupe! Digite seu e-mail abaixo e enviaremos um link para você redefinir sua senha.</p>
-        
-        <form id="formEsqueciSenha">
-            <div class="form-group">
-                <label for="email">E-mail</label>
-                <input type="email" id="email" placeholder="Digite seu e-mail de cadastro" required>
-            </div>
-            <button type="submit" class="btn btn-primary">Enviar link de redefinição</button>
-            <div id="messageArea" class="message-area"></div>
-        </form>
+        <!-- ETAPA 1: SOLICITAR E-MAIL -->
+        <div id="step-email">
+            <h2 class="page-title">Esqueceu sua senha?</h2>
+            <p class="page-description">Sem problemas. Digite seu e-mail e enviaremos um código para você.</p>
+            <form id="formEmailRequest">
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" placeholder="seuemail@exemplo.com" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Enviar Código</button>
+            </form>
+        </div>
 
-        <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html" class="back-link">Voltar para o Login</a>
+        <!-- ETAPA 2: VERIFICAR CÓDIGO -->
+        <div id="step-code" style="display: none;">
+            <h2 class="page-title">Verifique seu E-mail</h2>
+            <p class="page-description">Enviamos um código de 6 dígitos para <strong id="userEmailDisplay"></strong>.</p>
+            <form id="formCodeVerification">
+                <div class="form-group">
+                    <label for="code">Código de Verificação</label>
+                    <input type="text" id="code" placeholder="_ _ _ _ _ _" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Verificar Código</button>
+                <a class="back-link" onclick="showStep('step-email')">Voltar e usar outro e-mail</a>
+            </form>
+        </div>
+
+        <!-- ETAPA 3: REDEFINIR SENHA -->
+        <div id="step-password" style="display: none;">
+            <h2 class="page-title">Crie sua nova senha</h2>
+            <p class="page-description">Escolha uma senha forte que você não use em outro lugar.</p>
+            <form id="formPasswordReset">
+                <div class="form-group">
+                    <label for="nova_senha">Nova Senha</label>
+                    <input type="password" id="nova_senha" placeholder="Digite sua nova senha" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmar_senha">Confirmar Senha</label>
+                    <input type="password" id="confirmar_senha" placeholder="Confirme sua nova senha" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Alterar Senha</button>
+            </form>
+        </div>
+
+        <!-- ETAPA FINAL: SUCESSO -->
+         <div id="step-success" style="display: none;">
+            <h2 class="page-title">Sucesso!</h2>
+            <p class="page-description">Sua senha foi alterada com sucesso. Agora você já pode fazer o login.</p>
+            <a id="loginLink" href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html" class="login-link" style="display: inline-block;">Ir para o Login</a>
+        </div>
+
+        <!-- Área de mensagens para erros ou informações -->
+        <div id="messageArea" class="message-area"></div>
     </div>
 
     <script>
-    document.getElementById('formEsqueciSenha').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
+        // URLs da sua API Flask
+        const API_URL = 'http://127.0.0.1:5000/usuario';
+        
+        // Elementos do DOM
+        const steps = {
+            email: document.getElementById('step-email'),
+            code: document.getElementById('step-code'),
+            password: document.getElementById('step-password'),
+            success: document.getElementById('step-success')
+        };
         const messageArea = document.getElementById('messageArea');
         
-        // Limpa a área de mensagem e define um estado de "carregando"
-        messageArea.textContent = 'Enviando...';
-        messageArea.className = 'message-area';
+        // Variáveis para guardar o estado
+        let userEmail = '';
+        let verificationCode = '';
 
-        try {
-            const apiEndpoint = 'http://127.0.0.1:5000/usuario/esqueciSenha';
-            const requestData = { email };
-
-            // --- DEBUG ADICIONADO AQUI ---
-            console.log("--- DEBUG: Enviando requisição para a API ---");
-            console.log("Endpoint:", apiEndpoint);
-            console.log("Dados enviados:", requestData);
-            // --- FIM DO DEBUG ---
-
-            const res = await fetch(apiEndpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(requestData)
-            });
-
-            const data = await res.json();
-
-            // Verifica se a resposta foi bem-sucedida (status 2xx)
-            if (res.ok) {
-                messageArea.textContent = data.msg;
-                messageArea.classList.add('message-success');
-            } else {
-                messageArea.textContent = data.erro || 'Ocorreu um erro desconhecido.';
-                messageArea.classList.add('message-error');
-            }
-        } catch (error) {
-            console.error('Erro na requisição:', error);
-            messageArea.textContent = 'Não foi possível conectar ao servidor. Tente novamente mais tarde.';
-            messageArea.classList.add('message-error');
+        // Função para mostrar a etapa correta e esconder as outras
+        function showStep(stepName) {
+            Object.values(steps).forEach(step => step.style.display = 'none');
+            steps[stepName].style.display = 'block';
+            messageArea.style.display = 'none'; // Esconde mensagens de erro ao trocar de etapa
         }
-    });
+
+        // Função para exibir mensagens
+        function showMessage(message, isError = false) {
+            messageArea.textContent = message;
+            messageArea.className = isError ? 'message-area message-error' : 'message-area message-success';
+        }
+        
+        // ETAPA 1: Lidar com o envio do e-mail
+        document.getElementById('formEmailRequest').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const emailInput = document.getElementById('email');
+            const button = e.target.querySelector('button');
+            userEmail = emailInput.value;
+
+            button.disabled = true;
+            button.textContent = 'Enviando...';
+            
+            try {
+                const res = await fetch(`http://127.0.0.1:5000/usuario/esqueciSenha`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail })
+                });
+
+                const data = await res.json();
+                
+                // Independente de sucesso ou falha, a API retorna 200 para segurança.
+                // A mensagem da API é exibida e o fluxo continua.
+                showMessage(data.msg);
+                document.getElementById('userEmailDisplay').textContent = userEmail;
+                showStep('code');
+
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage('Não foi possível conectar ao servidor.', true);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Enviar Código';
+            }
+        });
+
+        // ETAPA 2: Lidar com a verificação do código
+        document.getElementById('formCodeVerification').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const codeInput = document.getElementById('code');
+            const button = e.target.querySelector('button');
+            verificationCode = codeInput.value;
+
+            button.disabled = true;
+            button.textContent = 'Verificando...';
+
+            try {
+                const res = await fetch(`http://127.0.0.1:5000/usuario/verificarCodigo`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: userEmail, codigo: verificationCode })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showStep('password');
+                } else {
+                    showMessage(data.msg || 'Código inválido ou expirado.', true);
+                }
+            } catch (error) {
+                 console.error('Erro:', error);
+                 showMessage('Erro ao verificar o código. Tente novamente.', true);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Verificar Código';
+            }
+        });
+
+        // ETAPA 3: Lidar com a redefinição da senha
+        document.getElementById('formPasswordReset').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const novaSenha = document.getElementById('nova_senha').value;
+            const confirmarSenha = document.getElementById('confirmar_senha').value;
+            const button = e.target.querySelector('button');
+
+            if (novaSenha !== confirmarSenha) {
+                showMessage('As senhas não coincidem. Tente novamente.', true);
+                return;
+            }
+
+            button.disabled = true;
+            button.textContent = 'Alterando...';
+
+            try {
+                const res = await fetch(`http://127.0.0.1:5000/usuario/resetarSenha`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        email: userEmail, 
+                        codigo: verificationCode, 
+                        nova_senha: novaSenha 
+                    })
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    showStep('success');
+                } else {
+                    showMessage(data.msg || 'Não foi possível redefinir a senha.', true);
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                showMessage('Erro ao conectar com o servidor.', true);
+            } finally {
+                button.disabled = false;
+                button.textContent = 'Alterar Senha';
+            }
+        });
     </script>
 </body>
 </html>
