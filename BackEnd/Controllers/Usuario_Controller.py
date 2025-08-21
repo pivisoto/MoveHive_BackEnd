@@ -57,18 +57,10 @@ def adicionar_informacoes():
     except Exception as e:
         return jsonify({"erro": str(e)}), 500
 
-
+# Implementado
 @usuario_bp.route('/MeuPerfil', methods=['GET'])
 def meu_perfil():
-    try:
-        dados = json.loads(request.form.get('dados', '{}'))
-        arquivo_foto = request.files.get('foto')
-
-        resposta, status = usuario_service.adicionar_dados_modal(dados, arquivo_foto)
-        return jsonify(resposta), status
-
-    except Exception as e:
-        return jsonify({"erro": str(e)}), 500
+    return usuario_service.meuPerfil()
 
 
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
@@ -123,6 +115,12 @@ def listar_usuarios_com_filtro():
 @usuario_bp.route('/usuariosSeguidos', methods=['GET'])
 def listar_usuarios_seguidos():
     resposta, status = usuario_service.listar_usuarios_seguindo()
+    return jsonify(resposta), status
+
+# Implementado
+@usuario_bp.route('/usuariosSeguidores', methods=['GET'])
+def listar_seguidores_controller():
+    resposta, status = usuario_service.listar_seguidores()
     return jsonify(resposta), status
 
 # Implementado

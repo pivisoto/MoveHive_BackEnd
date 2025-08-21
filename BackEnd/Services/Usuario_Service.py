@@ -162,15 +162,43 @@ def editar_usuario_por_id(novos_dados):
 
 # Implementado
 @token_required 
-def buscar_usuario_por_id():
-    usuario_id = g.user_id
-    usuario_ref = db.collection('Usuarios').document(usuario_id)
-    usuario = usuario_ref.get()
+def meuPerfil():
+    try:
+            usuario_id = g.user_id
 
-    if not usuario.exists:
-        return jsonify({'erro': 'Usuário não encontrado!'}), 404
+            usuario_ref = db.collection('Usuarios').document(usuario_id)
+            usuario_doc = usuario_ref.get()
 
-    return usuario.to_dict()
+            if not usuario_doc.exists:
+
+                return jsonify({'erro': 'Usuário não encontrado!'}), 404
+
+            usuario_data = usuario_doc.to_dict()
+
+            posts_query = db.collection('Posts').where('usuario_id', '==', usuario_id).stream()
+            total_posts = len(list(posts_query))
+
+
+            total_seguidores = len(usuario_data.get('seguidores', []))
+
+           
+            total_seguindo = len(usuario_data.get('seguindo', []))
+           
+
+            usuario_data['total_posts'] = total_posts
+            usuario_data['seguidores_count'] = total_seguidores 
+            usuario_data['seguindo_count'] = total_seguindo     
+
+            usuario_data.pop('seguidores', None)
+            usuario_data.pop('seguindo', None)
+            
+            usuario_data.pop('senha', None)
+
+            return jsonify(usuario_data), 200
+
+    except Exception as e:
+            print(f"Erro ao buscar perfil do usuário {g.user_id}: {e}")
+            return jsonify({'erro': f'Ocorreu um erro interno ao processar seu perfil.'}), 500
 
 
 # Implementado
@@ -201,7 +229,6 @@ def seguir_usuario(seguido_id):
     except Exception as e:
         return {'erro': str(e)}, 500
     
-
 # Implementado
 @token_required
 def deixar_de_seguir_usuario(seguido_id):
@@ -229,7 +256,6 @@ def deixar_de_seguir_usuario(seguido_id):
 
     except Exception as e:
         return {'erro': str(e)}, 500
-    
 
 # Implementado
 @token_required
@@ -379,6 +405,40 @@ def listar_usuarios_seguindo():
 
     except Exception as e:
         print(f"Erro em listar_usuarios_seguindo: {e}")
+        return {'erro': str(e)}, 500
+    
+# Implementado
+@token_required
+def listar_seguidores():
+    try:
+        usuario_logado_id = g.user_id
+        usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
+        usuario_logado_doc = usuario_logado_ref.get()
+
+        if not usuario_logado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        # Busca todos os usuários que seguem o usuário logado
+        query = db.collection('Usuarios').where('seguindo', 'array_contains', usuario_logado_id).stream()
+
+        seguidores = []
+        for user_doc in query:
+            dados = user_doc.to_dict()
+            seguidores.append({
+                'id': user_doc.id,
+                'username': dados.get('username'),
+                'nome_completo': dados.get('nome_completo'),
+                'foto_perfil': dados.get('foto_perfil'),
+                'biografia': dados.get('biografia', ''),
+                'cidade': dados.get('cidade', ''),
+                'estado': dados.get('estado', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {})
+            })
+
+        return {'seguidores': seguidores}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_seguidores: {e}")
         return {'erro': str(e)}, 500
 
 # Implementado

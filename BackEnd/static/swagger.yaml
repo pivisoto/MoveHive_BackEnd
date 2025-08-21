@@ -581,6 +581,74 @@ paths:
                     type: string
                     example: "Descrição do erro interno"
 
+  /usuario/usuariosSeguidores:
+   get:
+      summary: Listar seguidores do usuário autenticado
+      description: Retorna todos os usuários que seguem o usuário atualmente autenticado.
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de seguidores.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  seguidores:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "def456"
+                        username:
+                          type: string
+                          example: "maria_souza"
+                        nome_completo:
+                          type: string
+                          example: "Maria Souza"
+                        foto_perfil:
+                          type: string
+                          example: "https://example.com/foto_maria.jpg"
+                        biografia:
+                          type: string
+                          example: "Amante de basquete e natação"
+                        cidade:
+                          type: string
+                          example: "Rio de Janeiro"
+                        estado:
+                          type: string
+                          example: "RJ"
+                        esportes_praticados:
+                          type: object
+                          example:
+                            basquete: amador
+                            natação: profissional
+        '404':
+          description: Usuário autenticado não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário autenticado não encontrado"
+        '500':
+          description: Erro interno no servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Descrição do erro interno"
+
   /usuario/rankingTodos:
     get:
       summary: Lista o ranking de usuários
@@ -818,6 +886,131 @@ paths:
                   erro:
                     type: string
                     example: Ocorreu um erro interno no servidor.
+
+
+  /usuario/MeuPerfil:
+    get:
+      tags:
+        - Usuário
+      summary: Retorna os dados do perfil do usuário logado
+      description: >
+        Retorna as informações do usuário autenticado, incluindo biografia, cidade, esportes praticados,
+        eventos criados e participando, foto de perfil, pontos, seguidores e seguindo.
+        Campos sensíveis como senha não são retornados.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Perfil do usuário retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                  nome_completo:
+                    type: string
+                  username:
+                    type: string
+                  email:
+                    type: string
+                  biografia:
+                    type: string
+                  cidade:
+                    type: string
+                  estado:
+                    type: string
+                  data_nascimento:
+                    type: string
+                    format: date
+                  data_criacao:
+                    type: string
+                    format: date-time
+                  esportes_praticados:
+                    type: object
+                    additionalProperties:
+                      type: string
+                  eventos_criados:
+                    type: array
+                    items:
+                      type: string
+                  eventos_participando:
+                    type: array
+                    items:
+                      type: string
+                  post_criados:
+                    type: array
+                    items:
+                      type: string
+                  treinos_id:
+                    type: array
+                    items:
+                      type: string
+                  seguidores_count:
+                    type: integer
+                  seguindo_count:
+                    type: integer
+                  pontos:
+                    type: number
+                    format: float
+                  status_usuario:
+                    type: string
+                  tipo_usuario:
+                    type: string
+                  total_posts:
+                    type: integer
+                  foto_perfil:
+                    type: string
+                    format: uri
+              example:
+                id: "6244f084-8cdd-4aa2-9a01-ddba2b898291"
+                nome_completo: "Paulo"
+                username: "paulopalauro"
+                email: "paulopalauro@gmail.com"
+                biografia: "Sou Paulo"
+                cidade: "São Caetano do Sul"
+                estado: "SP"
+                data_nascimento: "2004-05-15"
+                data_criacao: "2025-07-24T21:20:03.953271+00:00"
+                esportes_praticados:
+                  futsal: "profissional"
+                  tênis: "amador"
+                eventos_criados:
+                  - "7d39af3e-2e44-4fed-8f37-57abc3f2b5dd"
+                  - "f755195a-8cb2-434c-b4d3-c57a37a3470e"
+                eventos_participando: []
+                post_criados:
+                  - "968975a1-1bd3-468b-ad8d-242c51354063"
+                treinos_id:
+                  - "99b16ceb-9266-4eba-9adb-63911faee01c"
+                seguidores_count: 1
+                seguindo_count: 1
+                pontos: 1833.33
+                status_usuario: "ativo"
+                tipo_usuario: "comum"
+                total_posts: 0
+                foto_perfil: "https://storage.googleapis.com/safeviewbd.appspot.com/Usuarios/6244f084-8cdd-4aa2-9a01-ddba2b898291/Fotos/foto_perfil.jpg"
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário não encontrado!"
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Ocorreu um erro interno ao processar seu perfil."
 
 # Esporte
  
