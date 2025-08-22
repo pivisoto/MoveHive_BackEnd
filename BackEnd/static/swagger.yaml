@@ -159,37 +159,35 @@ paths:
       tags:
         - Usuário
       summary: Adiciona ou atualiza dados do perfil do usuário
-      description: Adiciona informações no perfil do usuário autenticado, como biografia, cidade, estado e esportes praticados.
+      description: Adiciona ou atualiza informações no perfil do usuário autenticado, como foto, biografia, cidade, estado e esportes praticados. Esta rota espera um multipart/form-data.
       security:
         - bearerAuth: []
       requestBody:
         required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
               properties:
-                biografia:
+                foto:
                   type: string
-                  example: "Amo tecnologia e futebol."
-                cidade:
+                  format: binary
+                  description: "Arquivo de imagem para a foto de perfil do usuário (opcional)."
+                dados:
                   type: string
-                  example: São Paulo
-                estado:
-                  type: string
-                  example: SP
-                esportes_praticados:
-                  type: object
-                  additionalProperties:
-                    type: string
-                  example:
-                    futebol: iniciante
-                    basquete: amador
-              required:
-                - esportes_praticados
+                  description: "Uma string JSON contendo os dados textuais a serem atualizados."
+                  example: '{
+                    "biografia": "Amo tecnologia e futebol.",
+                    "cidade": "São Paulo",
+                    "estado": "SP",
+                    "esportes_praticados": {
+                      "futebol": "iniciante",
+                      "basquete": "amador"
+                    }
+                  }'
       responses:
         '200':
-          description: Informações adicionadas com sucesso
+          description: Informações atualizadas com sucesso
           content:
             application/json:
               schema:
@@ -200,7 +198,7 @@ paths:
                     example: sucesso
                   mensagem:
                     type: string
-                    example: Informações adicionadas com sucesso
+                    example: Informações atualizadas com sucesso
         '400':
           description: Nenhum dado fornecido
           content:

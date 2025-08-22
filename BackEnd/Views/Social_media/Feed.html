@@ -949,7 +949,6 @@
                         removeButton = document.createElement('button');
                         removeButton.type = 'button';
                         removeButton.classList.add('remove-sport-button');
-                        removeButton.innerHTML = '×';
                         newSportEntry.appendChild(removeButton);
                     }
                     removeButton.onclick = () => newSportEntry.remove();
@@ -1029,6 +1028,18 @@
                     }
 
                     const endpointURL = `${usuarioApiUrl}/DadosModal`;
+                    
+                    // <-- INÍCIO DA MODIFICAÇÃO
+                    console.log("========================================");
+                    console.log("ENVIANDO DADOS PARA /DadosModal");
+                    console.log("Endpoint:", endpointURL);
+                    console.log("Objeto de dados textuais:", textualData);
+                    console.log("--- Conteúdo do FormData ---");
+                    for (let [key, value] of formData.entries()) {
+                        console.log(`${key}:`, value);
+                    }
+                    console.log("========================================");
+                    // <-- FIM DA MODIFICAÇÃO
 
                     try {
                         const response = await fetch(endpointURL, {

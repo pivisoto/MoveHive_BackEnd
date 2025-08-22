@@ -155,6 +155,7 @@
                 });
 
                 const data = await res.json();
+                console.log(data)
                 
                 // Independente de sucesso ou falha, a API retorna 200 para segurança.
                 // A mensagem da API é exibida e o fluxo continua.
@@ -189,6 +190,7 @@
                 });
 
                 const data = await res.json();
+                console.log(data)
 
                 if (res.ok) {
                     showStep('password');
@@ -231,6 +233,7 @@
                 });
 
                 const data = await res.json();
+                console.log(data)
 
                 if (res.ok) {
                     showStep('success');

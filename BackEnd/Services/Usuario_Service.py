@@ -32,19 +32,6 @@ def calcular_idade(data_nascimento):
     return idade
 
 
-# def enviar_email(destinatario, assunto, corpo):
-#     remetente = os.getenv("EMAIL_USER")
-#     senha = os.getenv("EMAIL_PASS")
-
-#     msg = MIMEText(corpo)
-#     msg['Subject'] = assunto
-#     msg['From'] = remetente
-#     msg['To'] = destinatario
-
-#     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-#         server.login(remetente, senha)
-#         server.sendmail(remetente, destinatario, msg.as_string())
-
 
 # Função para Registar Usuario
 # Implementado
