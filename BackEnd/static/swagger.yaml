@@ -28,7 +28,7 @@ components:
 
 paths:
 
-# USUARIOS
+# Usuarios
   /usuario/RegistrarUsuario:
     post:
       tags:
@@ -1078,11 +1078,11 @@ paths:
               properties:
                 username:
                   type: string
-                  example: "paulo_dev"
+                  example: novo_usuario
                 email:
                   type: string
                   format: email
-                  example: "paulo@example.com"
+                  example: usuario@email.com
                 senha:
                   type: string
                   format: password
@@ -1090,41 +1090,40 @@ paths:
                 data_nascimento:
                   type: string
                   format: date
-                  example: "2000-05-10"
+                  example: "2000-05-15"
+                esportes_praticados:
+                  type: string
+                  description: JSON em formato de string representando esportes praticados.
+                  example: '{"futebol": "Iniciante", "basquete": "profissional"}'
                 nome_completo:
                   type: string
-                  example: "Paulo Eduardo Palauro"
+                  example: "João da Silva"
                 biografia:
                   type: string
-                  example: "Apaixonado por tecnologia e esportes."
+                  example: "Apaixonado por esportes e tecnologia."
                 estado:
                   type: string
-                  example: "São Paulo"
+                  example: "SP"
                 cidade:
                   type: string
-                  example: "São Caetano do Sul"
+                  example: "São Paulo"
                 foto_perfil:
                   type: string
                   format: binary
-                  description: Arquivo de imagem (JPEG/PNG)
+                  description: Arquivo de imagem para foto de perfil
       responses:
         '200':
-          description: Atualização realizada com sucesso ou nenhuma alteração feita
+          description: Usuário atualizado com sucesso ou nenhuma alteração realizada
           content:
             application/json:
               schema:
                 type: object
-                oneOf:
-                  - properties:
-                      mensagem:
-                        type: string
-                        example: "Usuário atualizado com sucesso."
-                  - properties:
-                      mensagem:
-                        type: string
-                        example: "Nenhuma alteração foi feita."
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Usuário atualizado com sucesso."
         '400':
-          description: Erro de validação nos dados enviados
+          description: Erro de validação nos campos enviados
           content:
             application/json:
               schema:
@@ -1144,7 +1143,7 @@ paths:
                     type: string
                     example: "Usuário não encontrado."
         '409':
-          description: Conflito de dados únicos (username ou email já em uso)
+          description: Conflito de dados (username ou email já existentes)
           content:
             application/json:
               schema:
@@ -1152,9 +1151,9 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "O email 'paulo@example.com' já está em uso."
+                    example: "O username 'novo_usuario' já está em uso."
         '500':
-          description: Erro interno no servidor (banco de dados ou upload de imagem)
+          description: Erro interno no servidor ou ao acessar banco de dados
           content:
             application/json:
               schema:
@@ -1162,7 +1161,7 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "Erro ao atualizar o usuário no banco de dados: erro_desconhecido"
+                    example: "Erro ao atualizar o usuário no banco de dados."
 
   /usuario/ExcluirUsuario:
     delete:

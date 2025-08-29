@@ -17,6 +17,8 @@ from firebase_admin import firestore
 import smtplib
 from email.mime.text import MIMEText
 from utils import enviar_email
+import json
+
 
 
 
@@ -151,7 +153,6 @@ def editar_usuario(dados, foto_perfil=None):
             continue 
 
         try:
-
             if campo == 'username':
                 usuarios_com_mesmo_username = db.collection('Usuarios').where('username', '==', valor).limit(1).get()
                 if len(usuarios_com_mesmo_username) > 0 and usuarios_com_mesmo_username[0].id != usuario_id:
@@ -182,6 +183,17 @@ def editar_usuario(dados, foto_perfil=None):
                     return {"erro": "O usuário deve ter pelo menos 18 anos."}, 400
                 
                 updates[campo] = valor
+            
+            elif campo == 'esportes_praticados':
+                try:
+                    esportes_obj = json.loads(valor)
+                    if not isinstance(esportes_obj, dict):
+                        return {"erro": "O formato para esportes_praticados deve ser um objeto JSON válido."}, 400
+                    
+                    updates[campo] = esportes_obj
+
+                except json.JSONDecodeError:
+                    return {"erro": "Formato inválido para o campo 'esportes_praticados'. Esperava-se um JSON."}, 400
             
             elif campo in ['nome_completo', 'biografia', 'estado', 'cidade']:
                 updates[campo] = str(valor)
