@@ -1,839 +1,689 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Editar Perfil</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f0f2f5;
-      color: #333;
-    }
-    .container {
-      max-width: 800px;
-      margin: 20px auto;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      position: relative; /* Needed for absolute positioning of the back button */
-    }
-    h1 {
-      color: #212529;
-      text-align: center;
-      margin-bottom: 30px;
-    }
-    .back-button {
-      position: absolute;
-      top: 20px; /* Adjust based on container padding */
-      left: 20px; /* Adjust based on container padding */
-      font-size: 1.5rem; /* Make the arrow visible */
-      text-decoration: none;
-      color: #007bff; /* Use a theme color */
-      padding: 5px; /* Give it a clickable area */
-      border-radius: 5px; /* Slight rounding */
-      transition: color 0.2s ease, background-color 0.2s ease; /* Smooth hover effect */
-    }
-    .back-button:hover {
-      color: #0056b3; /* Darken color on hover */
-      background-color: #f0f0f0; /* Subtle background on hover */
-    }
-
-    .message {
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 8px;
-      font-weight: 500;
-      display: none;
-    }
-    .message.info {
-      background-color: #cfe2ff;
-      color: #084298;
-      border-left: 4px solid #0d6efd;
-    }
-    .message.success {
-      background-color: #d4edda;
-      color: #155724;
-      border-left: 4溪 solid #28a745;
-    }
-    .message.error {
-      background-color: #f8d7da;
-      color: #721c24;
-      border-left: 4px solid #dc3545;
-    }
-     .message.warning {
-        background-color: #fff3cd;
-        color: #664d03;
-        border-left: 4px solid #ffc107;
-     }
-
-
-    .form-group {
-      margin-bottom: 20px;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .form-group input[type="text"],
-    .form-group input[type="email"],
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      padding: 10px;
-      border: 1px solid #ced4da;
-      border-radius: 5px;
-      box-sizing: border-box;
-      font-size: 1rem;
-      color: #495057;
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 100px;
-    }
-
-    .form-group select:disabled,
-    .form-group input[readonly] {
-        background-color: #e9ecef;
-        cursor: not-allowed;
-    }
-
-
-    .profile-picture-preview {
-        display: block;
-        width: 100px;
-        height: 100px;
-        border-radius: 50%;
-        object-fit: cover;
-        margin-top: 10px;
-        border: 3px solid #e9ecef;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.1);
-        background-color: #e9ecef;
-        text-align: center;
-        line-height: 100px;
-        font-size: 30px;
-        color: #6c757d;
-        font-weight: bold;
-    }
-     .profile-picture-preview img {
-         display: block;
-         width: 100%;
-         height: 100%;
-         object-fit: cover;
-         border-radius: 50%;
-     }
-
-
-     .profile-picture-upload {
-         margin-top: 15px;
-         padding: 10px;
-         border: 2px dashed #ced4da;
-         border-radius: 5px;
-         background-color: #f8f9fa;
-         text-align: center;
-         cursor: pointer;
-     }
-     .profile-picture-upload:hover {
-         border-color: #007bff;
-     }
-      .profile-picture-upload input[type="file"] {
-          display: none;
-      }
-
-    .form-group input[type="text"][readonly] {
-      background-color: #e9ecef;
-      cursor: not-allowed;
-    }
-
-    .sports-container {
-        border: 1px solid #ced4da;
-        border-radius: 5px;
-        padding: 15px;
-        background-color: #f8f9fa;
-    }
-
-    .sport-entry {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-bottom: 15px;
-        padding-bottom: 15px;
-        border-bottom: 1px solid #e9ecef;
-    }
-    .sport-entry:last-child {
-        border-bottom: none;
-        margin-bottom: 0;
-        padding-bottom: 0;
-    }
-
-    .sport-entry select {
-        flex: 1;
-        min-width: 120px;
-    }
-
-    .sport-entry .remove-sport-btn {
-        background-color: #dc3545;
-        color: white;
-        border: none;
-        border-radius: 5px;
-        padding: 5px 10px;
-        cursor: pointer;
-        transition: background-color 0.2s;
-        font-size: 0.9rem;
-    }
-     .sport-entry .remove-sport-btn:hover {
-         background-color: #c82333;
-     }
-
-    .add-sport-btn {
-       display: inline-block;
-       background-color: #28a745;
-       color: white;
-       border: none;
-       border-radius: 5px;
-       padding: 8px 15px;
-       cursor: pointer;
-       transition: background-color 0.2s;
-       margin-top: 10px;
-    }
-    .add-sport-btn:hover {
-        background-color: #218838;
-    }
-
-
-    .btn-save {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      font-size: 1.1rem;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-      margin-top: 30px;
-    }
-
-    .btn-save:hover {
-      background-color: #0056b3;
-    }
-
-    @media (max-width: 600px) {
-        .container {
-            padding: 15px;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Editar Perfil - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- ESTILOS VISUAIS --- */
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --tiktok-bg: #f0f2f5;
+            --tiktok-header-bg: #fff;
+            --tiktok-card-bg: #fff;
+            --tiktok-card-border: #e0e0e0;
+            --tiktok-icon-color: #666;
+            --tiktok-accent-text: #333;
+            --error-color: #c0392b;
+            --delete-color: #e74c3c;
         }
-         .back-button {
-             top: 15px;
-             left: 15px;
-         }
-        .sport-entry {
-            flex-direction: column;
-            align-items: stretch;
-            gap: 10px;
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
-         .sport-entry select, .sport-entry button {
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--tiktok-bg);
+            color: var(--text-color);
+            line-height: 1.6;
+            display: flex;
+            justify-content: center;
+        }
+
+        .app-container {
             width: 100%;
-            min-width: 0;
-         }
-    }
+            max-width: 600px;
+            background-color: var(--secondary-color);
+            position: relative;
+        }
 
-  </style>
+        .app-header {
+            background-color: var(--tiktok-header-bg);
+            padding: 12px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--tiktok-card-border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .app-header h2 {
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .header-action {
+            font-size: 1.5rem;
+            color: var(--tiktok-icon-color);
+            text-decoration: none;
+        }
+
+        .header-save-btn {
+            background: none;
+            border: none;
+            color: var(--accent-color);
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .page-content {
+            padding: 20px 15px 80px 15px;
+        }
+
+        .profile-picture-editor {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .picture-wrapper {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-picture-preview {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .picture-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-size: 2rem;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .picture-wrapper:hover .picture-overlay {
+            opacity: 1;
+        }
+
+        .change-photo-text {
+            font-weight: 600;
+            color: var(--text-color);
+            margin-top: 10px;
+        }
+
+        #foto_perfil_input {
+            display: none;
+        }
+
+        .edit-profile-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        .edit-profile-form label {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .edit-profile-form input[type="text"],
+        .edit-profile-form input[type="email"],
+        .edit-profile-form input[type="password"],
+        .edit-profile-form input[type="date"],
+        .edit-profile-form textarea,
+        .edit-profile-form select {
+            width: 100%;
+            padding: 12px 15px;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .edit-profile-form input::placeholder,
+        .edit-profile-form textarea::placeholder {
+            color: #999;
+        }
+
+        .edit-profile-form input:focus,
+        .edit-profile-form textarea:focus,
+        .edit-profile-form select:focus {
+            outline: none;
+            border-color: var(--accent-color);
+            background-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.25);
+        }
+
+        .edit-profile-form textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .password-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .password-note {
+            font-size: 0.85rem;
+            color: #777;
+            margin-bottom: 15px;
+        }
+
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background-color 0.2s ease;
+        }
+
+        .save-button {
+            background-color: var(--accent-color);
+            color: var(--tiktok-accent-text);
+        }
+
+        .save-button:hover {
+            background-color: #e6c300;
+        }
+
+        .save-button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .delete-button {
+            background-color: transparent;
+            color: var(--delete-color);
+            border: 1px solid var(--delete-color);
+        }
+
+        .delete-button:hover {
+            background-color: var(--delete-color);
+            color: white;
+        }
+        
+        .form-error-message {
+            color: var(--error-color);
+            font-size: 0.85rem;
+            margin-top: 5px;
+            display: none;
+        }
+
+        /* --- ESTILOS DO POP-UP DE EXCLUSÃO --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        .modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.show .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-content h3 {
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+        }
+
+        .modal-content p {
+            margin-bottom: 25px;
+            color: #666;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .modal-btn-confirm {
+            background-color: var(--delete-color);
+            color: white;
+        }
+        .modal-btn-confirm:hover {
+            background-color: #c0392b;
+        }
+        .modal-btn-confirm:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+
+        .modal-btn-cancel {
+            background-color: #f0f2f5;
+            color: #333;
+        }
+        .modal-btn-cancel:hover {
+            background-color: #e1e3e6;
+        }
+
+    </style>
 </head>
 <body>
-  <div class="container">
-    <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html" class="back-button">←</a>
+    <div class="app-container">
+        <header class="app-header">
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html" class="header-action"><i class="fas fa-arrow-left"></i></a>
+            <h2>Editar Perfil</h2>
+            <button class="header-save-btn" id="header-save-btn">Salvar</button>
+        </header>
 
-    <h1>Editar Perfil</h1>
+        <main class="page-content">
+            <form id="edit-profile-form" class="edit-profile-form">
 
-    <div id="mensagemDiv" class="message"></div>
+                <div class="profile-picture-editor">
+                    <label for="foto_perfil_input" class="picture-wrapper">
+                        <img src="https://via.placeholder.com/150" alt="Foto de Perfil" class="profile-picture-preview" id="profile-pic-preview">
+                        <div class="picture-overlay"><i class="fas fa-camera"></i></div>
+                    </label>
+                    <input type="file" id="foto_perfil_input" name="foto_perfil" accept="image/*">
+                    <span class="change-photo-text">Alterar foto de perfil</span>
+                </div>
 
-    <form id="editProfileForm">
+                <div class="form-group">
+                    <label for="nome_completo">Nome Completo</label>
+                    <input type="text" id="nome_completo" name="nome_completo" placeholder="Carregando...">
+                </div>
 
-      <div class="form-group">
-        <label>Foto de Perfil:</label>
-         <div id="profilePicturePreview" class="profile-picture-preview">
-         </div>
-         <label for="fileInput" class="profile-picture-upload">
-            Clique para selecionar uma nova foto
-             <input type="file" id="fileInput" name="foto_perfil" accept="image/*">
-         </label>
-         <small style="color: #dc3545;">Nota: O upload de foto não é suportado nesta versão da página de edição.</small>
-      </div>
+                <div class="form-group">
+                    <label for="username">Nome de Usuário</label>
+                    <input type="text" id="username" name="username" placeholder="Carregando...">
+                </div>
 
-      <div class="form-group">
-        <label for="nomeCompleto">Nome Completo:</label>
-        <input type="text" id="nomeCompleto" name="nome_completo" required>
-      </div>
+                <div class="form-group">
+                    <label for="biografia">Biografia</label>
+                    <textarea id="biografia" name="biografia" placeholder="Carregando..."></textarea>
+                </div>
 
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" readonly>
-      </div>
+                <div class="form-group">
+                    <label for="email">E-mail</label>
+                    <input type="email" id="email" name="email" placeholder="Carregando...">
+                </div>
 
-       <div class="form-group">
-           <label>Localização:</label>
-           <div style="display: flex; gap: 15px;">
-               <select id="estado" name="estado" style="flex: 1;" required>
-                   <option value="">Selecione o Estado</option>
-                   <option value="AC">Acre (AC)</option>
-                   <option value="AL">Alagoas (AL)</option>
-                   <option value="AP">Amapá (AP)</option>
-                   <option value="AM">Amazonas (AM)</option>
-                   <option value="BA">Bahia (BA)</option>
-                   <option value="CE">Ceará (CE)</option>
-                   <option value="DF">Distrito Federal (DF)</option>
-                   <option value="ES">Espírito Santo (ES)</option>
-                   <option value="GO">Goiás (GO)</option>
-                   <option value="MA">Maranhão (MA)</option>
-                   <option value="MT">Mato Grosso (MT)</option>
-                   <option value="MS">Mato Grosso do Sul (MS)</option>
-                   <option value="MG">Minas Gerais (MG)</option>
-                   <option value="PA">Pará (PA)</option>
-                   <option value="PB">Paraíba (PB)</option>
-                   <option value="PR">Paraná (PR)</option>
-                   <option value="PE">Pernambuco (PE)</option>
-                   <option value="PI">Piauí (PI)</option>
-                   <option value="RJ">Rio de Janeiro (RJ)</option>
-                   <option value="RN">Rio Grande do Norte (RN)</option>
-                   <option value="RS">Rio Grande do Sul (RS)</option>
-                   <option value="RO">Rondônia (RO)</option>
-                   <option value="RR">Roraima (RR)</option>
-                   <option value="SC">Santa Catarina (SC)</option>
-                   <option value="SP">São Paulo (SP)</option>
-                   <option value="SE">Sergipe (SE)</option>
-                   <option value="TO">Tocantins (TO)</option>
-               </select>
-               <select id="cidadeSelect" name="cidade" style="flex: 1;" disabled required>
-                   <option value="">Selecione o Estado Primeiro</option>
-               </select>
-           </div>
-       </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="estado">
+                            <option value="">Carregando estados...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cidade">Cidade</label>
+                        <select id="cidade" name="cidade" disabled>
+                            <option value="">Selecione um estado primeiro</option>
+                        </select>
+                    </div>
+                </div>
 
+                <div class="form-group">
+                    <label for="data_nascimento">Data de Nascimento</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento">
+                </div>
 
-      <div class="form-group">
-        <label for="biografia">Biografia:</label>
-        <textarea id="biografia" name="biografia" rows="4"></textarea>
-      </div>
+                <div class="password-section">
+                    <p class="password-note">Deixe os campos abaixo em branco se não desejar alterar sua senha.</p>
+                    <div class="form-group">
+                        <label for="senha">Nova Senha</label>
+                        <input type="password" id="senha" name="senha" placeholder="••••••••">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmar_senha">Confirmar Nova Senha</label>
+                        <input type="password" id="confirmar_senha" name="confirmar_senha" placeholder="••••••••">
+                        <p id="password-match-error" class="form-error-message">As senhas não coincidem.</p>
+                    </div>
+                </div>
 
-      <div class="form-group">
-          <label>Esportes e Habilidade:</label>
-          <div id="esportesHabilidadeContainer" class="sports-container">
-          </div>
-           <button type="button" id="addSportBtn" class="add-sport-btn">+ Adicionar Esporte</button>
-      </div>
+                <button type="submit" class="action-button save-button" id="main-save-btn">Salvar Alterações</button>
+                <button type="button" class="action-button delete-button" id="delete-account-btn">Excluir Conta</button>
+            </form>
+        </main>
+    </div>
 
-      <button type="submit" class="btn-save">Salvar Alterações</button>
-    </form>
-  </div>
-
-  <script>
-    const baseUrl = 'http://127.0.0.1:5000';
-    const usuarioApiUrl = `${baseUrl}/usuario`;
-    const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
-    const cidadesApiUrl = (uf) => `https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`;
-
-    let currentUserId = null;
-    let availableSports = [];
-    const skillLevels = ['iniciante', 'intermediario', 'avancado'];
-
-    document.addEventListener("DOMContentLoaded", function () {
-      const token = localStorage.getItem('token');
-      const mensagemDiv = document.getElementById('mensagemDiv');
-      const editProfileForm = document.getElementById('editProfileForm');
-      const profilePicturePreview = document.getElementById('profilePicturePreview');
-      const fileInput = document.getElementById('fileInput');
-      const esportesHabilidadeContainer = document.getElementById('esportesHabilidadeContainer');
-      const addSportBtn = document.getElementById('addSportBtn');
-      const estadoSelect = document.getElementById('estado');
-      const cidadeSelect = document.getElementById('cidadeSelect');
+    <!-- POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div class="modal-overlay" id="delete-confirm-modal">
+        <div class="modal-content">
+            <h3>Confirmar Exclusão</h3>
+            <p>Você tem certeza que deseja excluir sua conta? Esta ação é permanente e todos os seus dados serão removidos.</p>
+            <div class="modal-actions">
+                <button class="modal-btn modal-btn-cancel" id="cancel-delete-btn">Cancelar</button>
+                <button class="modal-btn modal-btn-confirm" id="confirm-delete-btn">Sim, excluir</button>
+            </div>
+        </div>
+    </div>
 
 
-      mensagemDiv.style.display = 'none';
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            // --- CONFIGURAÇÕES E SELETORES ---
+            const token = localStorage.getItem('jwtToken');
+            const API_BASE_URL = 'http://127.0.0.1:5000';
+            const IBGE_API_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
-      if (!token) {
-        showMessage('error', 'Você precisa estar logado para editar o perfil.');
-         setTimeout(() => {
-             window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-        }, 2000);
-        return;
-      }
-
-      Promise.all([
-          fetch(usuarioApiUrl + "/BuscarUsuarioID", {
-              method: 'GET',
-              headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(esportesApiUrl, {
-              method: 'GET'
-          })
-      ])
-      .then(async ([profileResponse, sportsResponse]) => {
-          if (!profileResponse.ok) {
-              if (profileResponse.status === 401) {
-                   showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
-                   setTimeout(() => {
-                        localStorage.removeItem('token');
-                        window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-                    }, 2000);
-              } else {
-                   const errorData = await profileResponse.json();
-                   showMessage('error', errorData.erro || `Erro ao carregar perfil: ${profileResponse.status} ${profileResponse.statusText}`);
-              }
-              throw new Error('Failed to load profile');
-          }
-
-           if (!sportsResponse.ok) {
-               console.error(`Erro ao carregar lista de esportes: ${sportsResponse.status} ${sportsResponse.statusText}`);
-               showMessage('warning', 'Não foi possível carregar a lista de esportes para edição.');
-               availableSports = [];
-           } else {
-               availableSports = await sportsResponse.json();
-               if (!Array.isArray(availableSports)) {
-                    console.error("Lista de esportes retornada não é um array:", availableSports);
-                    availableSports = [];
-               }
-           }
-
-          const profileData = await profileResponse.json();
-          return profileData;
-
-      })
-      .then(profileData => {
-
-        if (profileData.status === 'sucesso') {
-          const usuario = profileData.usuario;
-
-          currentUserId = usuario.id; // Store the user ID
-          if (!currentUserId) {
-              showMessage('error', 'ID do usuário não encontrado nos dados do perfil. Não é possível editar.');
-              editProfileForm.style.display = 'none';
-              return;
-          }
-
-          document.getElementById('nomeCompleto').value = usuario.nome_completo || '';
-          document.getElementById('username').value = usuario.username || '';
-          document.getElementById('biografia').value = usuario.biografia || '';
-
-          const userStateUf = usuario.estado || '';
-          estadoSelect.value = userStateUf;
-
-          if (userStateUf) {
-              populateCidadesPorEstado(userStateUf, usuario.cidade || '');
-          } else {
-              cidadeSelect.innerHTML = '<option value="">Selecione o Estado Primeiro</option>';
-              cidadeSelect.disabled = true;
-              cidadeSelect.value = '';
-          }
-
-          updateProfilePicturePreview(usuario.foto_perfil, usuario.nome_completo);
-
-          populateUserSports(usuario.esportes_praticados); // Pass the array of objects directly
-
-          showMessage('success', 'Dados do perfil carregados. Você pode editá-los.');
-
-        } else {
-           showMessage('error', profileData.erro || 'Erro ao carregar dados do perfil para edição.');
-           console.error('PerfilData status erro:', profileData);
-           editProfileForm.style.display = 'none';
-        }
-      })
-      .catch(error => {
-        console.error('Erro durante o carregamento dos dados:', error);
-         if (mensagemDiv.style.display === 'none' || !mensagemDiv.textContent.includes('Você precisa estar logado')) {
-             showMessage('error', 'Erro ao carregar dados para edição. Verifique a conexão ou contate o suporte.');
-        }
-        editProfileForm.style.display = 'none';
-      });
+            const form = document.getElementById('edit-profile-form');
+            const profilePicPreview = document.getElementById('profile-pic-preview');
+            const fileInput = document.getElementById('foto_perfil_input');
+            const nomeCompletoInput = document.getElementById('nome_completo');
+            const usernameInput = document.getElementById('username');
+            const biografiaInput = document.getElementById('biografia');
+            const emailInput = document.getElementById('email');
+            const estadoSelect = document.getElementById('estado');
+            const cidadeSelect = document.getElementById('cidade');
+            const dataNascimentoInput = document.getElementById('data_nascimento');
+            const senhaInput = document.getElementById('senha');
+            const confirmarSenhaInput = document.getElementById('confirmar_senha');
+            const passwordErrorMsg = document.getElementById('password-match-error');
+            const mainSaveBtn = document.getElementById('main-save-btn');
+            const headerSaveBtn = document.getElementById('header-save-btn');
+            
+            // Seletores para exclusão
+            const deleteAccountBtn = document.getElementById('delete-account-btn');
+            const deleteConfirmModal = document.getElementById('delete-confirm-modal');
+            const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
 
 
-      // --- Handle Form Submission (MODIFIED FOR NEW ENDPOINT) ---
-      editProfileForm.addEventListener('submit', function (event) {
-        event.preventDefault();
+            // --- FUNÇÕES DE API (IBGE) ---
+            async function loadStates() {
+                try {
+                    const response = await fetch(`${IBGE_API_URL}/estados`);
+                    if (!response.ok) throw new Error('Falha ao buscar estados.');
+                    const states = await response.json();
+                    estadoSelect.innerHTML = '<option value="">Selecione um estado</option>';
+                    states.sort((a, b) => a.nome.localeCompare(b.nome));
+                    states.forEach(state => {
+                        const option = document.createElement('option');
+                        option.value = state.sigla;
+                        option.textContent = state.nome;
+                        estadoSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    console.error(error);
+                    estadoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                }
+            }
+            
+            async function loadCities(stateSigla) {
+                if (!stateSigla) {
+                    cidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro</option>';
+                    cidadeSelect.disabled = true;
+                    return;
+                }
+                cidadeSelect.innerHTML = '<option value="">Carregando cidades...</option>';
+                cidadeSelect.disabled = true;
+                try {
+                    const response = await fetch(`${IBGE_API_URL}/estados/${stateSigla}/municipios`);
+                    if (!response.ok) throw new Error('Falha ao buscar cidades.');
+                    const cities = await response.json();
+                    cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
+                    cities.forEach(city => {
+                        const option = document.createElement('option');
+                        option.value = city.nome;
+                        option.textContent = city.nome;
+                        cidadeSelect.appendChild(option);
+                    });
+                    cidadeSelect.disabled = false;
+                } catch (error) {
+                    console.error(error);
+                    cidadeSelect.innerHTML = '<option value="">Erro ao carregar</option>';
+                }
+            }
 
-        if (!currentUserId) {
-             showMessage('error', 'Erro: ID do usuário não disponível para salvar.');
-             return;
-        }
+            // --- FUNÇÕES DE DADOS DO USUÁRIO ---
+            async function loadUserProfile() {
+                if (!token) {
+                    alert('Erro de autenticação: Token não encontrado.');
+                    window.location.href = '/login.html'; // Redireciona se não houver token
+                    return;
+                }
+                try {
+                    const response = await fetch(`${API_BASE_URL}/usuario/MeuPerfil`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
+                    const userData = await response.json();
+                    await populateForm(userData);
+                } catch (error) {
+                    console.error('Falha ao carregar perfil:', error);
+                    alert('Não foi possível carregar seus dados.');
+                }
+            }
 
-        showMessage('info', 'Salvando alterações...');
+            async function populateForm(data) {
+                profilePicPreview.src = data.foto_perfil || 'https://via.placeholder.com/150';
+                nomeCompletoInput.value = data.nome_completo || '';
+                usernameInput.value = data.username || '';
+                biografiaInput.value = data.biografia || '';
+                emailInput.value = data.email || '';
 
-
-        const updatedSports = [];
-        const sportEntries = esportesHabilidadeContainer.querySelectorAll('.sport-entry');
-
-        let hasEmptySportOrLevel = false;
-
-        sportEntries.forEach(entry => {
-             const sportSelect = entry.querySelector('.sport-select');
-             const levelSelect = entry.querySelector('.level-select');
-
-             const sportId = sportSelect.value;
-             const level = levelSelect.value;
-
-             if (sportId && level) {
-                 const sportObject = availableSports.find(sport => String(sport.id) === sportId);
-
-                 if (sportObject) {
-                     updatedSports.push({
-                         id: sportId,
-                         nome: sportObject.nome,
-                         nivel: level
-                     });
-                 } else {
-                     console.warn(`Esporte com ID ${sportId} não encontrado na lista de esportes disponíveis. Entrada ignorada.`);
-                     showMessage('warning', `Esporte com ID ${sportId} não reconhecido e será ignorado.`);
-                 }
-             } else if (sportId || level) {
-                 hasEmptySportOrLevel = true;
-             }
-        });
-
-         if (hasEmptySportOrLevel) {
-            showMessage('warning', 'Algumas entradas de esporte/nível estavam incompletas e foram ignoradas.');
-        }
-
-
-        // --- Collect other form data INCLUDING the user ID ---
-        const updatedData = {
-            //id: currentUserId, // *** Add the user ID to the JSON body ***
-            nome_completo: document.getElementById('nomeCompleto').value,
-            estado: estadoSelect.value,
-            cidade: cidadeSelect.value,
-            biografia: document.getElementById('biografia').value,
-            esportes_praticados: updatedSports,
-        };
-
-        if (!updatedData.nome_completo || !updatedData.estado || !updatedData.cidade) {
-             showMessage('warning', 'Por favor, preencha Nome, Estado e Cidade.');
-             return;
-        }
-
-
-        const fileInput = document.getElementById('fileInput');
-        if (fileInput.files && fileInput.files[0]) {
-             console.warn("Nova foto de perfil selecionada, mas o endpoint atual não suporta upload de arquivo via JSON body. A foto não será salva.");
-        }
-
-
-        // --- Send PUT request with JSON body to the NEW endpoint ---
-        fetch(`${usuarioApiUrl}/EditarUsuario`, { // *** Changed URL: Removed the user ID from the path ***
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify(updatedData) // Send JSON string including the 'id'
-        })
-        .then(response => response.json().then(data => ({ status: response.status, body: data })))
-        .then(({ status, body }) => {
-            if (status >= 200 && status < 300) {
-                if (body.status === 'sucesso') {
-                    showMessage('success', body.mensagem || 'Perfil atualizado com sucesso!');
-                    setTimeout(() => {
-                       window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html';
-                    }, 1500);
+                if (data.data_nascimento) {
+                    const birthDate = new Date(data.data_nascimento);
+                    const year = birthDate.getUTCFullYear();
+                    const month = String(birthDate.getUTCMonth() + 1).padStart(2, '0');
+                    const day = String(birthDate.getUTCDate()).padStart(2, '0');
+                    dataNascimentoInput.value = `${year}-${month}-${day}`;
                 } else {
-                    showMessage('error', body.erro || 'Erro ao salvar perfil. Resposta inesperada do servidor.');
-                    console.error('Backend reported error:', body);
+                    dataNascimentoInput.value = '';
                 }
-            } else if (status === 401) {
-                 showMessage('error', 'Sessão expirada ou inválida. Faça login novamente.');
-                 setTimeout(() => {
-                    localStorage.removeItem('token');
-                    window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
-                 }, 2000);
-            }
-             else {
-                 showMessage('error', body.erro || `Erro ao salvar perfil: ${status} ${body.mensagem || ''}`);
-                 console.error('Server error:', status, body);
-            }
-        })
-        .catch(error => {
-            console.error('Erro de rede ou ao enviar dados do perfil:', error);
-            showMessage('error', 'Erro ao conectar com o servidor para salvar o perfil.');
-        });
-      });
 
-      // --- Handle Add Sport Button ---
-      addSportBtn.addEventListener('click', function() {
-           if (availableSports && availableSports.length > 0) {
-               addSportEntry('', '');
-           } else {
-               showMessage('warning', 'Não foi possível adicionar esporte. A lista de esportes não foi carregada.');
-           }
-      });
-
-       // --- Delegate Remove Sport Button Clicks ---
-       esportesHabilidadeContainer.addEventListener('click', function(event) {
-           if (event.target.classList.contains('remove-sport-btn')) {
-               const entryDiv = event.target.closest('.sport-entry');
-               if (entryDiv) {
-                   const sportSelect = entryDiv.querySelector('.sport-select');
-                    if (sportSelect) {
-                       sportSelect.dataset.previousValue = '';
+                if (data.estado) {
+                    estadoSelect.value = data.estado;
+                    await loadCities(data.estado);
+                    if (data.cidade) {
+                        cidadeSelect.value = data.cidade;
                     }
-                   entryDiv.remove();
                 }
-           }
-       });
-
-        // --- Handle Profile Picture Preview ---
-        fileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            const userName = document.getElementById('nomeCompleto').value;
-
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                     updateProfilePicturePreview(e.target.result, userName);
-                }
-                reader.readAsDataURL(file);
-            } else {
-                 const currentPreviewSrc = profilePicturePreview.querySelector('img')?.src;
-                 if (!currentPreviewSrc || currentPreviewSrc.startsWith('data:image')) {
-                      updateProfilePicturePreview(null, userName);
-                 }
             }
-        });
 
-        // --- Delegate Sport Selection Change Listener (Duplicate Check) ---
-        esportesHabilidadeContainer.addEventListener('change', function(event) {
-            if (event.target.classList.contains('sport-select')) {
-                const currentSelect = event.target;
-                const newSportId = currentSelect.value;
-                const previousSportId = currentSelect.dataset.previousValue || '';
+            // --- FUNÇÃO DE ENVIO ---
+            async function handleFormSubmit(event) {
+                event.preventDefault();
+                if (!token) {
+                    alert('Erro de autenticação: Token não encontrado.');
+                    return;
+                }
+                if (senhaInput.value !== confirmarSenhaInput.value) {
+                    alert('As senhas não coincidem. Por favor, verifique.');
+                    return;
+                }
+                setButtonsLoading(true);
 
-                if (newSportId !== '') {
-                    const sportSelects = esportesHabilidadeContainer.querySelectorAll('.sport-select');
-                    let isDuplicate = false;
+                const formData = new FormData();
+                formData.append('nome_completo', nomeCompletoInput.value);
+                formData.append('username', usernameInput.value);
+                formData.append('biografia', biografiaInput.value);
+                formData.append('email', emailInput.value);
+                formData.append('estado', estadoSelect.value);
+                formData.append('cidade', cidadeSelect.value);
+                formData.append('data_nascimento', dataNascimentoInput.value);
 
-                    sportSelects.forEach(otherSelect => {
-                        if (otherSelect !== currentSelect && otherSelect.value === newSportId && otherSelect.value !== '') {
-                            isDuplicate = true;
+                if (senhaInput.value) {
+                    formData.append('senha', senhaInput.value);
+                }
+                if (fileInput.files[0]) {
+                    formData.append('foto_perfil', fileInput.files[0]);
+                }
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/usuario/EditarUsuario`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.erro || 'Ocorreu um erro ao salvar.');
+                    }
+                    alert(result.mensagem || 'Perfil atualizado com sucesso!');
+                } catch (error) {
+                    console.error('Falha ao salvar o perfil:', error);
+                    alert(`Erro: ${error.message}`);
+                } finally {
+                    setButtonsLoading(false);
+                }
+            }
+
+            // --- FUNÇÃO DE EXCLUSÃO DE CONTA ---
+            async function handleDeleteAccount() {
+                if (!token) {
+                    alert('Erro de autenticação: Token não encontrado.');
+                    return;
+                }
+                confirmDeleteBtn.disabled = true;
+                confirmDeleteBtn.textContent = 'Excluindo...';
+                
+                try {
+                    const response = await fetch(`${API_BASE_URL}/usuario/ExcluirUsuario`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
                         }
                     });
 
-                    if (isDuplicate) {
-                        showMessage('warning', 'Este esporte já foi selecionado em outra entrada.');
-                        currentSelect.value = previousSportId;
-                    } else {
-                        currentSelect.dataset.previousValue = newSportId;
-                         if (mensagemDiv.classList.contains('warning') && mensagemDiv.textContent.includes('Este esporte já foi selecionado')) {
-                            mensagemDiv.style.display = 'none';
-                         }
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.erro || 'Ocorreu um erro ao excluir a conta.');
                     }
-                } else {
-                    currentSelect.dataset.previousValue = '';
-                     if (mensagemDiv.classList.contains('warning') && mensagemDiv.textContent.includes('Este esporte já foi selecionado')) {
-                        mensagemDiv.style.display = 'none';
-                     }
+                    
+                    alert(result.mensagem || 'Conta excluída com sucesso.');
+                    localStorage.removeItem('jwtToken'); // Limpa o token
+                    window.location.href = '/pagina-de-login.html'; // Redireciona para a página de login
+
+                } catch (error) {
+                    console.error('Falha ao excluir a conta:', error);
+                    alert(`Erro: ${error.message}`);
+                    confirmDeleteBtn.disabled = false;
+                    confirmDeleteBtn.textContent = 'Sim, excluir';
                 }
             }
-        });
 
-        // --- Handle State Selection Change Listener to Populate Cities ---
-        estadoSelect.addEventListener('change', () => {
-            const selectedUf = estadoSelect.value;
-            populateCidadesPorEstado(selectedUf); // Fixed typo: selectedUuf -> selectedUf
-        });
-
-
-    }); // End DOMContentLoaded
-
-    // --- Helper Functions ---
-
-    function updateProfilePicturePreview(imageUrl, userName = '') {
-        const previewDiv = document.getElementById('profilePicturePreview');
-        previewDiv.innerHTML = '';
-
-        if (imageUrl) {
-            const img = document.createElement('img');
-            img.src = imageUrl;
-            img.alt = 'Foto de perfil';
-            previewDiv.appendChild(img);
-            previewDiv.style.fontSize = '';
-            previewDiv.style.color = '';
-            previewDiv.style.backgroundColor = '';
-            previewDiv.style.lineHeight = '';
-
-        } else {
-            const initials = userName ? userName.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2) : '?';
-            previewDiv.textContent = initials;
-            previewDiv.style.fontSize = '30px';
-            previewDiv.style.color = '#6c757d';
-            previewDiv.style.backgroundColor = '#e9ecef';
-            previewDiv.style.lineHeight = '100px';
-        }
-    }
-
-    async function populateCidadesPorEstado(uf, initialCity = null) {
-        const cidadeSelect = document.getElementById('cidadeSelect');
-
-        cidadeSelect.innerHTML = '<option value="">Carregando Cidades...</option>';
-        cidadeSelect.disabled = true;
-
-        if (!uf) {
-            cidadeSelect.innerHTML = '<option value="">Selecione o Estado Primeiro</option>';
-            cidadeSelect.disabled = true;
-            cidadeSelect.value = '';
-            return;
-        }
-
-        const apiUrl = cidadesApiUrl(uf);
-
-        try {
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error(`Erro HTTP! status: ${response.status}`);
+            // --- FUNÇÕES AUXILIARES E EVENT LISTENERS ---
+            function validatePasswordsOnInput() {
+                if (confirmarSenhaInput.value.length > 0 && senhaInput.value !== confirmarSenhaInput.value) {
+                    passwordErrorMsg.style.display = 'block';
+                } else {
+                    passwordErrorMsg.style.display = 'none';
+                }
             }
-            const cidades = await response.json();
 
-            cidadeSelect.innerHTML = '<option value="">Selecione a Cidade</option>';
-
-            if (cidades.length === 0) {
-                cidadeSelect.innerHTML = '<option value="">Nenhuma cidade encontrada</option>';
-                 cidadeSelect.disabled = true;
-            } else {
-                cidades.sort((a, b) => a.nome.localeCompare(b.nome)).forEach(cidade => {
-                    const option = document.createElement('option');
-                    option.value = cidade.nome;
-                    option.textContent = cidade.nome;
-                    cidadeSelect.appendChild(option);
+            function setupEventListeners() {
+                form.addEventListener('submit', handleFormSubmit);
+                headerSaveBtn.addEventListener('click', () => form.requestSubmit());
+                fileInput.addEventListener('change', () => {
+                    if (fileInput.files && fileInput.files[0]) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            profilePicPreview.src = e.target.result;
+                        };
+                        reader.readAsDataURL(fileInput.files[0]);
+                    }
                 });
-                 cidadeSelect.disabled = false;
-
-                 if (initialCity) {
-                     const optionToSelect = Array.from(cidadeSelect.options).find(option => option.value === initialCity);
-                     if (optionToSelect) {
-                         cidadeSelect.value = initialCity;
-                     } else {
-                         console.warn(`Cidade "${initialCity}" não encontrada na lista para o estado ${uf}.`);
-                         cidadeSelect.value = '';
-                     }
-                 }
+                estadoSelect.addEventListener('change', () => {
+                    const selectedState = estadoSelect.value;
+                    loadCities(selectedState);
+                });
+                senhaInput.addEventListener('input', validatePasswordsOnInput);
+                confirmarSenhaInput.addEventListener('input', validatePasswordsOnInput);
+                
+                // Eventos do modal de exclusão
+                deleteAccountBtn.addEventListener('click', () => deleteConfirmModal.classList.add('show'));
+                cancelDeleteBtn.addEventListener('click', () => deleteConfirmModal.classList.remove('show'));
+                confirmDeleteBtn.addEventListener('click', handleDeleteAccount);
             }
 
+            function setButtonsLoading(isLoading) {
+                if (isLoading) {
+                    mainSaveBtn.disabled = true;
+                    mainSaveBtn.textContent = 'Salvando...';
+                    headerSaveBtn.disabled = true;
+                } else {
+                    mainSaveBtn.disabled = false;
+                    mainSaveBtn.textContent = 'Salvar Alterações';
+                    headerSaveBtn.disabled = false;
+                }
+            }
 
-        } catch (error) {
-            console.error('Erro ao carregar cidades:', error);
-            cidadeSelect.innerHTML = '<option value="">Erro ao carregar cidades</option>';
-            cidadeSelect.disabled = true;
-            cidadeSelect.value = '';
-        }
-    }
-
-    function populateUserSports(userPracticedSports) {
-        const container = document.getElementById('esportesHabilidadeContainer');
-        container.innerHTML = '';
-
-        const safeUserPracticedSports = (userPracticedSports && Array.isArray(userPracticedSports)) ? userPracticedSports : [];
-
-        if (safeUserPracticedSports.length > 0) {
-            safeUserPracticedSports.forEach(esporte => {
-                 if (esporte && (esporte.id || esporte._id) && esporte.nivel) { // Allow _id or id
-                     const sportId = String(esporte.id || esporte._id);
-                     addSportEntry(sportId, esporte.nivel);
-                 } else {
-                      console.warn('Formato de objeto esporte inesperado encontrado:', esporte);
-                 }
-            });
-        }
-
-        // Always add at least one empty sport entry if no sports are loaded or if availableSports is empty
-        if (container.children.length === 0 && (availableSports && availableSports.length > 0)) {
-             addSportEntry('', '');
-        }
-
-
-         if (!availableSports || availableSports.length === 0) {
-              addSportBtn.disabled = true;
-              container.querySelectorAll('.sport-select, .level-select, .remove-sport-btn').forEach(el => el.disabled = true);
-         } else {
-              addSportBtn.disabled = false;
-         }
-    }
-
-
-    function addSportEntry(selectedSportId = '', selectedLevel = '') {
-        const container = document.getElementById('esportesHabilidadeContainer');
-        const levels = skillLevels;
-
-        const entryDiv = document.createElement('div');
-        entryDiv.className = 'sport-entry';
-
-        const sportSelect = document.createElement('select');
-        sportSelect.className = 'sport-select';
-        sportSelect.dataset.previousValue = selectedSportId;
-
-
-        let sportOptions = '<option value="">Selecione um esporte</option>';
-        if (availableSports && Array.isArray(availableSports) && availableSports.length > 0) {
-            availableSports.forEach(sport => {
-                 const currentSportId = String(sport.id || sport._id); // Handle both 'id' and '_id'
-                 sportOptions += `<option value="${currentSportId}" ${currentSportId === selectedSportId ? 'selected' : ''}>${sport.nome}</option>`;
-            });
-             sportSelect.disabled = false;
-
-        } else {
-             sportOptions += '<option value="" disabled>Nenhum esporte disponível</option>';
-             sportSelect.disabled = true;
-        }
-        sportSelect.innerHTML = sportOptions;
-
-        const levelSelect = document.createElement('select');
-        levelSelect.className = 'level-select';
-        let levelOptions = '<option value="">Selecione o nível</option>';
-        levels.forEach(level => {
-            levelOptions += `<option value="${level}" ${level === selectedLevel ? 'selected' : ''}>${level.charAt(0).toUpperCase() + level.slice(1)}</option>`;
+            // --- INICIALIZAÇÃO ---
+            setupEventListeners();
+            await loadStates();
+            await loadUserProfile();
         });
-        levelSelect.innerHTML = levelOptions;
-        if (!availableSports || availableSports.length === 0) {
-            levelSelect.disabled = true;
-        }
-
-
-        const removeButton = document.createElement('button');
-        removeButton.type = 'button';
-        removeButton.className = 'remove-sport-btn';
-        removeButton.textContent = 'Remover';
-         if (!availableSports || availableSports.length === 0) {
-             removeButton.disabled = true;
-          } else {
-              removeButton.disabled = false;
-          }
-
-        entryDiv.appendChild(sportSelect);
-        entryDiv.appendChild(levelSelect);
-        entryDiv.appendChild(removeButton);
-
-        container.appendChild(entryDiv);
-    }
-
-    function showMessage(type, text) {
-        const mensagemDiv = document.getElementById('mensagemDiv');
-        mensagemDiv.className = `message ${type}`;
-        mensagemDiv.textContent = text;
-        mensagemDiv.style.display = 'block';
-
-        if (type !== 'error') {
-           clearTimeout(mensagemDiv.dataset.timer);
-           mensagemDiv.dataset.timer = setTimeout(() => {
-               mensagemDiv.style.display = 'none';
-           }, 5000);
-        } else {
-             clearTimeout(mensagemDiv.dataset.timer);
-        }
-    }
-
-  </script>
+    </script>
 </body>
 </html>

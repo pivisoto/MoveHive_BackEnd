@@ -1,5 +1,6 @@
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime,  timedelta, timezone
 from email import utils
+import time
 import os
 import random
 import string
@@ -130,25 +131,154 @@ def adicionar_dados_modal(dados_modal, arquivo_foto=None):
     return {"status": "sucesso", "mensagem": "Informações atualizadas com sucesso"}, 200
 
 
-# Função para Editar Usuario por ID
 # Implementado
-@token_required  
-def editar_usuario_por_id(novos_dados):
+@token_required
+def editar_usuario(dados, foto_perfil=None):
     usuario_id = g.user_id
-    doc_ref = db.collection('Usuarios').document(usuario_id)
-    snapshot = doc_ref.get()
+    usuario_ref = db.collection('Usuarios').document(usuario_id)
 
-    if not snapshot.exists:
-        return {"erro": "Usuário não encontrado"}, 404
+    try:
+        usuario_doc = usuario_ref.get()
+        if not usuario_doc.exists:
+            return {"erro": "Usuário não encontrado."}, 404
+    except Exception as e:
+        return {"erro": f"Erro ao acessar o banco de dados: {str(e)}"}, 500
 
-    dados_atualizados = novos_dados.copy()
+    updates = {}
+    
+    for campo, valor in dados.items():
+        if valor is None or valor == '':
+            continue 
 
-    if 'senha' in novos_dados:
-        dados_atualizados['senha'] = bcrypt.hashpw(novos_dados['senha'].encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+        try:
 
-    doc_ref.update(dados_atualizados)
-    return {"status": "sucesso", "mensagem": "Usuário atualizado com sucesso"}, 200
+            if campo == 'username':
+                usuarios_com_mesmo_username = db.collection('Usuarios').where('username', '==', valor).limit(1).get()
+                if len(usuarios_com_mesmo_username) > 0 and usuarios_com_mesmo_username[0].id != usuario_id:
+                    return {"erro": f"O username '{valor}' já está em uso."}, 409 
+                updates[campo] = valor
 
+            elif campo == 'email':
+                usuarios_com_mesmo_email = db.collection('Usuarios').where('email', '==', valor).limit(1).get()
+                if len(usuarios_com_mesmo_email) > 0 and usuarios_com_mesmo_email[0].id != usuario_id:
+                    return {"erro": f"O email '{valor}' já está em uso."}, 409
+                updates[campo] = valor
+
+            elif campo == 'senha':
+               senha_hash = bcrypt.hashpw(valor.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+               updates[campo] = senha_hash
+               
+            elif campo == 'data_nascimento':
+                dt_nascimento = datetime.strptime(valor, "%Y-%m-%d")
+                hoje = datetime.now()
+                
+                if dt_nascimento.year < 1900:
+                    return {"erro": "O ano de nascimento não pode ser anterior a 1900."}, 400
+                if dt_nascimento > hoje:
+                    return {"erro": "A data de nascimento não pode ser no futuro."}, 400
+                
+                idade = hoje.year - dt_nascimento.year - ((hoje.month, hoje.day) < (dt_nascimento.month, dt_nascimento.day))
+                if idade < 18:
+                    return {"erro": "O usuário deve ter pelo menos 18 anos."}, 400
+                
+                updates[campo] = valor
+            
+            elif campo in ['nome_completo', 'biografia', 'estado', 'cidade']:
+                updates[campo] = str(valor)
+
+        except ValueError as e:
+            return {"erro": f"Formato inválido para o campo '{campo}'. Detalhes: {e}"}, 400
+        except Exception as e:
+            return {"erro": f"Ocorreu um erro inesperado ao processar o campo '{campo}': {str(e)}"}, 500
+
+    if foto_perfil:
+        try:
+            caminho = f"Usuarios/{usuario_id}/Fotos/foto_perfil.jpg"
+            blob = bucket.blob(caminho)
+            
+            foto_perfil.seek(0)
+            
+            blob.upload_from_file(foto_perfil, content_type=foto_perfil.content_type)
+            blob.make_public()
+            
+            timestamp = int(time.time())
+            updates['foto_perfil'] = f"{blob.public_url}?v={timestamp}"
+            
+        except Exception as e:
+            return {"erro": f"Erro ao fazer upload da imagem: {str(e)}"}, 500
+
+    if not updates:
+        return {"mensagem": "Nenhuma alteração foi feita."}, 200
+
+    try:
+        usuario_ref.update(updates)
+        return {"mensagem": "Usuário atualizado com sucesso."}, 200
+    except Exception as e:
+        return {"erro": f"Erro ao atualizar o usuário no banco de dados: {str(e)}"}, 500
+
+# Implementado
+@token_required
+def excluir_meu_usuario():
+    try:
+        usuario_id = g.user_id
+        batch = db.batch()
+        
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            return {"erro": "Usuário não encontrado para exclusão."}, 404
+        user_data = user_doc.to_dict()
+
+        
+
+        # Remover este usuário da lista de 'seguidores' de quem ele seguia
+        if user_data.get('seguindo'):
+            for followed_id in user_data['seguindo']:
+                followed_ref = db.collection('Usuarios').document(followed_id)
+                batch.update(followed_ref, {'seguidores': firestore.ArrayRemove([usuario_id])})
+
+        # Remover este usuário da lista de 'seguindo' de seus seguidores
+        if user_data.get('seguidores'):
+            for follower_id in user_data['seguidores']:
+                follower_ref = db.collection('Usuarios').document(follower_id)
+                batch.update(follower_ref, {'seguindo': firestore.ArrayRemove([usuario_id])})
+        
+        # Remover o usuário de todos os eventos que ele estava participando
+        events_participating_query = db.collection('Eventos').where('participantes', 'array_contains', usuario_id).stream()
+        for evento in events_participating_query:
+            batch.update(evento.reference, {'participantes': firestore.ArrayRemove([usuario_id])})
+
+
+        # Excluir posts
+        posts_query = db.collection('Postagens').where('usuario_id', '==', usuario_id).stream()
+        for post in posts_query:
+            batch.delete(post.reference)
+
+        # Excluir eventos
+        events_query = db.collection('Eventos').where('usuario_id', '==', usuario_id).stream()
+        for evento in events_query:
+            batch.delete(evento.reference)
+
+        # Excluir treinos
+        treinos_query = db.collection('Treinos').where('usuario_id', '==', usuario_id).stream()
+        for treino in treinos_query:
+            batch.delete(treino.reference)
+
+        batch.delete(user_ref)
+
+        batch.commit()
+
+ 
+        prefix = f"Usuarios/{usuario_id}/"
+        blobs = bucket.list_blobs(prefix=prefix)
+        for blob in blobs:
+            blob.delete()
+
+        return {"mensagem": "Usuário e todos os dados associados foram excluídos com sucesso."}, 200
+
+    except Exception as e:
+        print(f"Erro ao excluir usuário {usuario_id}: {str(e)}") 
+        return {"erro": f"Ocorreu um erro interno ao tentar excluir o usuário: {str(e)}"}, 500
 
 # Implementado
 @token_required 

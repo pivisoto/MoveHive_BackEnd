@@ -62,18 +62,29 @@ def adicionar_informacoes():
 def meu_perfil():
     return usuario_service.meuPerfil()
 
-
+# Implementado
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
-def editar():
-    novos_dados = request.get_json()
+def atualizar_perfil_usuario():
 
-    if not novos_dados:
-        return jsonify({"erro": "Nenhum dado fornecido para atualização"}), 400
+    try:
+        dados = request.form.to_dict()
+        foto_perfil = request.files.get('foto_perfil', None)
+        resposta, status_code = usuario_service.editar_usuario(dados, foto_perfil)
+        return jsonify(resposta), status_code
 
-    resposta, status = usuario_service.editar_usuario_por_id(novos_dados)
+    except Exception as e:
+        return jsonify({"erro": f"Ocorreu um erro interno no servidor: {str(e)}"}), 500
 
-    return jsonify(resposta), status
 
+# Implementado
+@usuario_bp.route('/ExcluirUsuario', methods=['DELETE'])
+def deletar_perfil_usuario():
+    try:
+        resposta, status_code = usuario_service.excluir_meu_usuario()
+        return jsonify(resposta), status_code
+    except Exception as e:
+        return jsonify({"erro": f"Ocorreu um erro interno no servidor: {str(e)}"}), 500
+    
 
 # Implementado
 @usuario_bp.route('/follow', methods=['POST'])

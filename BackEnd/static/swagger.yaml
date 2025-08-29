@@ -1053,6 +1053,163 @@ paths:
                     type: string
                     example: "Ocorreu um erro interno ao processar seu perfil."
 
+  /usuario/EditarUsuario:
+    put:
+      summary: Editar usuário autenticado
+      description: |
+        Atualiza os dados do usuário autenticado.  
+        Campos aceitos:  
+        - **username** (único)  
+        - **email** (único)  
+        - **senha** (armazenada com hash)  
+        - **data_nascimento** (formato `YYYY-MM-DD`, mínimo 18 anos, ano ≥ 1900, não pode ser no futuro)  
+        - **nome_completo**, **biografia**, **estado**, **cidade**  
+        - **foto_perfil** (upload de imagem JPG/PNG, substitui a anterior)  
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "paulo_dev"
+                email:
+                  type: string
+                  format: email
+                  example: "paulo@example.com"
+                senha:
+                  type: string
+                  format: password
+                  example: "novaSenha123"
+                data_nascimento:
+                  type: string
+                  format: date
+                  example: "2000-05-10"
+                nome_completo:
+                  type: string
+                  example: "Paulo Eduardo Palauro"
+                biografia:
+                  type: string
+                  example: "Apaixonado por tecnologia e esportes."
+                estado:
+                  type: string
+                  example: "São Paulo"
+                cidade:
+                  type: string
+                  example: "São Caetano do Sul"
+                foto_perfil:
+                  type: string
+                  format: binary
+                  description: Arquivo de imagem (JPEG/PNG)
+      responses:
+        '200':
+          description: Atualização realizada com sucesso ou nenhuma alteração feita
+          content:
+            application/json:
+              schema:
+                type: object
+                oneOf:
+                  - properties:
+                      mensagem:
+                        type: string
+                        example: "Usuário atualizado com sucesso."
+                  - properties:
+                      mensagem:
+                        type: string
+                        example: "Nenhuma alteração foi feita."
+        '400':
+          description: Erro de validação nos dados enviados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O usuário deve ter pelo menos 18 anos."
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário não encontrado."
+        '409':
+          description: Conflito de dados únicos (username ou email já em uso)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O email 'paulo@example.com' já está em uso."
+        '500':
+          description: Erro interno no servidor (banco de dados ou upload de imagem)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao atualizar o usuário no banco de dados: erro_desconhecido"
+
+  /usuario/ExcluirUsuario:
+    delete:
+      summary: Excluir usuário autenticado
+      description: |
+        Remove permanentemente o perfil do usuário autenticado e todos os seus dados associados:  
+        - Posts criados  
+        - Eventos criados ou participados  
+        - Treinos criados  
+        - Relacionamentos (seguindo/seguidores)  
+        - Arquivos armazenados no bucket  
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Usuário e dados excluídos com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Usuário e todos os dados associados foram excluídos com sucesso."
+        '404':
+          description: Usuário não encontrado para exclusão
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário não encontrado para exclusão."
+        '500':
+          description: Erro interno ao excluir usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Ocorreu um erro interno ao tentar excluir o usuário: erro_desconhecido"
+
 # Esporte
  
   /esportes/ListarEsportes:
