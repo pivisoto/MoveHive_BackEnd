@@ -104,7 +104,7 @@
                 <!-- Seção de Foto, Nome, etc. (sem alterações) -->
                 <div class="profile-picture-editor">
                     <label for="foto_perfil_input" class="picture-wrapper">
-                        <img src="https://via.placeholder.com/150" alt="Foto de Perfil" class="profile-picture-preview" id="profile-pic-preview">
+                        <img src="" alt="Foto de Perfil" class="profile-picture-preview" id="profile-pic-preview">
                         <div class="picture-overlay"><i class="fas fa-camera"></i></div>
                     </label>
                     <input type="file" id="foto_perfil_input" name="foto_perfil" accept="image/*">
@@ -131,9 +131,8 @@
                             <option value="">Carregando esportes...</option>
                         </select>
                         <select id="new-sport-level-select">
-                            <option value="iniciante">Iniciante</option>
-                            <option value="intermediario">Intermediário</option>
-                            <option value="avancado">Avançado</option>
+                            <option value="Amador">Amador</option>
+                            <option value="Iniciante">Iniciante</option>
                             <option value="profissional">Profissional</option>
                         </select>
                         <button type="button" id="add-sport-btn" class="add-sport-btn"><i class="fas fa-plus"></i></button>
@@ -155,14 +154,15 @@
     <!-- POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO (sem alterações) -->
     <div class="modal-overlay" id="delete-confirm-modal"><div class="modal-content"><h3>Confirmar Exclusão</h3><p>Você tem certeza que deseja excluir sua conta? Esta ação é permanente e todos os seus dados serão removidos.</p><div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="cancel-delete-btn">Cancelar</button><button class="modal-btn modal-btn-confirm" id="confirm-delete-btn">Sim, excluir</button></div></div></div>
 
-
+    <!-- ======================================================= -->
+    <!--           SCRIPT COM DEBUG ADICIONADO                 -->
+    <!-- ======================================================= -->
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             // --- CONFIGURAÇÕES E SELETORES ---
             const token = localStorage.getItem('jwtToken');
-            // MODIFICADO: Adicionado o endpoint de esportes
             const API_BASE_URL = 'http://127.0.0.1:5000';
-            const API_SPORTS_URL = `${API_BASE_URL}/esportes/ListarEsportes`; // Assumindo que o blueprint 'esporte_bp' está em '/Esporte'
+            const API_SPORTS_URL = `${API_BASE_URL}/esportes/ListarEsportes`;
             const IBGE_API_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
             // Seletores existentes...
@@ -186,27 +186,32 @@
             const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
             const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
             
-            // --- SELETORES PARA ESPORTES (MODIFICADO) ---
+            // --- SELETORES PARA ESPORTES ---
             const sportsListContainer = document.getElementById('sports-list');
-            const newSportNameSelect = document.getElementById('new-sport-name-select'); // <- Modificado
-            const newSportLevelSelect = document.getElementById('new-sport-level-select'); // <- ID mais específico
+            const newSportNameSelect = document.getElementById('new-sport-name-select');
+            const newSportLevelSelect = document.getElementById('new-sport-level-select');
             const addSportBtn = document.getElementById('add-sport-btn');
             
-            // --- VARIÁVEL PARA GUARDAR O ESTADO DOS ESPORTES ---
             let userSports = {};
-
 
             // --- FUNÇÕES DE API ---
             
-            // NOVO: Função para carregar a lista de esportes da API
             async function loadSports() {
+                console.log("--- [API Call] Iniciando busca de esportes ---");
+                console.log(`Endpoint: GET ${API_SPORTS_URL}`);
                 try {
                     const response = await fetch(API_SPORTS_URL);
-                    if (!response.ok) throw new Error('Falha ao buscar esportes.');
-                    const sports = await response.json();
                     
-                    newSportNameSelect.innerHTML = '<option value="">Selecione um esporte</option>'; // Limpa e adiciona a opção padrão
-                    sports.sort((a, b) => a.nome.localeCompare(b.nome)); // Ordena os esportes por nome
+                    if (!response.ok) {
+                        console.error(`[API Response] Falha ao buscar esportes. Status: ${response.status}`);
+                        throw new Error('Falha ao buscar esportes.');
+                    }
+                    
+                    const sports = await response.json();
+                    console.log("[API Response] Esportes recebidos com sucesso:", sports);
+
+                    newSportNameSelect.innerHTML = '<option value="">Selecione um esporte</option>';
+                    sports.sort((a, b) => a.nome.localeCompare(b.nome));
                     
                     sports.forEach(sport => {
                         const option = document.createElement('option');
@@ -215,16 +220,18 @@
                         newSportNameSelect.appendChild(option);
                     });
                 } catch (error) {
-                    console.error(error);
+                    console.error("[API Error] Erro detalhado ao buscar esportes:", error);
                     newSportNameSelect.innerHTML = '<option value="">Erro ao carregar</option>';
                 }
             }
             
-            async function loadStates() { /* ... (função sem alterações) ... */ 
+            async function loadStates() { 
+                console.log("--- [IBGE API Call] Buscando estados ---");
                 try {
                     const response = await fetch(`${IBGE_API_URL}/estados`);
                     if (!response.ok) throw new Error('Falha ao buscar estados.');
                     const states = await response.json();
+                    console.log("[IBGE Response] Estados recebidos:", states.length);
                     estadoSelect.innerHTML = '<option value="">Selecione um estado</option>';
                     states.sort((a, b) => a.nome.localeCompare(b.nome));
                     states.forEach(state => {
@@ -234,23 +241,25 @@
                         estadoSelect.appendChild(option);
                     });
                 } catch (error) {
-                    console.error(error);
+                    console.error("[IBGE Error] Erro ao buscar estados:", error);
                     estadoSelect.innerHTML = '<option value="">Erro ao carregar</option>';
                 }
             }
             
-            async function loadCities(stateSigla) { /* ... (função sem alterações) ... */ 
+            async function loadCities(stateSigla) { 
                 if (!stateSigla) {
                     cidadeSelect.innerHTML = '<option value="">Selecione um estado primeiro</option>';
                     cidadeSelect.disabled = true;
                     return;
                 }
+                console.log(`--- [IBGE API Call] Buscando cidades para o estado: ${stateSigla} ---`);
                 cidadeSelect.innerHTML = '<option value="">Carregando cidades...</option>';
                 cidadeSelect.disabled = true;
                 try {
                     const response = await fetch(`${IBGE_API_URL}/estados/${stateSigla}/municipios`);
                     if (!response.ok) throw new Error('Falha ao buscar cidades.');
                     const cities = await response.json();
+                    console.log(`[IBGE Response] Cidades recebidas para ${stateSigla}:`, cities.length);
                     cidadeSelect.innerHTML = '<option value="">Selecione uma cidade</option>';
                     cities.forEach(city => {
                         const option = document.createElement('option');
@@ -260,34 +269,50 @@
                     });
                     cidadeSelect.disabled = false;
                 } catch (error) {
-                    console.error(error);
+                    console.error("[IBGE Error] Erro ao buscar cidades:", error);
                     cidadeSelect.innerHTML = '<option value="">Erro ao carregar</option>';
                 }
             }
 
             // --- FUNÇÕES DE DADOS DO USUÁRIO ---
-            async function loadUserProfile() { /* ... (função sem alterações) ... */ 
+            async function loadUserProfile() { 
+                console.log("--- [API Call] Iniciando busca de perfil do usuário ---");
                 if (!token) {
+                    console.error("[Auth Error] Token JWT não encontrado no localStorage.");
                     alert('Erro de autenticação: Token não encontrado.');
                     window.location.href = '/login.html';
                     return;
                 }
+                
+                const headers = { 'Authorization': `Bearer ${token}` };
+                console.log(`Endpoint: GET ${API_BASE_URL}/usuario/MeuPerfil`);
+                console.log("Cabeçalhos enviados:", headers);
+
                 try {
                     const response = await fetch(`${API_BASE_URL}/usuario/MeuPerfil`, {
                         method: 'GET',
-                        headers: { 'Authorization': `Bearer ${token}` }
+                        headers: headers
                     });
-                    if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
+                    
                     const userData = await response.json();
+
+                    if (!response.ok) {
+                        console.error(`[API Response] Falha ao carregar perfil. Status: ${response.status}`, userData);
+                        throw new Error(userData.erro || `Erro: ${response.statusText}`);
+                    }
+                    
+                    console.log("[API Response] Dados do perfil recebidos com sucesso:", userData);
                     await populateForm(userData);
+
                 } catch (error) {
-                    console.error('Falha ao carregar perfil:', error);
+                    console.error('[API Error] Erro detalhado ao carregar perfil:', error);
                     alert('Não foi possível carregar seus dados.');
                 }
             }
 
-            async function populateForm(data) { /* ... (função sem alterações na lógica principal) ... */ 
-                profilePicPreview.src = data.foto_perfil || 'https://via.placeholder.com/150';
+            async function populateForm(data) {
+                console.log("Preenchendo o formulário com os dados recebidos.");
+                profilePicPreview.src = data.foto_perfil || '';
                 nomeCompletoInput.value = data.nome_completo || '';
                 usernameInput.value = data.username || '';
                 biografiaInput.value = data.biografia || '';
@@ -320,7 +345,7 @@
             }
             
             // --- FUNÇÕES PARA GERENCIAR ESPORTES NA INTERFACE ---
-            function renderSportsList() { /* ... (função sem alterações) ... */ 
+            function renderSportsList() {
                 sportsListContainer.innerHTML = '';
                 if (Object.keys(userSports).length === 0) {
                     sportsListContainer.innerHTML = '<p style="color: #888; text-align: center; margin-bottom: 15px;">Nenhum esporte adicionado.</p>';
@@ -338,7 +363,6 @@
                 });
             }
 
-            // MODIFICADO: para ler do <select> em vez do <input>
             function handleAddSport() {
                 const name = newSportNameSelect.value;
                 const level = newSportLevelSelect.value;
@@ -349,24 +373,31 @@
                 }
                 
                 userSports[name] = level;
+                console.log("Esporte adicionado localmente:", { [name]: level });
+                console.log("Estado atual dos esportes:", userSports);
                 
-                newSportNameSelect.value = ''; // Reseta o select
+                newSportNameSelect.value = '';
                 renderSportsList();
             }
 
-            function handleRemoveSport(event) { /* ... (função sem alterações) ... */ 
+            function handleRemoveSport(event) {
                 const sportNameToRemove = event.currentTarget.dataset.sport;
                 if (sportNameToRemove && userSports.hasOwnProperty(sportNameToRemove)) {
                     delete userSports[sportNameToRemove];
+                    console.log(`Esporte removido localmente: ${sportNameToRemove}`);
+                    console.log("Estado atual dos esportes:", userSports);
                     renderSportsList();
                 }
             }
 
             // --- FUNÇÃO DE ENVIO ---
-            async function handleFormSubmit(event) { /* ... (função sem alterações) ... */ 
+            async function handleFormSubmit(event) {
                 event.preventDefault();
-                if (!token) { alert('Erro de autenticação: Token não encontrado.'); return; }
+                console.log("--- [API Call] Iniciando envio de atualização de perfil ---");
+
+                if (!token) { console.error("[Auth Error] Token não encontrado."); alert('Erro de autenticação: Token não encontrado.'); return; }
                 if (senhaInput.value !== confirmarSenhaInput.value) { alert('As senhas não coincidem. Por favor, verifique.'); return; }
+                
                 setButtonsLoading(true);
 
                 const formData = new FormData();
@@ -381,6 +412,17 @@
 
                 if (senhaInput.value) { formData.append('senha', senhaInput.value); }
                 if (fileInput.files[0]) { formData.append('foto_perfil', fileInput.files[0]); }
+                
+                // Log para ver os dados que estão sendo enviados
+                console.log(`Endpoint: PUT ${API_BASE_URL}/usuario/EditarUsuario`);
+                console.log("Dados (FormData) a serem enviados:");
+                for (let [key, value] of formData.entries()) {
+                    if (value instanceof File) {
+                        console.log(`  ${key}:`, value); // Mostra o objeto do arquivo
+                    } else {
+                        console.log(`  ${key}: ${value}`);
+                    }
+                }
 
                 try {
                     const response = await fetch(`${API_BASE_URL}/usuario/EditarUsuario`, {
@@ -388,11 +430,19 @@
                         headers: { 'Authorization': `Bearer ${token}` },
                         body: formData
                     });
+                    
                     const result = await response.json();
-                    if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro ao salvar.'); }
+                    
+                    if (!response.ok) {
+                        console.error(`[API Response] Erro ao salvar. Status: ${response.status}`, result);
+                        throw new Error(result.erro || 'Ocorreu um erro ao salvar.');
+                    }
+
+                    console.log("[API Response] Perfil atualizado com sucesso:", result);
                     alert(result.mensagem || 'Perfil atualizado com sucesso!');
+
                 } catch (error) {
-                    console.error('Falha ao salvar o perfil:', error);
+                    console.error('[API Error] Falha detalhada ao salvar o perfil:', error);
                     alert(`Erro: ${error.message}`);
                 } finally {
                     setButtonsLoading(false);
@@ -423,17 +473,17 @@
                 confirmDeleteBtn.addEventListener('click', handleDeleteAccount);
             }
 
-            // --- INICIALIZAÇÃO (MODIFICADA) ---
+            // --- INICIALIZAÇÃO ---
+            console.log("Iniciando script da página de edição de perfil...");
             setupEventListeners();
             
-            // Carrega dados de estados e esportes em paralelo para otimizar
             await Promise.all([
                 loadStates(),
                 loadSports()
             ]);
 
-            // Carrega o perfil do usuário depois que os dados de suporte foram carregados
             await loadUserProfile();
+            console.log("Página completamente carregada e pronta.");
         });
     </script>
 </body>
