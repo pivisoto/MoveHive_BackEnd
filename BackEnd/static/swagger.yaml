@@ -16,6 +16,8 @@ tags:
     description: Operações relacionadas a Posts
   - name: Treino
     description: Operações relacionadas a Treino
+  - name: Notificao
+    description: Operações relacionadas a Notificações
 
 
 components:
@@ -2164,7 +2166,6 @@ paths:
                   erro:
                     type: string
                     example: "Todos os campos obrigatórios devem ser preenchidos."
-  
 
   /treino/ListarTreino:
     get:
@@ -2222,7 +2223,6 @@ paths:
                     type: string
                     example: "Token inválido ou não fornecido"
 
-
   /treino/ExcluirTreino:
     delete:
       tags:
@@ -2275,7 +2275,6 @@ paths:
                   erro:
                     type: string
                     example: "Token inválido ou não fornecido"
-
 
   /treino/AtualizarTreino:
     put:
@@ -2385,3 +2384,192 @@ paths:
                   erro:
                     type: string
                     example: "Token inválido ou não fornecido"
+
+# Notificações
+  /notificacao/MinhaNotificacoes:
+    get:
+      summary: Recupera as notificações do usuário logado
+      description: Retorna todas as notificações destinadas ao usuário autenticado, ordenadas da mais recente para a mais antiga.
+      tags:
+        - Notificao
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de notificações recuperadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID único da notificação
+                    usuario_destino_id:
+                      type: string
+                      description: ID do usuário que receberá a notificação
+                    tipo:
+                      type: string
+                      description: Tipo da notificação (ex "seguindo", "evento")
+                    referencia_id:
+                      type: string
+                      description: ID da referência relacionada à notificação
+                    mensagem:
+                      type: string
+                      description: Mensagem da notificação
+                    data_criacao:
+                      type: string
+                      format: date-time
+                      description: Data e hora de criação da notificação
+        '401':
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Autenticação necessária"
+
+  /notificacao/NotificacaoLida:
+    put:
+      summary: Marca uma notificação como lida
+      description: Atualiza o status de uma notificação para "lida" para o usuário autenticado.
+      tags:
+        - Notificao
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notificacao_id:
+                  type: string
+                  description: ID da notificação que será marcada como lida
+              required:
+                - notificacao_id
+            example:
+              notificacao_id: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Notificação marcada como lida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Notificação marcada como lida com sucesso."
+        '400':
+          description: Requisição inválida (campo obrigatório ausente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O campo 'notificacao_id' é obrigatório"
+        '403':
+          description: Usuário não tem permissão para alterar essa notificação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para alterar essa notificação."
+        '404':
+          description: Notificação não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Notificação não encontrada."
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao marcar notificação como lida: mensagem de erro"  
+
+  /notificacao/DeletarNotificacao:  
+     delete:
+      summary: Deleta uma notificação
+      description: Remove uma notificação específica do usuário autenticado.
+      tags:
+        - Notificao
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notificacao_id:
+                  type: string
+                  description: ID da notificação que será deletada
+              required:
+                - notificacao_id
+            example:
+              notificacao_id: "123e4567-e89b-12d3-a456-426614174000"
+      responses:
+        '200':
+          description: Notificação deletada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Notificação deletada com sucesso."
+        '403':
+          description: Usuário não tem permissão para deletar a notificação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para deletar esta notificação."
+        '404':
+          description: Notificação não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Notificação não encontrada."
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao processar requisição: mensagem de erro"
+                                
+

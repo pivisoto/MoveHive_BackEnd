@@ -1,6 +1,8 @@
 import uuid
 from datetime import datetime, timezone
 from flask import g, request 
+from Models.Notificacao_Model import Notificacao
+from Services.Notificacao_Service import criar_notificacao
 from Models.Eventos_Model import Evento
 from firebase_admin import firestore, credentials
 import firebase_admin
@@ -268,32 +270,52 @@ def participar_evento(evento_id):
 
     evento_data = evento_doc.to_dict()
 
-    # Não pode participar do próprio evento
-    if evento_data.get("usuario_id") == usuario_id:
+    dono_evento_id = evento_data.get("usuario_id")
+
+    if dono_evento_id == usuario_id:
         return {"erro": "Você é o criador deste evento e já está participando."}, 400
 
     participantes = evento_data.get("participantes", [])
 
-    # Verifica se já está participando
     if usuario_id in participantes:
         return {"erro": "Você já está participando deste evento."}, 400
 
-    # Verifica se há vagas
     max_participantes = evento_data.get("max_participantes", 0)
     if len(participantes) >= max_participantes:
         return {"erro": "Limite de participantes atingido."}, 400
 
     try:
-        # Adiciona o usuário aos participantes
         evento_ref.update({
             'participantes': ArrayUnion([usuario_id])
         })
 
-        # (Opcional) Registrar evento no perfil do usuário
         user_ref = db.collection('Usuarios').document(usuario_id)
         user_ref.update({
             'eventos_participando': ArrayUnion([evento_id])
         })
+
+        # 🔔 Criar notificação para o dono do evento
+        usuario_doc = user_ref.get()
+        usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
+        titulo_evento = evento_data.get('titulo', 'sem título')
+
+        mensagem = f"{usuario_nome} está participando do seu evento '{titulo_evento}'"
+        tipo = "participacao_evento"
+        referencia_id = evento_id
+
+        resultado_notif = criar_notificacao(
+            usuario_destino_id=dono_evento_id,
+            tipo=tipo,
+            referencia_id=referencia_id,
+            mensagem=mensagem
+        )
+
+        if isinstance(resultado_notif, tuple):
+            notif_resposta, notif_status = resultado_notif
+            if notif_status >= 400:
+                print("Aviso: falha ao criar notificação:", notif_resposta)
+        else:
+            notif_resposta = resultado_notif
 
         return {"mensagem": "Participação confirmada com sucesso!"}, 200
 

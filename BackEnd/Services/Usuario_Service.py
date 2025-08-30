@@ -18,6 +18,7 @@ import smtplib
 from email.mime.text import MIMEText
 from utils import enviar_email
 import json
+from Services.Notificacao_Service import criar_notificacao
 
 
 
@@ -345,6 +346,9 @@ def seguir_usuario(seguido_id):
         usuario_ref = db.collection('Usuarios').document(usuario_id)
         seguido_ref = db.collection('Usuarios').document(seguido_id)
 
+        usuario_doc = usuario_ref.get()
+        seguido_doc = seguido_ref.get()
+
         if not usuario_ref.get().exists or not seguido_ref.get().exists:
             return {'erro': 'Usuário(s) não encontrado(s)'}, 404
 
@@ -355,6 +359,15 @@ def seguir_usuario(seguido_id):
         seguido_ref.update({
             'seguidores': firestore.ArrayUnion([usuario_id])
         })
+
+        usuario_nome = usuario_doc.to_dict().get('username', 'Alguém')
+
+        criar_notificacao(
+            usuario_destino_id=seguido_id,
+            tipo="seguindo",
+            referencia_id=usuario_id,
+            mensagem= f"{usuario_nome} começou a te seguir."
+        )
 
         return {'mensagem': 'Usuário seguido com sucesso!'}, 200
 

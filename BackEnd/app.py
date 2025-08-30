@@ -4,7 +4,6 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from flask_caching import Cache
 from utils.cache import set_cache_instance
 
-
 from firebase_init import initialize_firebase
 firebase_app = initialize_firebase()
 
@@ -14,6 +13,7 @@ from Controllers.Eventos_Controller import evento_bp
 from Controllers.Post_Controller import postagem_bp
 from Controllers.Comentario_Controller import comentario_bp
 from Controllers.Treino_Controller import treino_bp
+from Controllers.Notificacao_Controller import notificacao_bp
 
 
 app = Flask(__name__, template_folder='Views/Social_media')
@@ -35,6 +35,7 @@ app.register_blueprint(evento_bp)
 app.register_blueprint(postagem_bp)
 app.register_blueprint(comentario_bp)
 app.register_blueprint(treino_bp)
+app.register_blueprint(notificacao_bp)
 
 @app.route('/')
 def index():
