@@ -1211,6 +1211,71 @@ paths:
                     type: string
                     example: "Ocorreu um erro interno ao tentar excluir o usuário: erro_desconhecido"
 
+  /usuario/{usuario_id}:
+    get:
+      summary: Visualizar perfil do usuário
+      description: >
+        Retorna os dados do perfil de um usuário específico.  
+        Inclui informações básicas do usuário, total de posts, número de seguidores e número de pessoas que o usuário está seguindo.  
+        Campos sensíveis como senha, lista completa de seguidores e seguindo não são retornados.
+      tags:
+        - Usuário
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: usuario_id
+          required: true
+          schema:
+            type: string
+          description: ID único do usuário no banco de dados.
+      responses:
+        '200':
+          description: Perfil retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nome:
+                    type: string
+                    example: "João Silva"
+                  email:
+                    type: string
+                    example: "joao@email.com"
+                  bio:
+                    type: string
+                    example: "Apaixonado por esportes e tecnologia."
+                  total_posts:
+                    type: integer
+                    example: 12
+                  seguidores_count:
+                    type: integer
+                    example: 150
+                  seguindo_count:
+                    type: integer
+                    example: 80
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário não encontrado!"
+        '500':
+          description: Erro interno no servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Ocorreu um erro interno ao processar o perfil."
+
 # Esporte
  
   /esportes/ListarEsportes:
@@ -1859,6 +1924,73 @@ paths:
                   erro:
                     type: string
                     example: "Erro ao cancelar participação: erro inesperado."
+
+  /evento/usuario/{usuario_id}:
+     get:
+      summary: Listar eventos de um usuário
+      description: >
+        Retorna todos os eventos cadastrados por um usuário específico, com base no seu **usuario_id**.  
+        Caso o usuário não tenha eventos, retorna uma mensagem informando.
+      tags:
+        - Eventos
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: usuario_id
+          required: true
+          schema:
+            type: string
+          description: ID único do usuário no banco de dados.
+      responses:
+        '200':
+          description: Lista de eventos retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "abc123xyz"
+                    titulo:
+                      type: string
+                      example: "Campeonato de Futebol"
+                    descricao:
+                      type: string
+                      example: "Evento esportivo para amantes de futebol."
+                    data:
+                      type: string
+                      format: date
+                      example: "2025-09-15"
+                    local:
+                      type: string
+                      example: "São Paulo - SP"
+                    usuario_id:
+                      type: string
+                      example: "user_123"
+        '404':
+          description: Nenhum evento encontrado para este usuário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Nenhum evento encontrado para este usuário."
+        '500':
+          description: Erro interno no servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro inesperado ao buscar eventos."
   
 # Posts 
   /postagem/ListarPostagens:
@@ -2083,6 +2215,64 @@ paths:
           description: Postagem não encontrada
         '500':
           description: Erro interno do servidor
+  
+  /postagem/usuario/{usuario_id}:
+    get:
+      summary: Listar postagens de um usuário
+      description: >
+        Retorna todas as postagens de um usuário específico, ordenadas da mais recente para a mais antiga.  
+        Cada postagem contém informações como ID, conteúdo, data de criação, entre outros.
+      tags:
+        - Posts
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: usuario_id
+          required: true
+          schema:
+            type: string
+          description: ID único do usuário no banco de dados.
+      responses:
+        '200':
+          description: Lista de postagens retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "post_123"
+                    usuario_id:
+                      type: string
+                      example: "user_456"
+                    conteudo:
+                      type: string
+                      example: "Hoje participei de um campeonato incrível!"
+                    imagem_url:
+                      type: string
+                      nullable: true
+                      example: "https://meuservidor.com/imagens/post123.jpg"
+                    data_criacao:
+                      type: string
+                      format: date-time
+                      example: "2025-09-01T14:30:00Z"
+        '500':
+          description: Erro interno ao buscar postagens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Erro ao buscar postagens."
+                  erro:
+                    type: string
+                    example: "Erro de conexão com o banco de dados."
 
 # Treinos
   /treino/AdicionarTreino:

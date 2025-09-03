@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil do Usuário - Feed Claro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --primary-color: #f0f2f5;
+            --secondary-color: #ffffff;
+            --accent-color: #ffd700;
+            --text-color: #333;
+            --border-color: #dbdbdb;
+            --tiktok-bg: #f0f2f5;
+            --tiktok-header-bg: #fff;
+            --tiktok-card-bg: #fff;
+            --tiktok-card-border: #e0e0e0;
+            --tiktok-icon-color: #666;
+            --tiktok-accent-text: #333;
+            --tiktok-profile-bg: #f8f9fa;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--tiktok-bg); color: var(--text-color); line-height: 1.6; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 600px; background-color: var(--tiktok-bg); position: relative; padding-bottom: 70px; }
+        .app-header { background-color: var(--tiktok-header-bg); padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--tiktok-card-border); position: sticky; top: 0; z-index: 100; }
+        .logo-area { display: flex; align-items: center; gap: 15px; }
+        .logo-area h1 { font-size: 1.4rem; font-weight: 600; }
+        .app-header a { color: var(--text-color); font-size: 1.2rem; text-decoration: none; }
+
+        /* --- SEÇÃO DO PERFIL --- */
+        .profile-section { background-color: var(--tiktok-profile-bg); padding: 20px 15px 30px 15px; text-align: center; border-bottom: 1px solid var(--tiktok-card-border); }
+        .profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; }
+        .profile-picture { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-color); margin-bottom: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .profile-name { font-size: 1.6rem; font-weight: 700; margin-bottom: 5px; }
+        .profile-username { font-size: 1rem; color: #777; margin-bottom: 10px; }
+        .profile-stats { display: flex; justify-content: space-around; width: 100%; margin-bottom: 20px; }
+        .profile-stat-item { display: flex; flex-direction: column; align-items: center; flex: 1; }
+        .profile-stat-value { font-size: 1.3rem; font-weight: 700; }
+        .profile-stat-label { font-size: 0.8rem; color: #777; text-transform: uppercase; }
+        .profile-bio { font-size: 0.95rem; color: #444; max-width: 400px; margin: 0 auto 20px auto; white-space: pre-wrap; word-wrap: break-word; }
+        .profile-actions { display: flex; justify-content: center; margin-top: 20px; gap: 10px; }
+        .profile-button { background-color: var(--accent-color); color: var(--tiktok-accent-text); border: none; padding: 10px 20px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+        .profile-location { font-size: 0.9rem; color: #888; margin-bottom: 15px; }
+        .profile-location i { margin-right: 5px; }
+        .profile-points-highlight { background: linear-gradient(45deg, var(--accent-color), #ffc107); color: var(--tiktok-accent-text); padding: 12px 20px; border-radius: 12px; display: flex; justify-content: center; align-items: center; gap: 15px; width: 60%; max-width: 250px; margin: 15px auto 25px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.15); border: 2px solid #fff; }
+        .profile-points-highlight i { font-size: 2.5rem; color: #fff; text-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .profile-points-highlight .profile-stat-value { font-size: 2rem; font-weight: 700; }
+
+        /* --- SEÇÃO DE ESPORTES --- */
+        .profile-sports { text-align: left; max-width: 90%; margin: 25px auto 0 auto; padding: 20px; background-color: var(--secondary-color); border: 1px solid var(--border-color); border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+        .profile-sports h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 20px; text-align: center; color: var(--text-color); }
+        .profile-sports-list { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; }
+        .profile-sports-list li { background-color: var(--primary-color); color: var(--text-color); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: flex; align-items: center; gap: 8px; border: 1px solid var(--border-color); }
+        .profile-sports-list li i { color: var(--accent-color); font-size: 1rem; }
+        
+        /* --- ABAS E CONTEÚDO --- */
+        .content-tabs { display: flex; justify-content: space-around; background-color: var(--tiktok-profile-bg); border-bottom: 1px solid var(--tiktok-card-border); position: sticky; top: 60px; z-index: 90; padding: 5px 0; }
+        .tab-item { flex-grow: 1; text-align: center; padding: 15px 5px; font-size: 0.9rem; font-weight: 600; color: var(--tiktok-icon-color); border-bottom: 3px solid transparent; cursor: pointer; }
+        .tab-item.active { color: var(--text-color); border-bottom-color: var(--accent-color); }
+        .content-section { display: none; padding: 20px 15px; }
+        .content-section.active { display: block; }
+        .info-message, .empty-message { text-align: center; color: #888; padding: 40px 20px; }
+        .error-message { text-align: center; color: #c0392b; font-weight: bold; padding: 20px; }
+        .loading-indicator { text-align: center; color: #888; padding-top: 20px; }
+
+        /* --- ESTILOS DOS CARDS (POST, EVENTO) --- */
+        .post-card, .evento-card { background-color: var(--tiktok-card-bg); border: 1px solid var(--tiktok-card-border); border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .post-header { display: flex; align-items: center; padding: 10px 15px; }
+        .post-profile-pic-small { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
+        .post-username-small { font-weight: 600; }
+        .post-media { width: 100%; max-height: 500px; object-fit: cover; display: block; }
+        .post-content { padding: 15px; }
+        .post-actions { display: flex; align-items: center; gap: 20px; margin-bottom: 10px; }
+        .post-actions span { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; font-weight: 600; }
+        .post-actions i { cursor: pointer; font-size: 1.4rem; color: var(--tiktok-icon-color); }
+        .post-caption { font-size: 0.9rem; margin-bottom: 10px; }
+        .post-caption .username { font-weight: 600; margin-right: 5px; }
+        .post-date { font-size: 0.75rem; color: #999; }
+        .evento-card { padding: 15px; }
+        .evento-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+        .evento-title { font-size: 1.2rem; font-weight: 600; margin-right: 10px; }
+        .evento-sport-badge { font-size: 0.75rem; font-weight: 500; padding: 3px 8px; border-radius: 12px; background-color: var(--accent-color); color: var(--tiktok-accent-text); display: inline-block; margin-top: 5px; margin-bottom: 10px; }
+        .evento-image { width: 100%; max-height: 250px; object-fit: cover; border-radius: 6px; margin-bottom: 15px; border: 1px solid var(--border-color); }
+        .evento-details { margin-bottom: 15px; }
+        .evento-details p { font-size: 0.9rem; color: #555; margin-bottom: 6px; display: flex; align-items: center; }
+        .evento-details p i { margin-right: 8px; width: 16px; text-align: center; color: var(--accent-color); }
+        .evento-stats { display: flex; justify-content: space-around; margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--border-color); }
+        .evento-stats .stat-item { text-align: center; }
+        .evento-stats .stat-value { font-size: 1.1rem; font-weight: bold; }
+        .evento-stats .stat-label { font-size: 0.7rem; color: #777; text-transform: uppercase; }
+        .evento-description, .evento-observations, .evento-prize { font-size: 0.85rem; color: #444; margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--border-color); }
+        .evento-observations p, .evento-prize p { margin: 0; }
+        .evento-prize p { color: #111; font-weight: 500; }
+        .evento-prize i { color: var(--accent-color); }
+        .evento-badges { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+        .evento-badge { font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 10px; color: #fff; }
+        .evento-badge i { margin-right: 4px; }
+        .evento-badge.privado { background-color: #c0392b; }
+        .evento-badge.torneio { background-color: #2980b9; }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <header class="app-header">
+            <div class="logo-area">
+                <a href="javascript:history.back()"><i class="fas fa-arrow-left"></i></a>
+                <h1 id="header-username">Perfil</h1>
+            </div>
+        </header>
+
+        <main class="page-content">
+            <div id="profile-container">
+                <section class="profile-section">
+                    <div class="profile-header">
+                        <img src="" alt="Foto de Perfil" class="profile-picture" id="profile-pic">
+                        <h2 class="profile-name" id="profile-name">Carregando...</h2>
+                        <p class="profile-username" id="profile-username">@...</p>
+                        <p class="profile-location" id="profile-location" style="display: none;"></p>
+                        
+                        <div class="profile-stats">
+                            <div class="profile-stat-item">
+                                <span class="profile-stat-value" id="profile-posts-count">0</span>
+                                <span class="profile-stat-label">Posts</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="profile-stat-value" id="profile-followers-count">0</span>
+                                <span class="profile-stat-label">Seguidores</span>
+                            </div>
+                            <div class="profile-stat-item">
+                                <span class="profile-stat-value" id="profile-following-count">0</span>
+                                <span class="profile-stat-label">Seguindo</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-points-highlight">
+                            <i class="fas fa-trophy"></i>
+                            <div>
+                                <span class="profile-stat-value" id="profile-points-count">0</span>
+                                <span class="profile-stat-label">Pontos</span>
+                            </div>
+                        </div>
+
+                        <p class="profile-bio" id="profile-bio"></p>
+                        
+                        <div class="profile-sports" id="profile-sports-section" style="display: none;">
+                            <h4>Esportes Praticados</h4>
+                            <ul class="profile-sports-list" id="profile-sports-list"></ul>
+                        </div>
+                        
+                        <div class="profile-actions">
+                            <button class="profile-button" id="follow-btn">Seguir</button>
+                        </div>
+                    </div>
+                </section>
+                
+                <div class="content-tabs">
+                    <div class="tab-item active" data-tab="posts"><i class="fas fa-image"></i> Posts</div>
+                    <div class="tab-item" data-tab="eventos"><i class="fas fa-trophy"></i> Eventos</div>
+                </div>
+
+                <div id="posts-content" class="content-section active">
+                    <p class="loading-indicator">Carregando posts...</p>
+                </div>
+                <div id="eventos-content" class="content-section">
+                    <p class="loading-indicator">Carregando eventos...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('jwtToken');
+            const urlParams = new URLSearchParams(window.location.search);
+            const viewedUserId = urlParams.get('id');
+
+            // --- Variáveis de estado ---
+            let arePostsLoaded = false;
+            let areEventosLoaded = false;
+            let loadedUserData = null; // Armazena os dados do usuário para uso posterior
+
+            // --- Seletores do DOM ---
+            const profileContainer = document.getElementById('profile-container');
+            const postsContent = document.getElementById('posts-content');
+            const eventosContent = document.getElementById('eventos-content');
+            // ... (outros seletores de perfil)
+            const headerUsername = document.getElementById('header-username');
+            const profilePic = document.getElementById('profile-pic');
+            const profileName = document.getElementById('profile-name');
+            const profileUsername = document.getElementById('profile-username');
+            const profileLocation = document.getElementById('profile-location');
+            const profileBio = document.getElementById('profile-bio');
+            const profilePostsCount = document.getElementById('profile-posts-count');
+            const profileFollowersCount = document.getElementById('profile-followers-count');
+            const profileFollowingCount = document.getElementById('profile-following-count');
+            const profilePointsCount = document.getElementById('profile-points-count');
+            const sportsSection = document.getElementById('profile-sports-section');
+            const sportsList = document.getElementById('profile-sports-list');
+            
+            function displayError(message) {
+                profileContainer.innerHTML = `<p class="error-message">${message}</p>`;
+            }
+
+            if (!token) {
+                displayError("Acesso Negado. Por favor, faça login para visualizar perfis.");
+                return;
+            }
+            if (!viewedUserId) {
+                displayError("Erro: ID do usuário não foi encontrado na URL.");
+                return;
+            }
+
+            // --- FUNÇÃO PARA CARREGAR DADOS DO PERFIL ---
+            async function loadUserProfile() {
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/usuario/${viewedUserId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.erro || 'Não foi possível carregar o perfil.');
+                    }
+                    const userData = await response.json();
+                    loadedUserData = userData; // Salva os dados do usuário
+
+                    populateProfileData(userData);
+                    await loadUserPosts(userData); // Carrega os posts iniciais
+                    arePostsLoaded = true;
+
+                } catch (error) {
+                    console.error("Erro na API de Perfil:", error);
+                    displayError(error.message);
+                }
+            }
+
+            // --- FUNÇÃO PARA CARREGAR POSTS DO USUÁRIO ---
+            async function loadUserPosts(authorData) {
+                postsContent.innerHTML = '<p class="loading-indicator">Carregando posts...</p>';
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/postagem/usuario/${viewedUserId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (!response.ok) { throw new Error('Não foi possível carregar os posts.'); }
+                    
+                    const posts = await response.json();
+                    postsContent.innerHTML = ''; 
+
+                    if (!posts || posts.length === 0) {
+                        postsContent.innerHTML = '<p class="empty-message">Este usuário ainda não publicou nada.</p>';
+                        return;
+                    }
+                    posts.forEach(post => postsContent.appendChild(createPostCard(post, authorData)));
+                } catch (error) {
+                    console.error("Erro na API de Posts:", error);
+                    postsContent.innerHTML = `<p class="error-message">${error.message}</p>`;
+                }
+            }
+            
+            // --- NOVA FUNÇÃO PARA CARREGAR EVENTOS DO USUÁRIO ---
+            async function loadUserEvents() {
+                eventosContent.innerHTML = '<p class="loading-indicator">Carregando eventos...</p>';
+                try {
+                    const response = await fetch(`http://127.0.0.1:5000/evento/usuario/${viewedUserId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    
+                    // A API retorna 404 se não houver eventos, tratamos isso como um caso de sucesso (lista vazia)
+                    if (response.status === 404) {
+                        eventosContent.innerHTML = '<p class="empty-message">Nenhum evento criado por este usuário.</p>';
+                        return;
+                    }
+                    if (!response.ok) { throw new Error('Não foi possível carregar os eventos.'); }
+
+                    const eventos = await response.json();
+                    eventosContent.innerHTML = '';
+                    
+                    if (!eventos || eventos.length === 0) {
+                        eventosContent.innerHTML = '<p class="empty-message">Nenhum evento encontrado.</p>';
+                        return;
+                    }
+
+                    eventos.sort((a, b) => new Date(b.data_hora) - new Date(a.data_hora));
+                    eventos.forEach(evento => eventosContent.appendChild(createEventoCard(evento)));
+                } catch (error) {
+                    console.error("Erro na API de Eventos:", error);
+                    eventosContent.innerHTML = `<p class="error-message">${error.message}</p>`;
+                }
+            }
+
+            // --- FUNÇÃO PARA CRIAR CARD DE POST ---
+            function createPostCard(postData, authorData) {
+                const card = document.createElement('article');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <div class="post-header">
+                        <img src="${authorData.foto_perfil || ''}" alt="Foto de ${authorData.nome_completo}" class="post-profile-pic-small">
+                        <span class="post-username-small">${authorData.nome_completo}</span>
+                    </div>
+                    ${postData.imagem ? `<img src="${postData.imagem}" alt="Mídia do post" class="post-media">` : ''}
+                    <div class="post-content">
+                        <div class="post-actions">
+                            <span><i class="far fa-heart"></i> ${postData.contador_curtidas || 0}</span>
+                            <span><i class="far fa-comment"></i> ${postData.comentarios ? postData.comentarios.length : 0}</span>
+                        </div>
+                        <div class="post-caption"><span class="username">${authorData.username}</span> <span>${postData.descricao || ''}</span></div>
+                        <div class="post-date">${formatDateTime(postData.data_criacao, { month: 'long', day: 'numeric', year: 'numeric' })}</div>
+                    </div>`;
+                return card;
+            }
+
+            // --- FUNÇÃO PARA CRIAR CARD DE EVENTO ---
+            function createEventoCard(eventoData) {
+                const card = document.createElement('article');
+                card.className = 'evento-card';
+                const titulo = eventoData.titulo || 'Evento sem título';
+                const esporteNome = eventoData.esporte_nome || 'Multiesportivo';
+                const imagemSrc = eventoData.foto;
+                const dataFormatada = formatDateTime(eventoData.data_hora);
+                const localizacao = eventoData.localizacao || 'Local a definir';
+                const numParticipantes = eventoData.participantes ? eventoData.participantes.length : 0;
+                const maxParticipantes = eventoData.max_participantes || 'Ilimitado';
+                const isPrivado = eventoData.privado;
+                const isTorneio = eventoData.torneio;
+                const premiacao = eventoData.premiacao;
+                const imagemHtml = imagemSrc ? `<img src="${imagemSrc}" alt="Imagem do evento" class="evento-image">` : '';
+                const privadoHtml = isPrivado ? `<span class="evento-badge privado"><i class="fas fa-lock"></i> Privado</span>` : '';
+                const torneioHtml = isTorneio ? `<span class="evento-badge torneio"><i class="fas fa-trophy"></i> Torneio</span>` : '';
+                const premiacaoHtml = isTorneio && premiacao ? `<div class="evento-prize"><p><i class="fas fa-gift"></i> <strong>Premiação:</strong> ${premiacao}</p></div>` : '';
+                const descricaoHtml = eventoData.descricao ? `<div class="evento-description">${eventoData.descricao}</div>` : '';
+                const observacoesHtml = eventoData.observacoes ? `<div class="evento-observations"><p><strong>Observações:</strong> ${eventoData.observacoes}</p></div>` : '';
+                card.innerHTML = `
+                    <div class="evento-header">
+                        <div>
+                            <h3 class="evento-title">${titulo}</h3>
+                            <span class="evento-sport-badge">${esporteNome}</span>
+                        </div>
+                        <div class="evento-badges">${privadoHtml}${torneioHtml}</div>
+                    </div>
+                    ${imagemHtml}
+                    <div class="evento-details">
+                        <p><i class="fas fa-calendar-alt"></i> ${dataFormatada}</p>
+                        <p><i class="fas fa-map-marker-alt"></i> ${localizacao}</p>
+                    </div>
+                    <div class="evento-stats">
+                        <div class="stat-item"><span class="stat-value">${numParticipantes} / ${maxParticipantes}</span><span class="stat-label">Participantes</span></div>
+                    </div>
+                    ${premiacaoHtml}${descricaoHtml}${observacoesHtml}`;
+                return card;
+            }
+            
+            // --- FUNÇÃO AUXILIAR PARA FORMATAR DATAS ---
+            function formatDateTime(isoString, options = {}) {
+                if (!isoString) return '';
+                const defaultOptions = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
+                const finalOptions = { ...defaultOptions, ...options };
+                const date = new Date(isoString);
+                date.setMinutes(date.getMinutes() + date.getTimezoneOffset());
+                return date.toLocaleDateString('pt-BR', finalOptions).replace(',', ' às');
+            }
+
+            // --- FUNÇÃO PARA PREENCHER OS ELEMENTOS DA PÁGINA ---
+            function populateProfileData(data) {
+                profilePic.src = data.foto_perfil || 'https://i.stack.imgur.com/l60Hf.png';
+                headerUsername.textContent = data.username || 'Perfil';
+                profileName.textContent = data.nome_completo || 'Usuário sem nome';
+                profileUsername.textContent = `@${data.username || '...'}`;
+                profileBio.textContent = data.biografia || 'Nenhuma biografia disponível.';
+                
+                if (data.cidade && data.estado) {
+                    profileLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${data.cidade}, ${data.estado}`;
+                    profileLocation.style.display = 'block';
+                }
+
+                profilePostsCount.textContent = data.total_posts !== undefined ? data.total_posts : 0;
+                profileFollowersCount.textContent = data.seguidores_count !== undefined ? data.seguidores_count : 0;
+                profileFollowingCount.textContent = data.seguindo_count !== undefined ? data.seguindo_count : 0;
+                profilePointsCount.textContent = data.pontos ? Math.round(data.pontos) : 0;
+
+                const sports = data.esportes_praticados;
+                sportsList.innerHTML = ''; 
+
+                if (sports && typeof sports === 'object' && Object.keys(sports).length > 0) {
+                    sportsSection.style.display = 'block';
+                    const sportIcons = {
+                        'futebol': 'fas fa-futbol', 'basquete': 'fas fa-basketball-ball', 'volei': 'fas fa-volleyball-ball',
+                        'tenis': 'fas fa-table-tennis', 'corrida': 'fas fa-running', 'natacao': 'fas fa-swimmer',
+                        'ciclismo': 'fas fa-biking', 'musculacao': 'fas fa-dumbbell', 'yoga': 'fas fa-praying-hands', 
+                        'default': 'fas fa-medal'
+                    };
+
+                    for (const sport in sports) {
+                        const level = sports[sport];
+                        const sportKey = sport.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                        const iconClass = sportIcons[sportKey] || sportIcons['default'];
+                        const listItem = document.createElement('li');
+                        const formattedSport = sport.charAt(0).toUpperCase() + sport.slice(1);
+                        const formattedLevel = level.charAt(0).toUpperCase() + level.slice(1);
+                        listItem.innerHTML = `<i class="${iconClass}"></i> <span>${formattedSport} (${formattedLevel})</span>`;
+                        sportsList.appendChild(listItem);
+                    }
+                } else {
+                    sportsSection.style.display = 'none';
+                }
+            }
+            
+            // --- LÓGICA DAS ABAS (TABS) ---
+            const tabItems = document.querySelectorAll('.tab-item');
+            const contentSections = document.querySelectorAll('.content-section');
+            tabItems.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+
+                    // Lazy loading: carrega os eventos apenas na primeira vez que a aba é clicada
+                    if (tabName === 'eventos' && !areEventosLoaded) { 
+                        loadUserEvents(); 
+                        areEventosLoaded = true; 
+                    }
+
+                    tabItems.forEach(t => t.classList.remove('active'));
+                    contentSections.forEach(s => s.classList.remove('active'));
+                    
+                    tab.classList.add('active');
+                    document.getElementById(`${tab.dataset.tab}-content`).classList.add('active');
+                });
+            });
+
+            // --- INICIA O PROCESSO ---
+            loadUserProfile();
+        });
+    </script>
+</body>
+</html>

@@ -25,9 +25,13 @@ def criarPostagem():
 # Rota para Listar Postagens
 # Implementado
 @postagem_bp.route('/ListarPostagens', methods=['GET'])
-def listarPostagensPorUserID():
-    return Post_Service.listar_postagens_UserID()
+def listarPostagens():
+    return Post_Service.listar_postagens_minhas()
 
+
+@postagem_bp.route('/usuario/<string:usuario_id>', methods=['GET'])
+def listar_postagens_de_usuario(usuario_id):
+    return Post_Service.listar_postagens_de_outro_usuario(usuario_id)
 
 
 # Implementado

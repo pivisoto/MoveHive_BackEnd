@@ -333,6 +333,38 @@ def meuPerfil():
             print(f"Erro ao buscar perfil do usuário {g.user_id}: {e}")
             return jsonify({'erro': f'Ocorreu um erro interno ao processar seu perfil.'}), 500
 
+# Implementado
+@token_required 
+def verPerfil(usuario_id):
+    try:
+        usuario_ref = db.collection('Usuarios').document(usuario_id)
+        usuario_doc = usuario_ref.get()
+
+        if not usuario_doc.exists:
+            return jsonify({'erro': 'Usuário não encontrado!'}), 404
+
+        usuario_data = usuario_doc.to_dict()
+
+        posts_query = db.collection('Posts').where('usuario_id', '==', usuario_id).stream()
+        total_posts = len(list(posts_query))
+
+        total_seguidores = len(usuario_data.get('seguidores', []))
+
+        total_seguindo = len(usuario_data.get('seguindo', []))
+       
+        usuario_data['total_posts'] = total_posts
+        usuario_data['seguidores_count'] = total_seguidores 
+        usuario_data['seguindo_count'] = total_seguindo     
+
+        usuario_data.pop('seguidores', None)
+        usuario_data.pop('seguindo', None)
+        usuario_data.pop('senha', None) 
+
+        return jsonify(usuario_data), 200
+
+    except Exception as e:
+        print(f"Erro ao buscar perfil do usuário {usuario_id}: {e}")
+        return jsonify({'erro': f'Ocorreu um erro interno ao processar o perfil.'}), 500
 
 # Implementado
 @token_required

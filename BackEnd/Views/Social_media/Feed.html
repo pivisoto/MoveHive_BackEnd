@@ -741,6 +741,7 @@
                 }
 
                 const feedData = await response.json();
+                console.log(feedData)
                 feedContainer.innerHTML = ''; 
 
                 if (Array.isArray(feedData) && feedData.length > 0) {
@@ -906,9 +907,7 @@
                 alert(`Não foi possível excluir a notificação: ${error.message}`);
             }
         }
-        // ####################################################################
-        // ##                       FIM DA CORREÇÃO                        ##
-        // ####################################################################
+       
 
         function setupNotificationPolling() {
             checkNotifications();

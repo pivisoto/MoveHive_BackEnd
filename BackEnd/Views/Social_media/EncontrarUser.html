@@ -6,6 +6,7 @@
     <title>Encontrar Usuários - Feed Claro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
+        /* --- ESTILOS GERAIS --- */
         :root {
             --primary-color: #f0f2f5;
             --secondary-color: #ffffff;
@@ -37,7 +38,8 @@
             background-color: var(--primary-color);
             min-height: 100vh;
         }
-
+        
+        /* --- CABEÇALHO --- */
         .app-header {
             background-color: var(--secondary-color);
             padding: 10px 15px;
@@ -50,48 +52,14 @@
             z-index: 100;
         }
 
-        .logo-area {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo-area h1 {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin-left: 10px;
-        }
-
-        .honeycomb-logo {
-            width: 30px;
-            height: 26px;
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .honeycomb-logo div {
-            width: 10px;
-            height: 11.54px;
-            background-color: var(--accent-color);
-            margin: 0.5px;
-            clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
-        }
-
-        .honeycomb-logo div:nth-child(4),
-        .honeycomb-logo div:nth-child(5),
-        .honeycomb-logo div:nth-child(6),
-        .honeycomb-logo div:nth-child(7) {
-            transform: translateX(5px);
-        }
-
-        .header-actions i {
-            font-size: 1.5rem;
-            margin-left: 20px;
-            cursor: pointer;
-            color: #555;
-        }
-
+        .logo-area { display: flex; align-items: center; }
+        .logo-area h1 { font-size: 1.4rem; font-weight: 600; margin-left: 10px; }
+        .honeycomb-logo { width: 30px; height: 26px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; }
+        .honeycomb-logo div { width: 10px; height: 11.54px; background-color: var(--accent-color); margin: 0.5px; clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%); }
+        .honeycomb-logo div:nth-child(4), .honeycomb-logo div:nth-child(5), .honeycomb-logo div:nth-child(6), .honeycomb-logo div:nth-child(7) { transform: translateX(5px); }
+        .header-actions i { font-size: 1.5rem; margin-left: 20px; cursor: pointer; color: #555; }
+        
+        /* --- CONTEÚDO PRINCIPAL --- */
         .user-list-container {
             padding: 15px;
             padding-bottom: 80px;
@@ -125,16 +93,13 @@
             text-align: center;
         }
 
-        .filter-button:hover {
-            background-color: #f5f5f5;
-        }
-        
         .filter-button.active {
             background-color: var(--accent-color);
             border-color: #e6c300;
             color: #333;
         }
-
+        
+        /* --- CARD DE USUÁRIO --- */
         .user-entry {
             display: flex;
             align-items: center;
@@ -144,18 +109,16 @@
             border-radius: 8px;
             margin-bottom: 10px;
             border: 1px solid var(--border-color);
-            cursor: pointer;
             transition: background-color 0.2s;
-        }
-
-        .user-entry:hover {
-            background-color: #fafafa;
         }
 
         .user-info {
             display: flex;
             align-items: center;
             gap: 12px;
+            flex-grow: 1;
+            min-width: 0;
+            cursor: pointer;
         }
 
         .user-avatar {
@@ -165,49 +128,44 @@
             object-fit: cover;
             border: 1px solid var(--border-color);
         }
-
-        .user-details h3 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin: 0;
+        
+        .user-details h3, .user-details p {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .user-details h3 { font-size: 0.95rem; font-weight: 600; margin: 0; }
+        .user-details p { font-size: 0.85rem; color: #8e8e8e; margin: 0; line-height: 1.3; }
+        .user-location i { margin-right: 4px; }
+        
+        /* --- BOTÕES DE AÇÃO --- */
+        .user-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .user-details p {
-            font-size: 0.85rem;
-            color: #8e8e8e;
-            margin: 0;
-            line-height: 1.3;
-        }
-
-        .user-location i {
-            margin-right: 4px;
-        }
-
-        .follow-button {
-            background-color: var(--accent-color);
-            color: #333;
-            border: none;
-            padding: 8px 18px;
+        .follow-button, .visit-profile-button {
+            padding: 8px 12px;
             border-radius: 5px;
             cursor: pointer;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
             transition: background-color 0.2s ease, color 0.2s ease;
             white-space: nowrap;
         }
-
-        .follow-button:hover {
-            background-color: #e6c300;
-        }
         
+        .follow-button {
+            background-color: var(--accent-color);
+            color: #333;
+            border: none;
+        }
+
         .follow-button.followed {
             background-color: var(--button-followed-bg);
             color: var(--button-followed-text);
             border: 1px solid var(--border-color);
-        }
-
-        .follow-button.followed:hover {
-            background-color: #dcdcdc;
         }
         
         .follow-button:disabled {
@@ -215,164 +173,35 @@
             cursor: not-allowed;
         }
 
-        .loading-message, .error-message, .empty-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #8e8e8e;
-        }
-
-        .error-message {
-            color: #d9534f;
-        }
-        
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.5);
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal-content {
-            background-color: var(--secondary-color);
-            margin: auto;
-            padding: 25px;
+        .visit-profile-button {
+            background-color: #f0f0f0;
+            color: #555;
             border: 1px solid var(--border-color);
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            position: relative;
-            box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
-            animation: fadeIn 0.3s;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: scale(0.95); }
-            to { opacity: 1; transform: scale(1); }
-        }
-
-        .close-button {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 28px;
-            font-weight: bold;
-        }
-
-        .close-button:hover,
-        .close-button:focus {
-            color: black;
             text-decoration: none;
-            cursor: pointer;
         }
+        .visit-profile-button:hover { background-color: #e0e0e0; }
 
-        .modal-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .modal-avatar {
-            width: 90px;
-            height: 90px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 10px;
-            border: 3px solid var(--border-color);
-        }
+        /* --- MENSAGENS E MODAL --- */
+        .loading-message, .error-message, .empty-message { text-align: center; padding: 40px 20px; color: #8e8e8e; }
+        .error-message { color: #d9534f; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+        .modal-content { background-color: var(--secondary-color); margin: auto; padding: 25px; border-radius: 12px; width: 90%; max-width: 500px; position: relative; box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); animation: fadeIn 0.3s; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .close-button { color: #aaa; position: absolute; top: 10px; right: 15px; font-size: 28px; font-weight: bold; cursor: pointer; }
+        .modal-header { text-align: center; margin-bottom: 20px; }
+        .modal-avatar { width: 90px; height: 90px; border-radius: 50%; object-fit: cover; margin-bottom: 10px; border: 3px solid var(--border-color); }
+        .modal-username { font-size: 1.4rem; font-weight: 600; margin: 0; }
+        .modal-fullname { font-size: 1rem; color: #8e8e8e; margin-top: 2px; }
+        .modal-location { font-size: 0.9rem; color: #8e8e8e; margin-top: 5px; }
+        .modal-body strong { display: block; margin-bottom: 5px; font-size: 1rem; }
+        .sports-list { list-style: none; padding: 0; }
+        .sports-list li { background-color: var(--primary-color); padding: 8px 12px; border-radius: 6px; margin-bottom: 8px; font-size: 0.9rem; }
+        .sports-list span { font-weight: bold; color: var(--text-color); text-transform: capitalize; }
         
-        .modal-username {
-            font-size: 1.4rem;
-            font-weight: 600;
-            margin: 0;
-        }
-
-        .modal-fullname {
-            font-size: 1rem;
-            color: #8e8e8e;
-            margin-top: 2px;
-        }
-
-        .modal-location {
-            font-size: 0.9rem;
-            color: #8e8e8e;
-            margin-top: 5px;
-        }
-        .modal-location i {
-            margin-right: 5px;
-        }
-
-        .modal-body p {
-            font-size: 0.95rem;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .modal-body strong {
-            display: block;
-            margin-bottom: 5px;
-            font-size: 1rem;
-        }
-        
-        .sports-list {
-            list-style: none;
-            padding: 0;
-        }
-        
-        .sports-list li {
-            background-color: var(--primary-color);
-            padding: 8px 12px;
-            border-radius: 6px;
-            margin-bottom: 8px;
-            font-size: 0.9rem;
-        }
-        
-        .sports-list span {
-            font-weight: bold;
-            color: var(--text-color);
-            text-transform: capitalize;
-        }
-
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 600px;
-            background-color: var(--accent-color);
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 10px 0;
-            border-top: 1px solid #cca300;
-            z-index: 100;
-        }
-
-        .nav-item {
-            color: #333;
-            font-size: 1.6rem;
-            text-decoration: none;
-            padding: 5px 15px;
-        }
-
-        .nav-item.active {
-            color: #000;
-            font-weight: bold;
-        }
-        
-        @media (min-width: 601px) {
-            .app-container {
-                border-left: 1px solid var(--border-color);
-                border-right: 1px solid var(--border-color);
-            }
-        }
+        /* --- NAVEGAÇÃO INFERIOR --- */
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 100%; max-width: 600px; background-color: var(--accent-color); display: flex; justify-content: space-around; align-items: center; padding: 10px 0; border-top: 1px solid #cca300; z-index: 100; }
+        .nav-item { color: #333; font-size: 1.6rem; text-decoration: none; padding: 5px 15px; }
+        .nav-item.active { color: #000; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -407,7 +236,7 @@
             <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
             <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item"><i class="fas fa-image"></i></a>
             <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/AdicionarEvento.html" class="nav-item"><i class="fas fa-trophy"></i></a>
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/EncontrarUser.html" class="nav-item"><i class="fas fa-user"></i></a>
+            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/EncontrarUser.html" class="nav-item active"><i class="fas fa-user"></i></a>
         </nav>
     </div>
 
@@ -415,7 +244,6 @@
         <div class="modal-content">
             <span class="close-button">&times;</span>
             <div id="modalUserDetails">
-                <input type="hidden" id="modalUserId" />
                 <div class="modal-header">
                     <img src="" alt="Avatar do usuário" id="modalUserAvatar" class="modal-avatar">
                     <h2 id="modalUsername" class="modal-username"></h2>
@@ -432,232 +260,25 @@
     </div>
 
     <script>
-        const baseUrl = 'http://127.0.0.1:5000';
-        
-        const randomUsersApiUrl = `${baseUrl}/usuario/usuariosSemFiltro`;
-        const suggestionsApiUrl = `${baseUrl}/usuario/usuariosComFiltro`; 
-        const followingApiUrl = `${baseUrl}/usuario/usuariosSeguidos`; // NOVA URL
-        
-        const followApiUrl = `${baseUrl}/usuario/follow`;
-        const unfollowApiUrl = `${baseUrl}/usuario/unfollow`;
+        document.addEventListener('DOMContentLoaded', () => {
+            const baseUrl = 'http://127.0.0.1:5000';
+            const token = localStorage.getItem('jwtToken');
 
-        function createUserEntryElement(user, options = {}) {
-            const userEntry = document.createElement('div');
-            userEntry.className = 'user-entry';
-            userEntry.dataset.userId = user.id;
-
-            const userName = user.username || 'usuário';
-            const fullName = user.nome_completo || 'Nome não informado';
-            const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=45&background=e0e0e0&color=333`;
+            // URLs da API
+            const randomUsersApiUrl = `${baseUrl}/usuario/usuariosSemFiltro`;
+            const suggestionsApiUrl = `${baseUrl}/usuario/usuariosComFiltro`; 
+            const followingApiUrl = `${baseUrl}/usuario/usuariosSeguidos`;
+            const followApiUrl = `${baseUrl}/usuario/follow`;
+            const unfollowApiUrl = `${baseUrl}/usuario/unfollow`;
             
-            // Se a lista for de pessoas que eu sigo, todos já vêm como "seguindo"
-            const isFollowed = options.isFollowingList ? true : (user.is_followed_by_me || false);
-            
-            let locationString = '';
-            if (user.cidade && user.estado) {
-                locationString = `${user.cidade}, ${user.estado}`;
-            } else if (user.cidade) {
-                locationString = user.cidade;
-            } else if (user.estado) {
-                locationString = user.estado;
-            }
-            
-            const locationElement = locationString 
-                ? `<p class="user-location"><i class="fas fa-map-marker-alt"></i>${locationString}</p>`
-                : '<p class="user-location">&nbsp;</p>';
-
-            userEntry.innerHTML = `
-                <div class="user-info">
-                    <img src="${userAvatar}" alt="Avatar de ${userName}" class="user-avatar">
-                    <div class="user-details">
-                        <h3>${userName}</h3>
-                        <p>${fullName}</p>
-                        ${locationElement}
-                    </div>
-                </div>
-                <button class="follow-button ${isFollowed ? 'followed' : ''}">${isFollowed ? 'Seguindo' : 'Seguir'}</button>
-            `;
-
-            const followButton = userEntry.querySelector('.follow-button');
-            
-            followButton.addEventListener('click', async (e) => {
-                e.stopPropagation();
-                const token = localStorage.getItem('jwtToken');
-                if (!token) return;
-
-                const isCurrentlyFollowed = followButton.classList.contains('followed');
-                followButton.disabled = true; 
-
-                try {
-                    await toggleFollowState(user.id, !isCurrentlyFollowed, token);
-                    
-                    followButton.classList.toggle('followed');
-                    followButton.textContent = isCurrentlyFollowed ? 'Seguir' : 'Seguindo';
-                    
-                    // Se estivermos na aba "Seguindo" e o usuário der unfollow, removemos o item da lista.
-                    if (isCurrentlyFollowed && options.isFollowingList) {
-                        userEntry.remove();
-                         // Verifica se a lista ficou vazia
-                        const container = document.getElementById('userListContainer');
-                        if (!container.querySelector('.user-entry')) {
-                             const emptyMessage = document.createElement('p');
-                             emptyMessage.className = 'empty-message';
-                             emptyMessage.textContent = 'Você não está seguindo ninguém.';
-                             container.appendChild(emptyMessage);
-                        }
-                    }
-
-                } catch (error) {
-                    console.error('Falha ao atualizar status de "seguir":', error);
-                    alert(`Não foi possível ${isCurrentlyFollowed ? 'deixar de seguir' : 'seguir'} o usuário. Tente novamente.`);
-                } finally {
-                    followButton.disabled = false;
-                }
-            });
-
-            userEntry.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('follow-button')) {
-                    showUserDetailsModal(user);
-                }
-            });
-
-            return userEntry;
-        }
-
-        async function toggleFollowState(userId, follow, token) {
-            const url = follow ? followApiUrl : unfollowApiUrl;
-            
-            const response = await fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
-                },
-                body: JSON.stringify({ seguido_id: userId })
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.erro || 'Ocorreu um erro na requisição.');
-            }
-
-            return await response.json();
-        }
-        
-        function showUserDetailsModal(user) {
-            const modal = document.getElementById('userModal');
-            const userName = user.username || 'usuário';
-            const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=90&background=e0e0e0&color=333`;
-
-            let locationString = '';
-            if (user.cidade && user.estado) {
-                locationString = `${user.cidade}, ${user.estado}`;
-            } else if (user.cidade) {
-                locationString = user.cidade;
-            } else if (user.estado) {
-                locationString = user.estado;
-            }
-
-            document.getElementById('modalUserId').value = user.id;
-            document.getElementById('modalUserAvatar').src = userAvatar;
-            document.getElementById('modalUserAvatar').alt = `Avatar de ${userName}`;
-            document.getElementById('modalUsername').textContent = userName;
-            document.getElementById('modalUserFullName').textContent = user.nome_completo || 'Nome não informado';
-            
-            const modalLocation = document.getElementById('modalUserLocation');
-            if (locationString) {
-                modalLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i>${locationString}`;
-            } else {
-                modalLocation.innerHTML = '';
-            }
-
-            document.getElementById('modalUserBio').textContent = user.biografia || 'Nenhuma biografia informada.';
-
-            const sportsList = document.getElementById('modalUserSports');
-            sportsList.innerHTML = ''; 
-
-            if (user.esportes_praticados && typeof user.esportes_praticados === 'object' && Object.keys(user.esportes_praticados).length > 0) {
-                for (const [esporte, nivel] of Object.entries(user.esportes_praticados)) {
-                    const li = document.createElement('li');
-                    li.innerHTML = `<span>${esporte}:</span> ${nivel}`;
-                    sportsList.appendChild(li);
-                }
-            } else {
-                const li = document.createElement('li');
-                li.textContent = 'Nenhum esporte informado.';
-                sportsList.appendChild(li);
-            }
-
-            modal.style.display = 'flex';
-        }
-
-        async function fetchAndDisplayUsers(token, apiUrl, options = {}) {
+            // Elementos do DOM
             const container = document.getElementById('userListContainer');
             const pageTitle = document.querySelector('.page-title');
-            pageTitle.textContent = options.title || 'Sugestões para você';
-
-            const oldEntries = container.querySelectorAll('.user-entry, .loading-message, .error-message, .empty-message');
-            oldEntries.forEach(entry => entry.remove());
-
-            const loadingMessage = document.createElement('p');
-            loadingMessage.className = 'loading-message';
-            loadingMessage.textContent = 'Carregando usuários...';
-            container.appendChild(loadingMessage);
-
-            try {
-                const response = await fetch(apiUrl, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                container.removeChild(loadingMessage);
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
-                }
-
-                const data = await response.json();
-                // ALTERAÇÃO: Adicionado suporte para a chave 'usuarios_seguindo'
-                const users = data.usuarios || data.seguidores || data.usuarios_seguindo; 
-
-                if (Array.isArray(users) && users.length > 0) {
-                    users.forEach(user => {
-                        // Passa a opção para a função de criação do elemento
-                        const userElement = createUserEntryElement(user, { isFollowingList: (apiUrl === followingApiUrl) });
-                        container.appendChild(userElement);
-                    });
-                } else {
-                    const emptyMessage = document.createElement('p');
-                    emptyMessage.className = 'empty-message';
-                    emptyMessage.textContent = options.emptyText || 'Nenhum usuário encontrado.';
-                    container.appendChild(emptyMessage);
-                }
-
-            } catch (error) {
-                console.error("Falha ao carregar a lista de usuários:", error);
-                
-                const oldError = container.querySelector('.error-message');
-                if(oldError) oldError.remove();
-
-                const errorMessage = document.createElement('p');
-                errorMessage.className = 'error-message';
-                errorMessage.textContent = `Não foi possível carregar os usuários. ${error.message}`;
-                container.appendChild(errorMessage);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            const token = localStorage.getItem('jwtToken');
             const modal = document.getElementById('userModal');
             const closeButton = document.querySelector('.close-button');
-            
             const filterRandomBtn = document.getElementById('filter-random');
             const filterSuggestionsBtn = document.getElementById('filter-suggestions');
-            const filterFollowingBtn = document.getElementById('filter-following'); // ID ATUALIZADO
+            const filterFollowingBtn = document.getElementById('filter-following');
             const filterButtons = [filterRandomBtn, filterSuggestionsBtn, filterFollowingBtn];
 
             if (!token) {
@@ -665,44 +286,204 @@
                 window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Login.html';
                 return;
             }
-            
-            const setActiveFilter = (activeButton) => {
-                filterButtons.forEach(button => {
-                    button.classList.remove('active');
+
+            /**
+             * Cria o elemento HTML para uma entrada de usuário na lista.
+             */
+            function createUserEntryElement(user, options = {}) {
+                const userEntry = document.createElement('div');
+                userEntry.className = 'user-entry';
+                userEntry.dataset.userId = user.id;
+
+                const userName = user.username || 'usuário';
+                const fullName = user.nome_completo || 'Nome não informado';
+                const userAvatar = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=45&background=e0e0e0&color=333`;
+                const isFollowed = options.isFollowingList ? true : (user.is_followed_by_me || false);
+                
+                let locationString = (user.cidade && user.estado) ? `${user.cidade}, ${user.estado}` : (user.cidade || user.estado || '');
+                const locationElement = locationString ? `<p class="user-location"><i class="fas fa-map-marker-alt"></i>${locationString}</p>` : '<p class="user-location">&nbsp;</p>';
+                
+                userEntry.innerHTML = `
+                    <div class="user-info">
+                        <img src="${userAvatar}" alt="Avatar de ${userName}" class="user-avatar">
+                        <div class="user-details">
+                            <h3>${userName}</h3>
+                            <p>${fullName}</p>
+                            ${locationElement}
+                        </div>
+                    </div>
+                    <div class="user-actions">
+                        <a href="PerfilAlheio.html?id=${user.id}" class="visit-profile-button">Ver Perfil</a>
+                        <button class="follow-button ${isFollowed ? 'followed' : ''}">${isFollowed ? 'Seguindo' : 'Seguir'}</button>
+                    </div>
+                `;
+
+                const followButton = userEntry.querySelector('.follow-button');
+                followButton.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    handleFollowToggle(user.id, followButton, options, userEntry);
                 });
+
+                const userInfo = userEntry.querySelector('.user-info');
+                userInfo.addEventListener('click', () => {
+                    showUserDetailsModal(user);
+                });
+
+                return userEntry;
+            }
+
+            /**
+             * Lida com a lógica de seguir/deixar de seguir.
+             */
+            async function handleFollowToggle(userId, button, options, entryElement) {
+                const isCurrentlyFollowed = button.classList.contains('followed');
+                button.disabled = true;
+
+                try {
+                    await toggleFollowState(userId, !isCurrentlyFollowed, token);
+                    button.classList.toggle('followed');
+                    button.textContent = isCurrentlyFollowed ? 'Seguir' : 'Seguindo';
+                    
+                    if (isCurrentlyFollowed && options.isFollowingList) {
+                        entryElement.style.transition = 'opacity 0.3s ease';
+                        entryElement.style.opacity = '0';
+                        setTimeout(() => {
+                            entryElement.remove();
+                            if (!container.querySelector('.user-entry')) {
+                                displayMessage('Você não está seguindo ninguém.', 'empty-message');
+                            }
+                        }, 300);
+                    }
+                } catch (error) {
+                    console.error('Falha ao atualizar status de "seguir":', error);
+                    alert(`Não foi possível ${isCurrentlyFollowed ? 'deixar de seguir' : 'seguir'} o usuário.`);
+                } finally {
+                    button.disabled = false;
+                }
+            }
+            
+            /**
+             * Envia a requisição para a API para seguir/deixar de seguir.
+             */
+            async function toggleFollowState(userId, follow, token) {
+                const url = follow ? followApiUrl : unfollowApiUrl;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ seguido_id: userId })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.erro || 'Ocorreu um erro na requisição.');
+                }
+                return await response.json();
+            }
+            
+            /**
+             * Exibe o modal com detalhes do usuário.
+             */
+            function showUserDetailsModal(user) {
+                const userName = user.username || 'usuário';
+                document.getElementById('modalUserAvatar').src = user.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=90&background=e0e0e0&color=333`;
+                document.getElementById('modalUsername').textContent = userName;
+                document.getElementById('modalUserFullName').textContent = user.nome_completo || 'Nome não informado';
+                
+                const modalLocation = document.getElementById('modalUserLocation');
+                let locationString = (user.cidade && user.estado) ? `${user.cidade}, ${user.estado}` : (user.cidade || user.estado || '');
+                modalLocation.innerHTML = locationString ? `<i class="fas fa-map-marker-alt"></i>${locationString}` : '';
+
+                document.getElementById('modalUserBio').textContent = user.biografia || 'Nenhuma biografia informada.';
+
+                const sportsList = document.getElementById('modalUserSports');
+                sportsList.innerHTML = '';
+                if (user.esportes_praticados && Object.keys(user.esportes_praticados).length > 0) {
+                    for (const [esporte, nivel] of Object.entries(user.esportes_praticados)) {
+                        const li = document.createElement('li');
+                        li.innerHTML = `<span>${esporte}:</span> ${nivel}`;
+                        sportsList.appendChild(li);
+                    }
+                } else {
+                    sportsList.innerHTML = '<li>Nenhum esporte informado.</li>';
+                }
+                modal.style.display = 'flex';
+            }
+
+            /**
+             * Limpa o container e exibe uma mensagem.
+             */
+            function displayMessage(text, className) {
+                const oldEntries = container.querySelectorAll('.user-entry, .loading-message, .error-message, .empty-message');
+                oldEntries.forEach(entry => entry.remove());
+                const messageElement = document.createElement('p');
+                messageElement.className = className;
+                messageElement.textContent = text;
+                container.appendChild(messageElement);
+            }
+
+            /**
+             * Busca e exibe a lista de usuários da API.
+             */
+            async function fetchAndDisplayUsers(apiUrl, options = {}) {
+                pageTitle.textContent = options.title || 'Sugestões para você';
+                displayMessage('Carregando usuários...', 'loading-message');
+
+                try {
+                    const response = await fetch(apiUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+                    if (!response.ok) {
+                        const errorData = await response.json();
+                        throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
+                    }
+                    const data = await response.json();
+                    const users = data.usuarios || data.seguidores || data.usuarios_seguindo;
+
+                    // Limpa a mensagem de "carregando"
+                    container.querySelector('.loading-message').remove();
+
+                    if (Array.isArray(users) && users.length > 0) {
+                        users.forEach(user => {
+                            const userElement = createUserEntryElement(user, { isFollowingList: (apiUrl === followingApiUrl) });
+                            container.appendChild(userElement);
+                        });
+                    } else {
+                        displayMessage(options.emptyText || 'Nenhum usuário encontrado.', 'empty-message');
+                    }
+                } catch (error) {
+                    console.error("Falha ao carregar usuários:", error);
+                    displayMessage(`Não foi possível carregar os usuários. ${error.message}`, 'error-message');
+                }
+            }
+
+            /**
+             * Configura os event listeners para filtros e modal.
+             */
+            const setActiveFilter = (activeButton) => {
+                filterButtons.forEach(button => button.classList.remove('active'));
                 activeButton.classList.add('active');
             };
 
             filterRandomBtn.addEventListener('click', () => {
                 setActiveFilter(filterRandomBtn);
-                fetchAndDisplayUsers(token, randomUsersApiUrl, { title: 'Sugestões para você (Aleatório)', emptyText: 'Nenhum usuário encontrado.' });
+                fetchAndDisplayUsers(randomUsersApiUrl, { title: 'Sugestões para você', emptyText: 'Nenhum usuário encontrado.' });
             });
 
             filterSuggestionsBtn.addEventListener('click', () => {
                 setActiveFilter(filterSuggestionsBtn);
-                fetchAndDisplayUsers(token, suggestionsApiUrl, { title: 'Sugestões para você (Com Filtro)', emptyText: 'Nenhuma sugestão encontrada.' });
+                fetchAndDisplayUsers(suggestionsApiUrl, { title: 'Sugestões com base em seus esportes', emptyText: 'Nenhuma sugestão encontrada.' });
             });
             
-            // EVENTO ATUALIZADO
             filterFollowingBtn.addEventListener('click', () => {
                 setActiveFilter(filterFollowingBtn);
-                fetchAndDisplayUsers(token, followingApiUrl, { title: 'Quem você segue', emptyText: 'Você ainda não segue ninguém.' });
+                fetchAndDisplayUsers(followingApiUrl, { title: 'Quem você segue', emptyText: 'Você ainda não segue ninguém.' });
             });
             
-            setActiveFilter(filterRandomBtn);
-            fetchAndDisplayUsers(token, randomUsersApiUrl, { title: 'Sugestões para você (Aleatório)' });
+            closeButton.onclick = () => { modal.style.display = 'none'; };
+            window.onclick = (event) => { if (event.target == modal) modal.style.display = 'none'; };
             
-            closeButton.onclick = () => {
-                modal.style.display = 'none';
-            }
-
-            window.onclick = (event) => {
-                if (event.target == modal) {
-                    modal.style.display = 'none';
-                }
-            }
+            // Carga inicial
+            setActiveFilter(filterRandomBtn);
+            fetchAndDisplayUsers(randomUsersApiUrl, { title: 'Sugestões para você' });
         });
     </script>
-
 </body>
 </html>

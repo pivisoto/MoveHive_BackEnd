@@ -63,6 +63,11 @@ def meu_perfil():
     return usuario_service.meuPerfil()
 
 # Implementado
+@usuario_bp.route('/<string:usuario_id>', methods=['GET'])
+def ver_perfil(usuario_id):
+    return usuario_service.verPerfil(usuario_id)
+
+# Implementado
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
 def atualizar_perfil_usuario():
 
@@ -75,7 +80,6 @@ def atualizar_perfil_usuario():
     except Exception as e:
         return jsonify({"erro": f"Ocorreu um erro interno no servidor: {str(e)}"}), 500
 
-
 # Implementado
 @usuario_bp.route('/ExcluirUsuario', methods=['DELETE'])
 def deletar_perfil_usuario():
@@ -85,7 +89,6 @@ def deletar_perfil_usuario():
     except Exception as e:
         return jsonify({"erro": f"Ocorreu um erro interno no servidor: {str(e)}"}), 500
     
-
 # Implementado
 @usuario_bp.route('/follow', methods=['POST'])
 def seguir_usuario():

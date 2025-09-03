@@ -737,6 +737,7 @@
                         throw new Error(`Erro HTTP: ${response.status} - ${errorData.erro || response.statusText}`);
                     }
                     globalTreinosList = await response.json();
+                    console.log(globalTreinosList)
 
                     if (loadingIndicator) loadingIndicator.remove();
                     treinosContainer.innerHTML = '';

@@ -107,6 +107,34 @@ def listar_eventos_usuario():
     return jsonify(eventos), 200
 
 
+@token_required
+def listar_eventos_por_id_usuario(usuario_id):
+   
+    try:
+        # Referência à coleção 'Eventos' no Firestore
+        eventos_ref = db.collection('Eventos')
+        
+        # Cria a query para encontrar documentos onde o campo 'usuario_id' seja igual ao ID fornecido
+        eventos_query = eventos_ref.where('usuario_id', '==', usuario_id).stream()
+
+        eventos = []
+        for doc in eventos_query:
+            evento_data = doc.to_dict()
+            evento_data['id'] = doc.id  # Adiciona o ID do documento ao dicionário
+            eventos.append(evento_data)
+
+        # Se nenhum evento for encontrado para o usuário, pode ser útil retornar uma lista vazia
+        # ou uma mensagem específica.
+        if not eventos:
+            return jsonify({"mensagem": "Nenhum evento encontrado para este usuário."}), 404
+
+        return jsonify(eventos), 200
+
+    except Exception as e:
+        # Tratamento de erro genérico
+        return jsonify({"erro": str(e)}), 500
+
+
 
 # Implementado
 @token_required

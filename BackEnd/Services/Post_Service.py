@@ -45,7 +45,7 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
 # Função para Listar Postagens
 # Implementado
 @token_required
-def listar_postagens_UserID():
+def listar_postagens_minhas():
     usuario_id = g.user_id
 
     try:
@@ -61,6 +61,29 @@ def listar_postagens_UserID():
         return jsonify(lista_postagens), 200
 
     except Exception as e:
+        return jsonify({'mensagem': 'Erro ao buscar postagens.', 'erro': str(e)}), 500
+
+
+
+@token_required
+def listar_postagens_de_outro_usuario(usuario_id):
+
+    try:
+        postagens_ref = db.collection('Postagens').where('usuario_id', '==', usuario_id)
+        docs = postagens_ref.stream()
+
+        lista_postagens = []
+        for doc in docs:
+            data = doc.to_dict()
+            data['id'] = doc.id  
+            lista_postagens.append(data)
+        
+        lista_postagens.sort(key=lambda x: x.get('data_criacao'), reverse=True)
+
+        return jsonify(lista_postagens), 200
+
+    except Exception as e:
+        print(f"Erro ao buscar postagens do usuário {usuario_id}: {e}")
         return jsonify({'mensagem': 'Erro ao buscar postagens.', 'erro': str(e)}), 500
 
 

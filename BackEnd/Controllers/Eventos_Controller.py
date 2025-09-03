@@ -54,6 +54,10 @@ def meus_eventos():
     return Eventos_Service.listar_eventos_usuario()
 
 
+@evento_bp.route('/usuario/<string:usuario_id>', methods=['GET'])
+def eventos_por_id_usuario(usuario_id):
+    return Eventos_Service.listar_eventos_por_id_usuario(usuario_id)
+
 
 # Implementado
 @evento_bp.route('/editarEvento', methods=['PUT'])
