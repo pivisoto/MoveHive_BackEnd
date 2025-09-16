@@ -103,3 +103,10 @@ def listar_treino_por_id():
 
     response, status = Treino_Service.listar_treino_por_treinoID(treino_id)
     return jsonify(response), status
+
+
+# Implementado
+@treino_bp.route('/FeedTreinosSeguindo', methods=['GET'])
+def get_feed_treinos():
+    resultado = Treino_Service.feed_treinos_seguindo()
+    return resultado

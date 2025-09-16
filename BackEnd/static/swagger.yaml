@@ -2709,6 +2709,78 @@ paths:
                     type: string
                     example: "Token inválido ou não fornecido"
 
+
+  /treino/FeedTreinosSeguindo:
+     get:
+      tags:
+        - Treino
+      summary: Obter feed de treinos dos usuários seguidos
+      description: Retorna todos os treinos realizados pelos usuários que o usuário logado segue, ordenados por data e hora decrescente.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de treinos dos usuários seguidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID do treino
+                    data_hora:
+                      type: string
+                      format: date-time
+                      description: Data e hora do treino
+                    descricao:
+                      type: string
+                      description: Descrição do treino
+                    usuario:
+                      type: object
+                      description: Informações do usuário que criou o treino
+                      properties:
+                        id:
+                          type: string
+                          description: ID do usuário
+                        nome_completo:
+                          type: string
+                          description: Nome completo do usuário
+                        username:
+                          type: string
+                          description: Username do usuário
+                        pontos:
+                          type: integer
+                          description: Pontos do usuário
+                        foto_perfil:
+                          type: string
+                          description: URL da foto de perfil do usuário
+        '404':
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Usuário não encontrado.
+        '200_no_seguindo':
+          description: Usuário não segue ninguém ainda
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Você não segue ninguém ainda.
+
+
+
+
 # Notificações
   /notificacao/MinhaNotificacoes:
     get:

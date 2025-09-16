@@ -299,3 +299,62 @@ def listar_treino_por_treinoID(treino_id):
     treino_data['id'] = treino_doc.id
 
     return treino_data, 200
+
+
+# Implementado
+@token_required
+def feed_treinos_seguindo():
+    usuario_id = g.user_id
+    user_ref = db.collection('Usuarios').document(usuario_id)
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        return {"erro": "Usuário não encontrado."}, 404
+
+    user_data = user_doc.to_dict()
+    seguindo_ids = user_data.get('seguindo', [])  # IDs de usuários que o usuário segue
+    print("Seguindo IDs:", seguindo_ids)
+
+
+    if not seguindo_ids:
+        return {"mensagem": "Você não segue ninguém ainda."}, 200
+
+    treinos_ref = db.collection('Treinos')
+    
+    feed = []
+
+    for seguidor_id in seguindo_ids:
+        treinos_query = treinos_ref.where('usuario_id', '==', seguidor_id) \
+                                   .order_by('data_hora', direction=firestore.Query.DESCENDING) \
+                                   .stream()
+        for treino_doc in treinos_query:
+            treino_data = treino_doc.to_dict()
+            treino_data['id'] = treino_doc.id
+
+            # Buscar dados do usuário dono do treino
+            seguidor_ref = db.collection('Usuarios').document(seguidor_id)
+            seguidor_doc = seguidor_ref.get()
+            if seguidor_doc.exists:
+                seguidor_data = seguidor_doc.to_dict()
+                treino_data['usuario'] = {
+                    'id': seguidor_id,
+                    'nome_completo': seguidor_data.get('nome_completo'),
+                    'username': seguidor_data.get('username'),
+                    'pontos': seguidor_data.get('pontos', 0),
+                    'foto_perfil': seguidor_data.get('foto_perfil')
+                }
+            else:
+                treino_data['usuario'] = {
+                    'id': seguidor_id,
+                    'nome_completo': None,
+                    'username': None,
+                    'pontos': 0,
+                    'foto_perfil' : None
+                }
+
+            feed.append(treino_data)
+
+    # Ordenar todos os treinos do feed por data_criacao decrescente
+    feed.sort(key=lambda x: x.get('data_hora'), reverse=True)
+
+    return jsonify(feed), 200
