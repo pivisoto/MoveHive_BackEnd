@@ -223,7 +223,9 @@
                         throw new Error(errorData.erro || 'Não foi possível carregar o perfil.');
                     }
                     const userData = await response.json();
+                    
                     loadedUserData = userData; // Salva os dados do usuário
+                    console.log("userData: " +  loadedUserData)
 
                     populateProfileData(userData);
                     await loadUserPosts(userData); // Carrega os posts iniciais
@@ -245,6 +247,7 @@
                     if (!response.ok) { throw new Error('Não foi possível carregar os posts.'); }
                     
                     const posts = await response.json();
+                    console.log("Posts: ", posts)
                     postsContent.innerHTML = ''; 
 
                     if (!posts || posts.length === 0) {
@@ -274,6 +277,7 @@
                     if (!response.ok) { throw new Error('Não foi possível carregar os eventos.'); }
 
                     const eventos = await response.json();
+                    console.log("Eventos: " , eventos)
                     eventosContent.innerHTML = '';
                     
                     if (!eventos || eventos.length === 0) {
@@ -362,6 +366,7 @@
 
             // --- FUNÇÃO PARA PREENCHER OS ELEMENTOS DA PÁGINA ---
             function populateProfileData(data) {
+                console.log("Dados do User: " , data)
                 profilePic.src = data.foto_perfil || 'https://i.stack.imgur.com/l60Hf.png';
                 headerUsername.textContent = data.username || 'Perfil';
                 profileName.textContent = data.nome_completo || 'Usuário sem nome';

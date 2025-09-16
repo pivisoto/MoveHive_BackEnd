@@ -46,8 +46,6 @@ def criar_evento():
 
     return evento_dict, status
 
-
-
 # Implementado
 @evento_bp.route('/meusEventos', methods=['GET'])
 def meus_eventos():
@@ -85,7 +83,6 @@ def EditarEvento():
     )
 
     return jsonify(resposta), status
-
 
 
 # Implementado
@@ -145,3 +142,9 @@ def cancelar_participacao_evento():
     evento_id = dados['evento_id']
     
     return Eventos_Service.cancelar_participacao(evento_id)
+
+
+
+@evento_bp.route('/participando', methods=['GET'])
+def get_eventos_participando():
+    return Eventos_Service.listar_eventos_participando()

@@ -65,6 +65,7 @@
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background-color: var(--card-color);
+            overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
         }
 
         .filter-btn {
@@ -77,6 +78,7 @@
             background-color: #f9fafb;
             color: var(--secondary-text-color);
             transition: background-color 0.3s, color 0.3s;
+            white-space: nowrap; /* Impede que o texto do botão quebre */
         }
 
         .filter-btn.active {
@@ -352,6 +354,8 @@
             <button class="filter-btn active" data-filter="events">Eventos</button>
             <button class="filter-btn" data-filter="tournaments">Torneios</button>
             <button class="filter-btn" data-filter="my-events">Meus Eventos</button>
+            <!-- NOVO FILTRO ADICIONADO -->
+            <button class="filter-btn" data-filter="participating">Participando</button>
         </div>
 
         <main class="main-content" id="main-content">
@@ -626,7 +630,7 @@
         // Pega o ID do usuário logado uma vez
         const currentUserId = getUserIdFromToken();
 
-        // --- FUNÇÕES DE EXIBIÇÃO (sem alterações, exceto displayEventDetails) ---
+        // --- FUNÇÕES DE EXIBIÇÃO ---
 
         function showEmptyMessage(filterType = 'events') {
             let message = "Nenhum evento encontrado.";
@@ -636,6 +640,9 @@
                  suggestion = "Clique no botão '+' para criar seu primeiro evento!";
             } else if (filterType === 'tournaments') {
                  message = "Nenhum torneio encontrado no momento.";
+            } else if (filterType === 'participating') { // <-- NOVO CASO
+                 message = "Você não está participando de nenhum evento.";
+                 suggestion = "Explore os eventos e torneios para encontrar um para você!";
             }
             
             mainContent.innerHTML = `
@@ -742,14 +749,14 @@
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
                 
                 const events = await response.json();
-                console.log(events)
                 currentEvents = events;
                 mainContent.innerHTML = '';
                 mainContent.classList.remove('text-center');
 
                 if (events && events.length > 0) {
                      events.forEach((event, index) => {
-                        const eventCard = createEventCard(event, index, false);
+                        const isMyEvent = currentUserId && event.usuario_id === currentUserId;
+                        const eventCard = createEventCard(event, index, isMyEvent);
                         mainContent.appendChild(eventCard);
                     });
                 } else {
@@ -781,7 +788,6 @@
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
                 
                 const events = await response.json();
-                console.log(events)
                 currentEvents = events;
                 mainContent.innerHTML = '';
                 mainContent.classList.remove('text-center');
@@ -801,7 +807,55 @@
                 mainContent.classList.add('text-center');
             }
         }
+
+        // --- NOVA FUNÇÃO PARA FILTRO "PARTICIPANDO" ---
+        async function displayParticipatingEvents() {
+            showLoading();
+            if (!token) {
+                mainContent.innerHTML = '<p>Erro de autenticação. Faça o login novamente.</p>';
+                mainContent.classList.add('text-center');
+                return;
+            }
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/evento/participando', {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                // A API pode retornar um objeto com uma mensagem em vez de um array vazio
+                const events = Array.isArray(data) ? data : [];
+
+                currentEvents = events;
+                mainContent.innerHTML = '';
+                mainContent.classList.remove('text-center');
+
+                if (events.length > 0) {
+                    events.forEach((event, index) => {
+                        // Um evento que estou participando também pode ser um que eu criei
+                        const isMyEvent = currentUserId && event.usuario_id === currentUserId;
+                        const eventCard = createEventCard(event, index, isMyEvent);
+                        mainContent.appendChild(eventCard);
+                    });
+                } else {
+                    showEmptyMessage('participating');
+                }
+
+            } catch (error) {
+                console.error('Falha ao buscar eventos que estou participando:', error);
+                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar os eventos. Tente novamente.</p>`;
+                mainContent.classList.add('text-center');
+            }
+        }
         
+        // --- GERENCIADOR DE CLIQUES DOS FILTROS ATUALIZADO ---
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -810,6 +864,8 @@
 
                 if (activeFilter === 'my-events') {
                     displayMyEvents();
+                } else if (activeFilter === 'participating') {
+                    displayParticipatingEvents();
                 } else {
                     displayPublicEvents(activeFilter);
                 }
@@ -818,7 +874,7 @@
 
         document.querySelector('.filter-btn[data-filter="events"]').click(); 
 
-        // --- LÓGICA DOS MODAIS ---
+        // --- LÓGICA DOS MODAIS (sem alterações) ---
         const modalOverlays = document.querySelectorAll('.modal-overlay');
 
         window.openModal = function(modalId) {
@@ -844,7 +900,7 @@
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
         
-        // --- FUNÇÃO displayEventDetails ATUALIZADA ---
+        // --- FUNÇÃO displayEventDetails (sem alterações) ---
         function displayEventDetails(event) {
             document.getElementById('details-image').src = event.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
             document.getElementById('details-title').textContent = event.titulo;
@@ -879,19 +935,16 @@
                 infoContainer.appendChild(infoDiv);
             });
 
-            // --- LÓGICA DE VERIFICAÇÃO DO BOTÃO ---
             const actionButton = document.getElementById('participate-btn');
             actionButton.dataset.eventId = event.id;
 
-            // Verifica se o ID do usuário está na lista de participantes
             const isParticipating = currentUserId && participants.includes(currentUserId);
-            // Verifica se o usuário é o criador do evento
             const isCreator = currentUserId && event.usuario_id === currentUserId;
 
             if (isCreator) {
-                actionButton.style.display = 'none'; // Esconde o botão se o usuário for o criador
+                actionButton.style.display = 'none';
             } else {
-                 actionButton.style.display = 'block'; // Garante que o botão esteja visível para não-criadores
+                 actionButton.style.display = 'block';
                  if (isParticipating) {
                     actionButton.textContent = 'Cancelar Inscrição';
                     actionButton.classList.remove('btn-primary');
@@ -992,12 +1045,11 @@
             }
         }
         
-        // --- FUNÇÃO DE CLIQUE ATUALIZADA ---
-        // Lida com ambas as ações: participar e cancelar
         async function handleEventActionClick(event) {
+            // (Esta função permanece sem alterações)
             const button = event.target;
             const eventId = button.dataset.eventId;
-            const action = button.dataset.action; // 'participate' ou 'cancel'
+            const action = button.dataset.action;
 
             if (!eventId || !action) {
                 alert('Erro: Ação ou ID do evento não encontrados.');
@@ -1009,11 +1061,9 @@
                 return;
             }
             
-            // Define a URL e a mensagem de sucesso com base na ação
-            // AJUSTE REALIZADO AQUI: a URL para cancelar foi atualizada
             const endpoint = action === 'participate' 
                 ? 'http://127.0.0.1:5000/evento/participarEvento' 
-                : 'http://127.0.0.1:5000/evento/cancelarParticipacao'; // <- URL CORRIGIDA
+                : 'http://127.0.0.1:5000/evento/cancelarParticipacao';
             
             const originalText = button.textContent;
             button.disabled = true;
@@ -1035,10 +1085,9 @@
                     throw new Error(result.erro || 'Ocorreu um erro na solicitação.');
                 }
 
-                alert(result.mensagem); // Exibe a mensagem de sucesso da API
+                alert(result.mensagem);
                 closeModal('event-details-modal');
                 
-                // Atualiza a lista de eventos para refletir a mudança
                 document.querySelector('.filter-btn.active').click();
 
             } catch (error) {
@@ -1050,10 +1099,6 @@
             }
         }
 
-        // Garanta que o listener de clique utilize a função atualizada
-        document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
-
-        // Renomeei o listener para refletir a nova função genérica
         document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
 
 

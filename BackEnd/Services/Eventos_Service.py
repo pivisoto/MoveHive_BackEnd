@@ -107,31 +107,28 @@ def listar_eventos_usuario():
     return jsonify(eventos), 200
 
 
+# Implementado
 @token_required
 def listar_eventos_por_id_usuario(usuario_id):
    
     try:
-        # Referência à coleção 'Eventos' no Firestore
         eventos_ref = db.collection('Eventos')
         
-        # Cria a query para encontrar documentos onde o campo 'usuario_id' seja igual ao ID fornecido
         eventos_query = eventos_ref.where('usuario_id', '==', usuario_id).stream()
 
         eventos = []
         for doc in eventos_query:
             evento_data = doc.to_dict()
-            evento_data['id'] = doc.id  # Adiciona o ID do documento ao dicionário
+            evento_data['id'] = doc.id  
             eventos.append(evento_data)
 
-        # Se nenhum evento for encontrado para o usuário, pode ser útil retornar uma lista vazia
-        # ou uma mensagem específica.
+
         if not eventos:
             return jsonify({"mensagem": "Nenhum evento encontrado para este usuário."}), 404
 
         return jsonify(eventos), 200
 
     except Exception as e:
-        # Tratamento de erro genérico
         return jsonify({"erro": str(e)}), 500
 
 
@@ -386,3 +383,37 @@ def cancelar_participacao(evento_id):
 
     except Exception as e:
         return {"erro": f"Erro ao cancelar participação: {str(e)}"}, 500
+    
+
+
+# Implementado
+@token_required
+def listar_eventos_participando():
+    usuario_id = g.user_id  
+
+    try:
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return {"erro": "Usuário não encontrado."}, 404
+
+        user_data = user_doc.to_dict()
+        eventos_ids = user_data.get('eventos_participando', [])
+
+        if not eventos_ids:
+            return jsonify({"mensagem": "Você não está participando de nenhum evento ou torneio."}), 200
+
+        eventos_ref = db.collection('Eventos')
+        eventos = []
+        for evento_id in eventos_ids:
+            evento_doc = eventos_ref.document(evento_id).get()
+            if evento_doc.exists:
+                evento_data = evento_doc.to_dict()
+                evento_data['id'] = evento_doc.id
+                eventos.append(evento_data)
+
+        return jsonify(eventos), 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao listar eventos participando: {str(e)}"}, 500
