@@ -75,3 +75,13 @@ def EditarPostagem():
 def FeedSemFiltro():
     resultado = Post_Service.feed_sem_filtro()
     return jsonify(resultado)
+
+# Implementado
+
+@postagem_bp.route("/FeedSeguindo", methods=["GET"])
+def feed():
+    try:
+        resultado = Post_Service.feed_seguindos()
+        return jsonify(resultado), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500

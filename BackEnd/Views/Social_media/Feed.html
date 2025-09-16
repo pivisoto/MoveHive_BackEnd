@@ -345,6 +345,39 @@
             font-size: 1rem;
         }
 
+        /* INÍCIO: Estilos para os botões de filtro */
+        .feed-filters {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            padding: 15px;
+            background-color: var(--secondary-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .filter-button {
+            border: 1px solid var(--border-color);
+            background-color: transparent;
+            color: var(--text-color);
+            padding: 8px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .filter-button:hover {
+            background-color: var(--primary-color);
+        }
+
+        .filter-button.active {
+            background-color: var(--accent-color);
+            border-color: #e6c300;
+            color: #333;
+        }
+        /* FIM: Estilos para os botões de filtro */
+
         .feed {
             padding: 0 0 70px 0;
         }
@@ -626,6 +659,14 @@
                 <i class="fas fa-comment-alt"></i>
             </div>
         </header>
+        
+        <!-- INÍCIO: Botões de Filtro Adicionados -->
+        <div class="feed-filters">
+            <button class="filter-button" id="followingFeedBtn">Seguindo</button>
+            <button class="filter-button active" id="discoverFeedBtn">Descobrir</button>
+        </div>
+        <!-- FIM: Botões de Filtro Adicionados -->
+        
         <main class="feed">
             <!-- Os posts serão inseridos aqui dinamicamente pelo JavaScript -->
         </main>
@@ -648,6 +689,10 @@
         const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
         const postagemApiUrl = `${baseUrl}/postagem`;
         const notificacaoApiUrl = `${baseUrl}/notificacao`;
+
+        // URLs específicas do feed
+        const feedSeguindoApiUrl = `${postagemApiUrl}/FeedSeguindo`;
+        const feedDescobrirApiUrl = `${postagemApiUrl}/FeedSemFiltro`;
 
         let _availableSports = [];
         let _notificationsData = [];
@@ -723,12 +768,12 @@
             return postElement;
         }
 
-        async function fetchAndDisplayFeed(token) {
+        async function fetchAndDisplayFeed(token, apiUrl) {
             const feedContainer = document.querySelector('.feed');
             feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Carregando feed...</p>';
 
             try {
-                const response = await fetch(`${postagemApiUrl}/FeedSemFiltro`, {
+                const response = await fetch(apiUrl, { // Usa a URL passada como argumento
                     method: 'GET',
                     headers: {
                         'Accept': 'application/json',
@@ -737,11 +782,11 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.statusText}`);
+                    const errorData = await response.json();
+                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
                 }
 
                 const feedData = await response.json();
-                console.log(feedData)
                 feedContainer.innerHTML = ''; 
 
                 if (Array.isArray(feedData) && feedData.length > 0) {
@@ -750,12 +795,12 @@
                         feedContainer.appendChild(postElement);
                     });
                 } else {
-                    feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Ainda não há nenhuma postagem no feed. Que tal criar a primeira?</p>';
+                    feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Não há nenhuma postagem para exibir aqui.</p>';
                 }
 
             } catch (error) {
                 console.error("Falha ao carregar o feed:", error);
-                feedContainer.innerHTML = '<p style="text-align: center; color: red; padding: 20px;">Não foi possível carregar o feed. Por favor, tente recarregar a página.</p>';
+                feedContainer.innerHTML = `<p style="text-align: center; color: red; padding: 20px;">Não foi possível carregar o feed. Erro: ${error.message}</p>`;
             }
         }
         
@@ -869,9 +914,6 @@
             }
         }
         
-        // ####################################################################
-        // ##     INÍCIO DA CORREÇÃO: AJUSTANDO A REQUISIÇÃO 'DELETE'      ##
-        // ####################################################################
         async function deleteNotification(notificationId) {
             if (!confirm('Tem certeza que deseja excluir esta notificação?')) return;
 
@@ -908,7 +950,6 @@
             }
         }
        
-
         function setupNotificationPolling() {
             checkNotifications();
             setInterval(checkNotifications, 10000);
@@ -924,7 +965,7 @@
                 _availableSports = await response.json();
             } catch (error) {
                 console.error("Falha ao carregar esportes:", error);
-                alert("Não foi possível carregar a lista de esportes.");
+                alert("Não foi possível carregar la lista de esportes.");
             }
         }
 
@@ -974,6 +1015,24 @@
             }
 
             setupNotificationPolling();
+
+            // --- Lógica dos Filtros do Feed ---
+            const followingFeedBtn = document.getElementById('followingFeedBtn');
+            const discoverFeedBtn = document.getElementById('discoverFeedBtn');
+
+            followingFeedBtn.addEventListener('click', () => {
+                followingFeedBtn.classList.add('active');
+                discoverFeedBtn.classList.remove('active');
+                fetchAndDisplayFeed(token, feedSeguindoApiUrl);
+            });
+
+            discoverFeedBtn.addEventListener('click', () => {
+                discoverFeedBtn.classList.add('active');
+                followingFeedBtn.classList.remove('active');
+                fetchAndDisplayFeed(token, feedDescobrirApiUrl);
+            });
+            // --- Fim da Lógica dos Filtros ---
+
 
             const notificationBell = document.getElementById('notificationBell');
             const notificationModalOverlay = document.getElementById('notificationModalOverlay');
@@ -1053,7 +1112,7 @@
                 appContainer.style.display = 'none';
                 if (bottomNav) bottomNav.style.display = 'none';
             } else {
-                fetchAndDisplayFeed(token);
+                fetchAndDisplayFeed(token, feedDescobrirApiUrl); // Carrega o feed "Descobrir" por padrão
             }
 
             startProfileSetupButton.addEventListener('click', () => {
@@ -1166,7 +1225,7 @@
                     profileSetupModalOverlay.classList.add('hidden');
                     appContainer.style.display = 'block'; 
                     if (bottomNav) bottomNav.style.display = 'flex';
-                    fetchAndDisplayFeed(token);
+                    fetchAndDisplayFeed(token, feedDescobrirApiUrl); // Carrega o feed ao finalizar o modal
                     sessionStorage.setItem('showProfileModal', 'false'); 
                     alert("Perfil atualizado com sucesso!"); 
 

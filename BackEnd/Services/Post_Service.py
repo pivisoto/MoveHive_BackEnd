@@ -180,8 +180,18 @@ def editar_postagem_por_id(post_id, descricao=None, imagem=None):
 # Implementado
 @token_required
 def feed_sem_filtro():
-    # Buscar as 10 últimas postagens (ordem decrescente por data_criacao)
-    postagens_ref = db.collection("Postagens").order_by("data_criacao", direction=firestore.Query.DESCENDING).limit(10)
+    usuario_id = g.user_id  # usuário logado
+    usuario_ref = db.collection("Usuarios").document(usuario_id)
+    usuario_doc = usuario_ref.get()
+
+    if not usuario_doc.exists:
+        return {"erro": "Usuário não encontrado"}, 404
+
+    usuario_data = usuario_doc.to_dict()
+    seguindo = usuario_data.get("seguindo", [])
+
+    # Buscar todas postagens em ordem decrescente
+    postagens_ref = db.collection("Postagens").order_by("data_criacao", direction=firestore.Query.DESCENDING)
     postagens_docs = postagens_ref.stream()
 
     resultado = []
@@ -190,17 +200,64 @@ def feed_sem_filtro():
         postagem_data = doc.to_dict()
         postagem_data["id"] = doc.id
 
-        usuario_id = postagem_data.get("usuario_id")
-        if usuario_id:
-            usuario_ref = db.collection("Usuarios").document(usuario_id)
-            usuario_doc = usuario_ref.get()
-            if usuario_doc.exists:
-                usuario_data = usuario_doc.to_dict()
-                usuario_data["id"] = usuario_doc.id
+        usuario_id_post = postagem_data.get("usuario_id")
+
+        # Ignorar posts de quem o usuário segue (e do próprio usuário, se quiser)
+        if usuario_id_post and usuario_id_post not in seguindo and usuario_id_post != usuario_id:
+            usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
+            usuario_doc_post = usuario_ref_post.get()
+            if usuario_doc_post.exists:
+                usuario_data_post = usuario_doc_post.to_dict()
+                usuario_data_post["id"] = usuario_doc_post.id
 
                 resultado.append({
                     "postagem": postagem_data,
-                    "usuario": usuario_data
+                    "usuario": usuario_data_post
+                })
+
+    return resultado
+
+
+# Implementado
+@token_required
+def feed_seguindos():
+    usuario_id = g.user_id  # usuário logado
+    usuario_ref = db.collection("Usuarios").document(usuario_id)
+    usuario_doc = usuario_ref.get()
+
+    if not usuario_doc.exists:
+        return {"erro": "Usuário não encontrado"}, 404
+
+    usuario_data = usuario_doc.to_dict()
+    seguindo = usuario_data.get("seguindo", [])  
+
+    if not seguindo:
+        return []  
+
+    postagens_ref = (
+        db.collection("Postagens")
+        .where("usuario_id", "in", seguindo)
+        .order_by("data_criacao", direction=firestore.Query.DESCENDING)
+        .limit(20)
+    )
+    postagens_docs = postagens_ref.stream()
+
+    resultado = []
+    for doc in postagens_docs:
+        postagem_data = doc.to_dict()
+        postagem_data["id"] = doc.id
+
+        usuario_id_post = postagem_data.get("usuario_id")
+        if usuario_id_post:
+            usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
+            usuario_doc_post = usuario_ref_post.get()
+            if usuario_doc_post.exists:
+                usuario_data_post = usuario_doc_post.to_dict()
+                usuario_data_post["id"] = usuario_doc_post.id
+
+                resultado.append({
+                    "postagem": postagem_data,
+                    "usuario": usuario_data_post
                 })
 
     return resultado

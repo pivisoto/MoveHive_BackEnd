@@ -2084,13 +2084,12 @@ paths:
         '500':
           description: Erro interno do servidor
 
-
   /postagem/FeedSemFiltro:
     get:
       summary: Obter feed público de postagens (sem filtro)
       description: >
-        Retorna as 10 postagens públicas mais recentes, ordenadas por data de criação em ordem decrescente.
-        Cada item da resposta contém os dados da postagem e as informações básicas do usuário autor.
+        Retorna as postagens públicas mais recentes, ordenadas por data de criação em ordem decrescente.
+        Cada item da resposta contém os dados da postagem e as informações básicas do usuário autor. So mostra de quem voce não segue.
       tags:
         - Posts
       security:
@@ -2144,7 +2143,85 @@ paths:
         '500':
           description: Erro interno do servidor
 
-
+  /postagem/FeedSeguindo:
+    get:
+      summary: Retorna o feed de postagens dos usuários seguidos
+      description: |
+        Este endpoint retorna as últimas postagens feitas pelos usuários que o usuário logado está seguindo.  
+        É necessário estar autenticado e fornecer o token JWT no header `Authorization`.
+      tags:
+        - Posts
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lista de postagens dos usuários seguidos
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    postagem:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "abc123"
+                        usuario_id:
+                          type: string
+                          example: "user789"
+                        conteudo:
+                          type: string
+                          example: "Hoje joguei futebol com os amigos!"
+                        data_criacao:
+                          type: string
+                          format: date-time
+                          example: "2025-09-16T14:30:00Z"
+                    usuario:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "user789"
+                        nome:
+                          type: string
+                          example: "Paulo Eduardo"
+                        foto_perfil:
+                          type: string
+                          example: "https://meusite.com/fotos/perfil.png"
+        "401":
+          description: Token inválido ou ausente
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Token inválido ou expirado"
+        "404":
+          description: Usuário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário não encontrado"
+        "500":
+          description: Erro interno no servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro inesperado"
+ 
   /postagem/CriarPostagem:
     post:
       summary: Criar uma nova postagem
@@ -2187,7 +2264,6 @@ paths:
           description: Não autorizado - Token JWT ausente ou inválido
         '500':
           description: Erro interno do servidor
-
 
   /postagem/EditarPostagem:
     put:
@@ -2235,8 +2311,7 @@ paths:
           description: Postagem não encontrada
         '500':
           description: Erro interno do servidor   
-          
-               
+                       
   /postagem/ExcluirPostagem:
     delete:
       summary: Excluir uma postagem
