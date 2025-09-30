@@ -11,6 +11,7 @@ def criar_evento():
     esporte_nome = request.form.get("esporte_nome")
     data_hora_str = request.form.get("data_hora_str")
     localizacao = request.form.get("localizacao")
+    endereco = request.form.get("endereco")
     max_participantes = request.form.get("max_participantes")
     torneio = request.form.get("torneio", "false").lower() == "true"
     premiacao = request.form.get("premiacao", 0)
@@ -20,7 +21,7 @@ def criar_evento():
     print(titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes, torneio, premiacao, privado, observacoes)
     print("oiii")
     
-    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes]):
+    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, endereco, max_participantes]):
         return {"erro": "Todos os campos obrigatórios devem ser preenchidos."}, 400
 
     try:
@@ -36,6 +37,7 @@ def criar_evento():
         esporte_nome=esporte_nome,
         data_hora_str=data_hora_str,
         localizacao=localizacao,
+        endereco=endereco,
         max_participantes=max_participantes,
         torneio=torneio,
         premiacao=premiacao,
@@ -68,7 +70,7 @@ def EditarEvento():
 
     # Coleta os campos do formulário
     campos = [
-        "titulo", "descricao", "esporte_nome", "data_hora", "localizacao",
+        "titulo", "descricao", "esporte_nome", "data_hora", "localizacao", "endereco",
         "max_participantes", "torneio", "premiacao", "privado", "observacoes"
     ]
 

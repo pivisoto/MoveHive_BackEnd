@@ -354,7 +354,6 @@
             <button class="filter-btn active" data-filter="events">Eventos</button>
             <button class="filter-btn" data-filter="tournaments">Torneios</button>
             <button class="filter-btn" data-filter="my-events">Meus Eventos</button>
-            <!-- NOVO FILTRO ADICIONADO -->
             <button class="filter-btn" data-filter="participating">Participando</button>
         </div>
 
@@ -422,6 +421,12 @@
                         <select id="cidade" name="cidade" required disabled>
                             <option value="" disabled selected>Selecione um estado primeiro</option>
                         </select>
+                    </div>
+
+                    <!-- NOVO CAMPO ADICIONADO -->
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" placeholder="Ex: Rua Exemplo, 123, Bairro" required>
                     </div>
 
                     <div class="form-group">
@@ -528,6 +533,12 @@
                         </select>
                     </div>
 
+                    <!-- NOVO CAMPO ADICIONADO -->
+                    <div class="form-group">
+                        <label for="edit-endereco">Endereço</label>
+                        <input type="text" id="edit-endereco" name="endereco" placeholder="Ex: Rua Exemplo, 123, Bairro" required>
+                    </div>
+
                     <div class="form-group">
                         <label for="edit-observacoes">Observações/Ponto de referencia</label>
                         <textarea id="edit-observacoes" name="observacoes" placeholder="Informações adicionais, regras, etc."></textarea>
@@ -592,7 +603,6 @@
                 </div>
                 <div class="details-action-buttons">
                     <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
-                    <!-- NOVO: Adicionado ID ao botão -->
                     <button id="participate-btn" class="action-btn btn-primary">Participar</button>
                 </div>
             </main>
@@ -603,12 +613,10 @@
     <script>
     const token = localStorage.getItem('jwtToken');
 
-
     function getUserIdFromToken() {
         if (!token) return null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            console.log(payload)
             return payload.user_id; 
         } catch (e) {
             console.error("Erro ao decodificar o token:", e);
@@ -616,9 +624,7 @@
         }
     }
     
-    //exemplo
     const currentUserId = getUserIdFromToken();
-
 
     document.addEventListener('DOMContentLoaded', function () {
         const mainContent = document.getElementById('main-content');
@@ -627,7 +633,6 @@
         let activeFilter = 'events'; 
         let allSports = [];
         
-        // Pega o ID do usuário logado uma vez
         const currentUserId = getUserIdFromToken();
 
         // --- FUNÇÕES DE EXIBIÇÃO ---
@@ -640,7 +645,7 @@
                  suggestion = "Clique no botão '+' para criar seu primeiro evento!";
             } else if (filterType === 'tournaments') {
                  message = "Nenhum torneio encontrado no momento.";
-            } else if (filterType === 'participating') { // <-- NOVO CASO
+            } else if (filterType === 'participating') {
                  message = "Você não está participando de nenhum evento.";
                  suggestion = "Explore os eventos e torneios para encontrar um para você!";
             }
@@ -677,14 +682,17 @@
             return `${day}/${month}/${year} - ${hours}:${minutes}`;
         }
         
+        // ALTERADO: Adicionado `event.endereco` à exibição
         function createEventCard(event, index, isMyEvent = false) {
             const card = document.createElement('div');
             card.className = 'event-card';
             card.dataset.index = index;
 
             const participants = Array.isArray(event.participantes) ? event.participantes : [];
+            const fullLocation = `${event.endereco ? event.endereco + ', ' : ''}${event.localizacao || 'Local não definido'}`;
+            
             let infoHtml = `
-                <div class="event-info"><i class="fas fa-map-marker-alt"></i><span>${event.localizacao || 'Local não definido'}</span></div>
+                <div class="event-info"><i class="fas fa-map-marker-alt"></i><span>${fullLocation}</span></div>
                 <div class="event-info"><i class="fas fa-users"></i><span>${participants.length} / ${event.max_participantes} participantes</span></div>
             `;
             if (event.torneio && event.premiacao > 0) {
@@ -770,7 +778,6 @@
             }
         }
 
-
         async function displayMyEvents() {
             showLoading();
             if (!token) {
@@ -808,7 +815,6 @@
             }
         }
 
-        // --- NOVA FUNÇÃO PARA FILTRO "PARTICIPANDO" ---
         async function displayParticipatingEvents() {
             showLoading();
             if (!token) {
@@ -829,8 +835,6 @@
                 }
                 
                 const data = await response.json();
-                
-                // A API pode retornar um objeto com uma mensagem em vez de um array vazio
                 const events = Array.isArray(data) ? data : [];
 
                 currentEvents = events;
@@ -839,7 +843,6 @@
 
                 if (events.length > 0) {
                     events.forEach((event, index) => {
-                        // Um evento que estou participando também pode ser um que eu criei
                         const isMyEvent = currentUserId && event.usuario_id === currentUserId;
                         const eventCard = createEventCard(event, index, isMyEvent);
                         mainContent.appendChild(eventCard);
@@ -855,7 +858,6 @@
             }
         }
         
-        // --- GERENCIADOR DE CLIQUES DOS FILTROS ATUALIZADO ---
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
@@ -874,7 +876,6 @@
 
         document.querySelector('.filter-btn[data-filter="events"]').click(); 
 
-        // --- LÓGICA DOS MODAIS (sem alterações) ---
         const modalOverlays = document.querySelectorAll('.modal-overlay');
 
         window.openModal = function(modalId) {
@@ -900,7 +901,7 @@
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
         
-        // --- FUNÇÃO displayEventDetails (sem alterações) ---
+        // ALTERADO: Adicionado `event.endereco` na lista de detalhes
         function displayEventDetails(event) {
             document.getElementById('details-image').src = event.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
             document.getElementById('details-title').textContent = event.titulo;
@@ -920,14 +921,17 @@
             infoContainer.innerHTML = '';
             const participants = Array.isArray(event.participantes) ? event.participantes : [];
             const prizeFormatted = event.premiacao > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(event.premiacao) : null;
+            const fullLocation = `${event.endereco ? event.endereco + ', ' : ''}${event.localizacao || 'Local não definido'}`;
+            
             const detailsList = [
                 { icon: 'fa-calendar-alt', text: formatEventDate(event.data_hora) },
-                { icon: 'fa-map-marker-alt', text: event.localizacao || 'Local não definido' },
+                { icon: 'fa-map-marker-alt', text: fullLocation },
                 { icon: 'fa-users', text: `${participants.length} de ${event.max_participantes} participantes` },
                 { icon: 'fa-futbol', text: `Esporte: ${event.esporte_nome}` },
                 (event.torneio && prizeFormatted) ? { icon: 'fa-trophy', text: `Premiação: ${prizeFormatted}` } : null,
                 event.observacoes ? { icon: 'fa-info-circle', text: `Observações: ${event.observacoes}` } : null
             ].filter(Boolean);
+
             detailsList.forEach(detail => {
                 const infoDiv = document.createElement('div');
                 infoDiv.className = 'event-info';
@@ -961,8 +965,8 @@
             openModal('event-details-modal');
         }
 
+        // ALTERADO: Populando o campo `edit-endereco`
         window.openEditModal = async function(index) {
-            // (Esta função permanece sem alterações)
             const event = currentEvents[index];
             if (!event) return;
 
@@ -970,6 +974,7 @@
             document.getElementById('edit-titulo').value = event.titulo;
             document.getElementById('edit-descricao').value = event.descricao;
             document.getElementById('edit-data_hora_str').value = formatISODateToInput(event.data_hora_str);
+            document.getElementById('edit-endereco').value = event.endereco || ''; // <-- CAMPO ADICIONADO
             document.getElementById('edit-observacoes').value = event.observacoes || '';
             document.getElementById('edit-max_participantes').value = event.max_participantes;
 
@@ -1006,7 +1011,6 @@
         }
 
         window.deleteEvent = async function(eventId) {
-            // (Esta função permanece sem alterações)
             if (!eventId) {
                 alert('ID do evento não encontrado.');
                 return;
@@ -1046,7 +1050,6 @@
         }
         
         async function handleEventActionClick(event) {
-            // (Esta função permanece sem alterações)
             const button = event.target;
             const eventId = button.dataset.eventId;
             const action = button.dataset.action;
@@ -1102,7 +1105,6 @@
         document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
 
 
-        // --- LÓGICA DO FORMULÁRIO (sem alterações) ---
         async function populateSportsDropdown(selectElement, selectedValue = null) {
             if (allSports.length === 0) {
                 if (!token) { console.error('Erro de autenticação: Token não encontrado.'); selectElement.innerHTML = '<option value="" disabled selected>Falha ao carregar</option>'; return; }
@@ -1187,8 +1189,6 @@
         setupImagePreview('create-upload-area', 'arquivo_foto', 'create-image-preview');
         setupImagePreview('edit-upload-area', 'edit-arquivo_foto', 'edit-image-preview');
 
-
-        // --- LÓGICA DE SUBMISSÃO (sem alterações) ---
         document.getElementById('eventForm').addEventListener('submit', async function(event) {
             event.preventDefault();
             const submitButton = event.target.querySelector('.submit-btn');

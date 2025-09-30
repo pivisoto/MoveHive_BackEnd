@@ -25,7 +25,7 @@ db = firestore.client()
 
 # Implementado
 @token_required
-def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao,
+def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, endereco, localizacao,
                      max_participantes, torneio=False, premiacao=0, privado=False,
                      observacoes=None, arquivo_foto=None):
     
@@ -60,6 +60,7 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, localizacao
         descricao=descricao,
         esporte_nome=esporte_nome,
         localizacao=localizacao,
+        endereco=endereco,
         data_hora=data_hora,
         max_participantes=max_participantes,
         torneio=torneio,

@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime, timezone
 
 class Evento:
-    def __init__(self, usuario_id, titulo, descricao, esporte_nome, localizacao, data_hora,
+    def __init__(self, usuario_id, titulo, descricao, esporte_nome, localizacao, endereco, data_hora,
                  max_participantes, torneio=False, premiacao=0, foto=None,
                  participantes=None, privado=False, observacoes=None, status=None):
 
@@ -12,6 +12,7 @@ class Evento:
         self.descricao = descricao
         self.esporte_nome = esporte_nome
         self.localizacao = localizacao
+        self.endereco = endereco
         self.data_hora = data_hora
         self.max_participantes = max_participantes
         self.data_criacao = datetime.now(timezone.utc)
@@ -32,6 +33,7 @@ class Evento:
             'descricao': self.descricao,
             'esporte_nome': self.esporte_nome,
             'localizacao': self.localizacao,
+            'endereco': self.endereco,
             'data_hora': self.data_hora.isoformat() if isinstance(self.data_hora, datetime) else self.data_hora,
             'max_participantes': self.max_participantes,
             'data_criacao': self.data_criacao.isoformat(),

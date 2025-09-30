@@ -1319,6 +1319,9 @@ paths:
               localizacao:
                 type: string
                 description: "Local do evento. Ex: 'Parque Ibirapuera, São Paulo'"
+              endereco:
+                type: string
+                description: "Endereço do Lugar. Ex: 'Avenida 123'"
               max_participantes:
                 type: integer
                 description: "Número máximo de participantes. Ex: 10"
@@ -1344,6 +1347,7 @@ paths:
               - esporte_nome
               - data_hora_str
               - localizacao
+              - endereco
               - max_participantes
               - torneio
               - privado
@@ -1386,6 +1390,9 @@ paths:
                 localizacao:
                   type: string
                   example: "Parque Ibirapuera, São Paulo"
+                endereco:
+                  type: string
+                  example: "Avenida 123"
                 max_participantes:
                   type: integer
                   example: 10
