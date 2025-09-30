@@ -103,7 +103,7 @@ def enviar_email_reset(destinatario, codigo):
     msg.attach(part2)
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 587) as server:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
             server.login(remetente, senha)
             server.sendmail(remetente, destinatario, msg.as_string())
             logger.info(f"E-mail de reset enviado com sucesso para {destinatario}")
