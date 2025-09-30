@@ -1,11 +1,5 @@
-import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
-import os
-
-cred_path = os.getenv("FIREBASE")
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred)
 
 db = firestore.client()
 EMAIL_COLLECTION = "mail" 
