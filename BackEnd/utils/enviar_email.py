@@ -1,33 +1,19 @@
-import smtplib
+import firebase_admin
+from firebase_admin import credentials
+from firebase_admin import firestore
 import os
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from venv import logger
+
+cred_path = os.getenv("FIREBASE")
+cred = credentials.Certificate(cred_path)
+firebase_admin.initialize_app(cred)
+
+db = firestore.client()
+EMAIL_COLLECTION = "mail" 
+
 
 def enviar_email_reset(destinatario, codigo):
-    """
-    Envia um e-mail de redefinição de senha com um template HTML profissional.
-    """
-    remetente = os.getenv("EMAIL_USER")
-    senha = os.getenv("EMAIL_PASS")
     assunto = "Seu Código de Redefinição de Senha - Move Hive"
 
-    # --- 1. Crie o corpo de Texto Simples (Fallback) ---
-    corpo_texto = f"""
-    Olá,
-    
-    Seu código para redefinir a senha no Move Hive é: {codigo}
-    
-    Este código expira em 10 minutos.
-    
-    Se você não solicitou esta redefinição, por favor, ignore este e-mail.
-    
-    Atenciosamente,
-    Equipe Move Hive
-    """
-
-    # --- 2. Crie o corpo em HTML usando o template ---
-    # O ideal é carregar de um arquivo, mas para simplificar, vamos usar uma f-string.
     corpo_html = f"""
     <!DOCTYPE html>
     <html lang="pt-BR">
@@ -91,22 +77,17 @@ def enviar_email_reset(destinatario, codigo):
     </body>
     </html>
     """
-    
-    msg = MIMEMultipart('alternative')
-    msg['Subject'] = assunto
-    msg['From'] = f"Move Hive <{remetente}>" 
-    msg['To'] = destinatario
-
-    part1 = MIMEText(corpo_texto, 'plain', 'utf-8')
-    part2 = MIMEText(corpo_html, 'html', 'utf-8')
-    msg.attach(part1)
-    msg.attach(part2)
+    email_doc = {
+        'to': destinatario, 
+        'message': {
+            'subject': assunto,
+            'html': corpo_html 
+        }
+    }
 
     try:
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
-            server.login(remetente, senha)
-            server.sendmail(remetente, destinatario, msg.as_string())
-            logger.info(f"E-mail de reset enviado com sucesso para {destinatario}")
+        db.collection(EMAIL_COLLECTION).add(email_doc)
+        print(f"Documento de e-mail adicionado ao Firestore para {destinatario}. Extensão irá disparar o envio.")
     except Exception as e:
-        logger.error(f"Falha ao enviar e-mail de reset para {destinatario}. Erro: {e}")
+        print(f"Falha ao adicionar documento de e-mail ao Firestore para {destinatario}. Erro: {e}")
         raise e
