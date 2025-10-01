@@ -4,7 +4,7 @@ from datetime import datetime, timezone
 class Evento:
     def __init__(self, usuario_id, titulo, descricao, esporte_nome, localizacao, endereco, data_hora,
                  max_participantes, torneio=False, premiacao=0, foto=None,
-                 participantes=None, privado=False, observacoes=None, status=None):
+                 participantes=None, pendentes=None, privado=False, observacoes=None, status=None):
 
         self.id = str(uuid.uuid4())
         self.usuario_id = usuario_id
@@ -20,6 +20,7 @@ class Evento:
         self.premiacao = premiacao if torneio else False
         self.foto = foto
         self.participantes = participantes if participantes is not None else []
+        self.pendentes = pendentes if pendentes is not None else []
         self.privado = privado
         self.observacoes = observacoes if observacoes else ""
         self.status = status
@@ -41,6 +42,7 @@ class Evento:
             'premiacao': self.premiacao,
             'foto': self.foto,
             'participantes': self.participantes,
+            'pendentes': self.pendentes,
             'privado': self.privado,
             'observacoes': self.observacoes,
             'status': self.status

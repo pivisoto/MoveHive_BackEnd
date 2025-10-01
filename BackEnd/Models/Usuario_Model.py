@@ -17,6 +17,7 @@ class Usuario:
                  post_criados = None,
                  eventos_criados=None, 
                  eventos_participando=None,
+                 eventos_pendentes=None,
                  seguidores=None,
                  seguindo=None,
                  treinos_id=None):
@@ -41,6 +42,7 @@ class Usuario:
         self.esportes_praticados = esportes_praticados if esportes_praticados is not None else {}
         self.eventos_criados = eventos_criados if eventos_criados is not None else []
         self.eventos_participando = eventos_participando if eventos_participando is not None else []
+        self.eventos_pendentes = eventos_pendentes if eventos_pendentes is not None else []
         self.treinos_id = treinos_id if treinos_id is not None else []
 
 
@@ -64,6 +66,7 @@ class Usuario:
             'esportes_praticados': self.esportes_praticados,
             'eventos_criados': self.eventos_criados,
             'eventos_participando': self.eventos_participando,
+            'eventos_pendentes': self.eventos_pendentes,
             'seguidores': self.seguidores,
             'seguindo': self.seguindo,
             'treinos_id': self.treinos_id,

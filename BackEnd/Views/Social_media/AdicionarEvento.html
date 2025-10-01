@@ -6,7 +6,7 @@
     <title>Eventos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
-        /* Estilos Globais (sem alterações) */
+        /* Estilos Globais */
         :root {
             --primary-color: #facc15; /* Amarelo principal */
             --background-color: #f0f2f5;
@@ -17,6 +17,8 @@
             --icon-color: #4b5563;
             --tooltip-bg: #374151;
             --tooltip-text-color: #ffffff;
+            --success-color: #10b981; /* Verde para aceitar */
+            --danger-color: #ef4444;  /* Vermelho para recusar */
         }
 
         body {
@@ -38,9 +40,9 @@
         }
 
         .btn-danger {
-            background-color: #ef4444; /* Vermelho */
+            background-color: var(--danger-color);
             color: white;
-            border-color: #ef4444;
+            border-color: var(--danger-color);
         }
 
         .btn-danger:hover {
@@ -65,7 +67,7 @@
             padding: 1rem 1.5rem;
             border-bottom: 1px solid var(--border-color);
             background-color: var(--card-color);
-            overflow-x: auto; /* Permite rolagem horizontal em telas pequenas */
+            overflow-x: auto;
         }
 
         .filter-btn {
@@ -78,7 +80,7 @@
             background-color: #f9fafb;
             color: var(--secondary-text-color);
             transition: background-color 0.3s, color 0.3s;
-            white-space: nowrap; /* Impede que o texto do botão quebre */
+            white-space: nowrap;
         }
 
         .filter-btn.active {
@@ -89,12 +91,12 @@
 
         .main-content {
             flex-grow: 1;
-            padding: 1.5rem; /* Ajustado padding */
+            padding: 1.5rem;
             color: var(--secondary-text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 1.5rem; /* Espaçamento entre os cards */
+            gap: 1.5rem;
         }
         
         .main-content.text-center {
@@ -114,7 +116,7 @@
             width: 100%;
             max-width: 450px;
             border: 1px solid var(--border-color);
-            cursor: pointer; /* Adicionado para indicar que é clicável */
+            cursor: pointer;
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
         }
 
@@ -146,12 +148,8 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
-        .event-details {
-            padding: 1rem 1.25rem;
-            position: relative; /* Contexto para posicionar os botões de ação */
-        }
+        .event-details { padding: 1rem 1.25rem; position: relative; }
         
-        /* --- Ícones de Ação no Card --- */
         .card-actions {
             position: absolute;
             top: 1rem;
@@ -183,10 +181,9 @@
         }
 
         .action-icon.delete-btn:hover {
-            background-color: #ef4444; /* Vermelho */
-            border-color: #ef4444;
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
         }
-         /* --- FIM DOS Ícones de Ação --- */
 
         .event-title-container {
             display: flex;
@@ -200,6 +197,11 @@
             font-weight: 700;
             margin: 0;
             color: var(--text-color);
+        }
+        
+        .event-title-container .private-icon {
+            color: var(--secondary-text-color);
+            font-size: 1.1rem;
         }
 
         .tournament-badge {
@@ -239,8 +241,6 @@
             margin-top: 2px;
             color: var(--icon-color);
         }
-        /* --- FIM DOS ESTILOS DO CARD --- */
-
 
         .fab {
             position: fixed;
@@ -259,10 +259,7 @@
             z-index: 101;
             transition: transform 0.2s ease-in-out;
         }
-        @media (max-width: 500px) {
-            .fab { right: 20px; }
-        }
-
+        @media (max-width: 500px) { .fab { right: 20px; } }
         .fab:hover { transform: scale(1.05); }
         .fab svg { width: 28px; height: 28px; color: #333; }
 
@@ -281,7 +278,6 @@
             border-top: 1px solid #cca300;
             z-index: 100;
         }
-
         .nav-item { color: #333; font-size: 24px; text-decoration: none; transition: transform 0.2s; }
         .nav-item:hover { transform: scale(1.1); }
         
@@ -295,7 +291,6 @@
         .close-modal-btn { font-size: 2rem; line-height: 1; font-weight: 300; cursor: pointer; background: none; border: none; color: var(--secondary-text-color); }
         .modal-body { overflow-y: auto; padding: 1.5rem 0.5rem 0.5rem 0.5rem; }
         
-        /* Estilos específicos do modal de detalhes */
         #event-details-modal .modal-body { padding: 0; }
         #event-details-modal .modal-header { border-bottom: none; position: absolute; top: 10px; right: 10px; z-index: 2; }
         #event-details-modal .close-modal-btn { background-color: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 32px; height: 32px; font-size: 1.5rem; line-height: 32px; }
@@ -305,10 +300,12 @@
         #details-title { font-size: 1.75rem; font-weight: 700; margin: 0; }
         #details-info { display: flex; flex-direction: column; gap: 1rem; }
         #details-description { font-size: 1rem; line-height: 1.5; }
-        .details-action-buttons { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; }
-        .action-btn { flex: 1; padding: 0.8rem; font-size: 1rem; font-weight: 600; border-radius: 25px; cursor: pointer; border: 1px solid; text-align: center; }
+        .details-action-buttons { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+        .action-btn { flex: 1; padding: 0.8rem; font-size: 1rem; font-weight: 600; border-radius: 25px; cursor: pointer; border: 1px solid; text-align: center; min-width: 120px; }
         .btn-primary { background-color: var(--primary-color); color: #333; border-color: var(--primary-color); }
         .btn-secondary { background-color: transparent; color: var(--text-color); border-color: var(--border-color); }
+        .btn-tertiary { background-color: #374151; color: white; border-color: #374151; flex-basis: 100%;}
+        .action-btn:disabled { background-color: #ccc; color: #666; border-color: #ccc; cursor: not-allowed; }
 
         /* Estilos do formulário */
         .form-group { margin-bottom: 1.25rem; }
@@ -337,6 +334,31 @@
         .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
         .submit-btn { width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 700; color: #333; background-color: var(--primary-color); border: none; border-radius: 25px; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem; }
         .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* --- ESTILOS DO MODAL DE PENDENTES --- */
+        #pending-list { list-style-type: none; padding: 0; margin: 0; }
+        .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .pending-item:last-child { border-bottom: none; }
+        .pending-item-actions { display: flex; gap: 0.5rem; }
+        .pending-action-btn { padding: 6px 12px; font-size: 14px; font-weight: 600; border-radius: 15px; cursor: pointer; border: none; color: white; }
+        .pending-accept-btn { background-color: var(--success-color); }
+        .pending-reject-btn { background-color: var(--danger-color); }
+
+        /* CSS ADICIONAL PARA A FOTO DE PERFIL NO MODAL DE PENDENTES */
+        .pending-item-info {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Espaço entre a imagem e o nome */
+        }
+        .pending-user-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eee; /* Cor de fundo para imagens que não carregam */
+        }
+
     </style>
 </head>
 <body>
@@ -366,11 +388,11 @@
         </button>
 
         <nav class="bottom-nav">
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html" class="nav-item active"><i class="fas fa-home"></i></a>
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusTreinos.html" class="nav-item"><i class="fas fa-dumbbell"></i></a>
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeusPosts.html" class="nav-item"><i class="fas fa-image"></i></a>
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/AdicionarEvento.html" class="nav-item"><i class="fas fa-trophy"></i></a>
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/EncontrarUser.html" class="nav-item"><i class="fas fa-user"></i></a>
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-image"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
         </nav>
     </div>
 
@@ -409,7 +431,6 @@
                         <label for="data_hora_str">Data e Hora</label>
                         <input type="datetime-local" id="data_hora_str" name="data_hora_str" required>
                     </div>
-                    
                     <div class="form-group">
                         <label for="estado">Estado</label>
                         <select id="estado" name="estado" required>
@@ -422,23 +443,18 @@
                             <option value="" disabled selected>Selecione um estado primeiro</option>
                         </select>
                     </div>
-
-                    <!-- NOVO CAMPO ADICIONADO -->
                     <div class="form-group">
                         <label for="endereco">Endereço</label>
                         <input type="text" id="endereco" name="endereco" placeholder="Ex: Rua Exemplo, 123, Bairro" required>
                     </div>
-
                     <div class="form-group">
                         <label for="observacoes">Observações/Ponto de referencia</label>
                         <textarea id="observacoes" name="observacoes" placeholder="Informações adicionais, regras, etc."></textarea>
                     </div>
-                    
                     <div class="form-group">
                         <label for="max_participantes">Máx. de Participantes</label>
                         <input type="number" id="max_participantes" name="max_participantes" min="2" placeholder="Ex: 16" required>
                     </div>
-
                     <div class="form-group">
                          <div class="switch-group">
                             <div class="switch-label-group">
@@ -453,20 +469,18 @@
                                 <span class="slider"></span>
                             </label>
                         </div>
-
                         <div class="conditional-field" id="premiacao-group">
                              <div class="form-group">
                                 <label for="premiacao">Valor da Premiação (R$)</label>
                                 <input type="number" id="premiacao" name="premiacao" placeholder="Ex: 500" min="0" step="any">
                              </div>
                         </div>
-
                          <div class="switch-group">
                             <div class="switch-label-group">
                                 <span class="switch-label">Evento Privado?</span>
                                  <div class="tooltip">
                                     <span class="tooltip-icon">?</span>
-                                    <span class="tooltip-text">Eventos privados só podem participar pessoas que te seguem.</span>
+                                    <span class="tooltip-text">Em eventos privados, você precisa aprovar quem pode participar.</span>
                                 </div>
                             </div>
                             <label class="switch">
@@ -475,7 +489,6 @@
                             </label>
                         </div>
                     </div>
-
                     <button type="submit" class="submit-btn">Criar Evento</button>
                 </form>
             </main>
@@ -492,20 +505,17 @@
             <main class="modal-body">
                 <form id="editEventForm" enctype="multipart/form-data">
                     <input type="hidden" id="edit-event-id" name="id">
-                    
                     <div class="form-group">
                         <label for="edit-titulo">Título do Evento</label>
-                        <input type="text" id="edit-titulo" name="titulo" placeholder="Ex: Torneio de Verão" required>
+                        <input type="text" id="edit-titulo" name="titulo" required>
                     </div>
                     <div class="form-group">
                         <label for="edit-nome_esporte">Esporte</label>
-                         <select id="edit-nome_esporte" name="esporte_nome" required>
-                            <!-- Populado via JS -->
-                        </select>
+                         <select id="edit-nome_esporte" name="esporte_nome" required></select>
                     </div>
                     <div class="form-group">
                         <label for="edit-descricao">Descrição</label>
-                        <textarea id="edit-descricao" name="descricao" placeholder="Descreva os detalhes do seu evento..." required></textarea>
+                        <textarea id="edit-descricao" name="descricao" required></textarea>
                     </div>
                     <div class="form-group">
                         <label for="edit-arquivo_foto">Alterar Foto de Capa (opcional)</label>
@@ -519,71 +529,53 @@
                         <label for="edit-data_hora_str">Data e Hora</label>
                         <input type="datetime-local" id="edit-data_hora_str" name="data_hora_str" required>
                     </div>
-                    
                     <div class="form-group">
                         <label for="edit-estado">Estado</label>
-                        <select id="edit-estado" name="estado" required>
-                            <option value="" disabled selected>Carregando estados...</option>
-                        </select>
+                        <select id="edit-estado" name="estado" required></select>
                     </div>
                     <div class="form-group">
                         <label for="edit-cidade">Cidade</label>
-                        <select id="edit-cidade" name="cidade" required disabled>
-                            <option value="" disabled selected>Selecione um estado primeiro</option>
-                        </select>
+                        <select id="edit-cidade" name="cidade" required disabled></select>
                     </div>
-
-                    <!-- NOVO CAMPO ADICIONADO -->
                     <div class="form-group">
                         <label for="edit-endereco">Endereço</label>
-                        <input type="text" id="edit-endereco" name="endereco" placeholder="Ex: Rua Exemplo, 123, Bairro" required>
+                        <input type="text" id="edit-endereco" name="endereco" required>
                     </div>
-
                     <div class="form-group">
                         <label for="edit-observacoes">Observações/Ponto de referencia</label>
-                        <textarea id="edit-observacoes" name="observacoes" placeholder="Informações adicionais, regras, etc."></textarea>
+                        <textarea id="edit-observacoes" name="observacoes"></textarea>
                     </div>
-                    
                     <div class="form-group">
                         <label for="edit-max_participantes">Máx. de Participantes</label>
-                        <input type="number" id="edit-max_participantes" name="max_participantes" min="2" placeholder="Ex: 16" required>
+                        <input type="number" id="edit-max_participantes" name="max_participantes" min="2" required>
                     </div>
-
                     <div class="form-group">
                          <div class="switch-group">
-                            <div class="switch-label-group">
-                                <span class="switch-label">É um torneio?</span>
-                            </div>
+                            <div class="switch-label-group"> <span class="switch-label">É um torneio?</span> </div>
                             <label class="switch">
                                 <input type="checkbox" id="edit-torneio-checkbox" name="torneio" value="true">
                                 <span class="slider"></span>
                             </label>
                         </div>
-
                         <div class="conditional-field" id="edit-premiacao-group">
                              <div class="form-group">
                                 <label for="edit-premiacao">Valor da Premiação (R$)</label>
-                                <input type="number" id="edit-premiacao" name="premiacao" placeholder="Ex: 500" min="0" step="any">
+                                <input type="number" id="edit-premiacao" name="premiacao" min="0" step="any">
                              </div>
                         </div>
-
                          <div class="switch-group">
-                            <div class="switch-label-group">
-                                <span class="switch-label">Evento Privado?</span>
-                            </div>
+                            <div class="switch-label-group"><span class="switch-label">Evento Privado?</span></div>
                             <label class="switch">
                                 <input type="checkbox" id="edit-privado-checkbox" name="privado" value="true">
                                 <span class="slider"></span>
                             </label>
                         </div>
                     </div>
-
                     <button type="submit" class="submit-btn">Salvar Alterações</button>
                 </form>
             </main>
         </div>
     </div>
-
 
     <!-- MODAL PARA DETALHES DO EVENTO -->
     <div class="modal-overlay" id="event-details-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-details">
@@ -598,17 +590,31 @@
                         <h2 id="details-title"></h2>
                     </div>
                     <p id="details-description"></p>
-                    <div id="details-info">
-                    </div>
+                    <div id="details-info"></div>
                 </div>
                 <div class="details-action-buttons">
                     <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
                     <button id="participate-btn" class="action-btn btn-primary">Participar</button>
+                    <button id="manage-requests-btn" class="action-btn btn-tertiary" style="display: none;">Gerenciar Solicitações</button>
                 </div>
             </main>
         </div>
     </div>
 
+    <!-- MODAL PARA GERENCIAR PENDENTES -->
+    <div class="modal-overlay" id="pending-requests-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-pending">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-pending">Solicitações Pendentes</h2>
+                <button class="close-modal-btn" data-close-modal="pending-requests-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <ul id="pending-list">
+                    <!-- Usuários pendentes serão inseridos aqui -->
+                </ul>
+            </main>
+        </div>
+    </div>
 
     <script>
     const token = localStorage.getItem('jwtToken');
@@ -633,10 +639,7 @@
         let activeFilter = 'events'; 
         let allSports = [];
         
-        const currentUserId = getUserIdFromToken();
-
         // --- FUNÇÕES DE EXIBIÇÃO ---
-
         function showEmptyMessage(filterType = 'events') {
             let message = "Nenhum evento encontrado.";
             let suggestion = "Que tal criar um novo evento no botão '+'?";
@@ -649,14 +652,8 @@
                  message = "Você não está participando de nenhum evento.";
                  suggestion = "Explore os eventos e torneios para encontrar um para você!";
             }
-            
-            mainContent.innerHTML = `
-                <div class="text-center">
-                    <p>${message}</p>
-                    <p>${suggestion}</p>
-                </div>
-            `;
-             mainContent.classList.add('text-center');
+            mainContent.innerHTML = `<div class="text-center"><p>${message}</p><p>${suggestion}</p></div>`;
+            mainContent.classList.add('text-center');
         }
         
         function showLoading() {
@@ -682,7 +679,6 @@
             return `${day}/${month}/${year} - ${hours}:${minutes}`;
         }
         
-        // ALTERADO: Adicionado `event.endereco` à exibição
         function createEventCard(event, index, isMyEvent = false) {
             const card = document.createElement('div');
             card.className = 'event-card';
@@ -699,18 +695,11 @@
                 const prizeFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(event.premiacao);
                 infoHtml += `<div class="event-info"><i class="fas fa-trophy"></i><span>Premiação: ${prizeFormatted}</span></div>`;
             }
-            if (event.observacoes) {
-                infoHtml += `<div class="event-info"><i class="fas fa-info-circle"></i><span>${event.observacoes}</span></div>`;
-            }
 
             const actionsHtml = isMyEvent ? `
                 <div class="card-actions">
-                    <button class="action-icon" onclick="event.stopPropagation(); window.openEditModal(${index});" title="Editar Evento">
-                        <i class="fas fa-pencil-alt"></i>
-                    </button>
-                    <button class="action-icon delete-btn" onclick="event.stopPropagation(); if(confirm('Tem certeza que deseja excluir o evento \\'${event.titulo}\\'? Esta ação não pode ser desfeita.')) window.deleteEvent('${event.id}');" title="Excluir Evento">
-                        <i class="fas fa-trash-alt"></i>
-                    </button>
+                    <button class="action-icon" onclick="event.stopPropagation(); window.openEditModal(${index});" title="Editar Evento"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="action-icon delete-btn" onclick="event.stopPropagation(); if(confirm('Tem certeza que deseja excluir o evento \\'${event.titulo}\\'?')) window.deleteEvent('${event.id}');" title="Excluir Evento"><i class="fas fa-trash-alt"></i></button>
                 </div>
             ` : '';
 
@@ -722,6 +711,7 @@
                 <div class="event-details">
                     ${actionsHtml}
                     <div class="event-title-container">
+                        ${event.privado ? '<i class="fas fa-lock private-icon" title="Evento Privado"></i>' : ''}
                         <h3 class="event-title">${event.titulo}</h3>
                         ${event.torneio ? '<span class="tournament-badge">Torneio</span>' : ''}
                     </div>
@@ -734,35 +724,22 @@
             return card;
         }
 
-        async function displayPublicEvents(filter) {
-            showLoading();
-            let endpoint = '';
-
-            if (filter === 'events') {
-                endpoint = 'http://127.0.0.1:5000/evento/listarEventos';
-            } else if (filter === 'tournaments') {
-                endpoint = 'http://127.0.0.1:5000/evento/listarTorneios'; 
-            } else {
-                mainContent.innerHTML = `<p>Filtro desconhecido.</p>`;
-                mainContent.classList.add('text-center');
-                return;
-            }
-
+        async function fetchAndDisplay(endpoint, filter) {
+             showLoading();
             try {
                 const response = await fetch(endpoint, { 
                     method: 'GET' ,
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
                 
                 const events = await response.json();
-                currentEvents = events;
+                currentEvents = Array.isArray(events) ? events : [];
                 mainContent.innerHTML = '';
                 mainContent.classList.remove('text-center');
 
-                if (events && events.length > 0) {
-                     events.forEach((event, index) => {
+                if (currentEvents.length > 0) {
+                     currentEvents.forEach((event, index) => {
                         const isMyEvent = currentUserId && event.usuario_id === currentUserId;
                         const eventCard = createEventCard(event, index, isMyEvent);
                         mainContent.appendChild(eventCard);
@@ -770,146 +747,56 @@
                 } else {
                     showEmptyMessage(filter);
                 }
-
             } catch (error) {
                 console.error(`Falha ao buscar eventos para o filtro '${filter}':`, error);
-                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar os eventos. Tente novamente.</p>`;
+                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar. Tente novamente.</p>`;
                 mainContent.classList.add('text-center');
             }
         }
 
-        async function displayMyEvents() {
-            showLoading();
-            if (!token) {
-                mainContent.innerHTML = '<p>Erro de autenticação. Faça o login novamente.</p>';
-                mainContent.classList.add('text-center');
-                return;
-            }
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/evento/meusEventos', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
-                
-                const events = await response.json();
-                currentEvents = events;
-                mainContent.innerHTML = '';
-                mainContent.classList.remove('text-center');
-
-                if (events && events.length > 0) {
-                    events.forEach((event, index) => {
-                        const eventCard = createEventCard(event, index, true);
-                        mainContent.appendChild(eventCard);
-                    });
-                } else {
-                    showEmptyMessage('my-events');
-                }
-
-            } catch (error) {
-                console.error('Falha ao buscar meus eventos:', error);
-                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar seus eventos. Tente novamente.</p>`;
-                mainContent.classList.add('text-center');
-            }
-        }
-
-        async function displayParticipatingEvents() {
-            showLoading();
-            if (!token) {
-                mainContent.innerHTML = '<p>Erro de autenticação. Faça o login novamente.</p>';
-                mainContent.classList.add('text-center');
-                return;
-            }
-
-            try {
-                const response = await fetch('http://127.0.0.1:5000/evento/participando', {
-                    method: 'GET',
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                const events = Array.isArray(data) ? data : [];
-
-                currentEvents = events;
-                mainContent.innerHTML = '';
-                mainContent.classList.remove('text-center');
-
-                if (events.length > 0) {
-                    events.forEach((event, index) => {
-                        const isMyEvent = currentUserId && event.usuario_id === currentUserId;
-                        const eventCard = createEventCard(event, index, isMyEvent);
-                        mainContent.appendChild(eventCard);
-                    });
-                } else {
-                    showEmptyMessage('participating');
-                }
-
-            } catch (error) {
-                console.error('Falha ao buscar eventos que estou participando:', error);
-                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar os eventos. Tente novamente.</p>`;
-                mainContent.classList.add('text-center');
-            }
-        }
-        
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 activeFilter = button.getAttribute('data-filter');
-
-                if (activeFilter === 'my-events') {
-                    displayMyEvents();
-                } else if (activeFilter === 'participating') {
-                    displayParticipatingEvents();
-                } else {
-                    displayPublicEvents(activeFilter);
+                let endpoint = '';
+                switch(activeFilter) {
+                    case 'events': endpoint = 'http://127.0.0.1:5000/evento/listarEventos'; break;
+                    case 'tournaments': endpoint = 'http://127.0.0.1:5000/evento/listarTorneios'; break;
+                    case 'my-events': endpoint = 'http://127.0.0.1:5000/evento/meusEventos'; break;
+                    case 'participating': endpoint = 'http://127.0.0.1:5000/evento/participando'; break;
                 }
+                if (endpoint) fetchAndDisplay(endpoint, activeFilter);
             });
         });
-
         document.querySelector('.filter-btn[data-filter="events"]').click(); 
 
         const modalOverlays = document.querySelectorAll('.modal-overlay');
 
-        window.openModal = function(modalId) {
-            const modal = document.getElementById(modalId);
-            if(modal) modal.classList.add('visible');
-        }
-
-        window.closeModal = function(modalId) {
-            const modal = document.getElementById(modalId);
-            if(modal) modal.classList.remove('visible');
-        }
+        window.openModal = function(modalId) { document.getElementById(modalId)?.classList.add('visible'); }
+        window.closeModal = function(modalId) { document.getElementById(modalId)?.classList.remove('visible'); }
 
         document.getElementById('open-modal-btn').addEventListener('click', () => openModal('create-event-modal'));
-        
         document.querySelectorAll('[data-close-modal]').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const modalId = btn.getAttribute('data-close-modal');
-                closeModal(modalId);
-            });
+            btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close-modal')));
         });
-
         modalOverlays.forEach(overlay => {
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
         
-        // ALTERADO: Adicionado `event.endereco` na lista de detalhes
         function displayEventDetails(event) {
             document.getElementById('details-image').src = event.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
-            document.getElementById('details-title').textContent = event.titulo;
             document.getElementById('details-description').textContent = event.descricao;
             
             const titleContainer = document.getElementById('details-title-container');
-            const oldBadge = titleContainer.querySelector('.tournament-badge');
-            if (oldBadge) oldBadge.remove();
+            titleContainer.innerHTML = `<h2 id="details-title">${event.titulo}</h2>`;
+
+            if (event.privado) {
+                const privateIcon = document.createElement('i');
+                privateIcon.className = 'fas fa-lock private-icon';
+                privateIcon.title = 'Este é um evento privado';
+                titleContainer.prepend(privateIcon);
+            }
             if (event.torneio) {
                 const badge = document.createElement('span');
                 badge.className = 'tournament-badge';
@@ -920,6 +807,7 @@
             const infoContainer = document.getElementById('details-info');
             infoContainer.innerHTML = '';
             const participants = Array.isArray(event.participantes) ? event.participantes : [];
+            const pendentes = Array.isArray(event.pendentes) ? event.pendentes : [];
             const prizeFormatted = event.premiacao > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(event.premiacao) : null;
             const fullLocation = `${event.endereco ? event.endereco + ', ' : ''}${event.localizacao || 'Local não definido'}`;
             
@@ -933,209 +821,207 @@
             ].filter(Boolean);
 
             detailsList.forEach(detail => {
-                const infoDiv = document.createElement('div');
-                infoDiv.className = 'event-info';
-                infoDiv.innerHTML = `<i class="fas ${detail.icon}"></i> <span>${detail.text}</span>`;
-                infoContainer.appendChild(infoDiv);
+                infoContainer.innerHTML += `<div class="event-info"><i class="fas ${detail.icon}"></i> <span>${detail.text}</span></div>`;
             });
 
             const actionButton = document.getElementById('participate-btn');
+            const manageButton = document.getElementById('manage-requests-btn');
             actionButton.dataset.eventId = event.id;
+            manageButton.dataset.eventId = event.id;
+            manageButton.style.display = 'none';
 
             const isParticipating = currentUserId && participants.includes(currentUserId);
+            const isPending = currentUserId && pendentes.some(p => p.id === currentUserId);
             const isCreator = currentUserId && event.usuario_id === currentUserId;
 
             if (isCreator) {
                 actionButton.style.display = 'none';
+                if (event.privado) manageButton.style.display = 'block';
             } else {
                  actionButton.style.display = 'block';
+                 actionButton.disabled = false;
+                 actionButton.className = 'action-btn';
                  if (isParticipating) {
                     actionButton.textContent = 'Cancelar Inscrição';
-                    actionButton.classList.remove('btn-primary');
                     actionButton.classList.add('btn-danger');
                     actionButton.dataset.action = 'cancel';
+                } else if (isPending) {
+                    actionButton.textContent = 'Aguardando Aprovação';
+                    actionButton.classList.add('btn-secondary');
+                    actionButton.disabled = true;
                 } else {
-                    actionButton.textContent = 'Participar';
-                    actionButton.classList.remove('btn-danger');
+                    actionButton.textContent = event.privado ? 'Solicitar Participação' : 'Participar';
                     actionButton.classList.add('btn-primary');
                     actionButton.dataset.action = 'participate';
                 }
             }
-           
             openModal('event-details-modal');
         }
 
-        // ALTERADO: Populando o campo `edit-endereco`
         window.openEditModal = async function(index) {
             const event = currentEvents[index];
             if (!event) return;
-
             document.getElementById('edit-event-id').value = event.id;
             document.getElementById('edit-titulo').value = event.titulo;
             document.getElementById('edit-descricao').value = event.descricao;
             document.getElementById('edit-data_hora_str').value = formatISODateToInput(event.data_hora_str);
-            document.getElementById('edit-endereco').value = event.endereco || ''; // <-- CAMPO ADICIONADO
+            document.getElementById('edit-endereco').value = event.endereco || '';
             document.getElementById('edit-observacoes').value = event.observacoes || '';
             document.getElementById('edit-max_participantes').value = event.max_participantes;
-
-            const sportSelect = document.getElementById('edit-nome_esporte');
-            populateSportsDropdown(sportSelect, event.esporte_nome);
-
+            populateSportsDropdown(document.getElementById('edit-nome_esporte'), event.esporte_nome);
             const preview = document.getElementById('edit-image-preview');
             preview.src = event.foto || '';
             preview.style.display = event.foto ? 'block' : 'none';
             document.querySelector('#edit-upload-area span').style.display = event.foto ? 'none' : 'block';
-
             const torneioCheckbox = document.getElementById('edit-torneio-checkbox');
-            const premiacaoGroup = document.getElementById('edit-premiacao-group');
-            const premiacaoInput = document.getElementById('edit-premiacao');
             torneioCheckbox.checked = event.torneio;
-            premiacaoGroup.classList.toggle('visible', event.torneio);
-            premiacaoInput.required = event.torneio;
-            premiacaoInput.value = event.torneio ? (event.premiacao || '') : '';
-            
+            document.getElementById('edit-premiacao-group').classList.toggle('visible', event.torneio);
+            document.getElementById('edit-premiacao').value = event.torneio ? (event.premiacao || '') : '';
             document.getElementById('edit-privado-checkbox').checked = event.privado;
-            
             const [cidadeNome, estadoUf] = (event.localizacao || ',').split(', ');
             const estadoSelect = document.getElementById('edit-estado');
             await loadStates(estadoSelect);
-            
             const optionToSelect = Array.from(estadoSelect.options).find(opt => opt.dataset.uf === estadoUf);
             if (optionToSelect) {
                 optionToSelect.selected = true;
-                const cidadeSelect = document.getElementById('edit-cidade');
-                await loadCities(cidadeSelect, optionToSelect.value, cidadeNome);
+                await loadCities(document.getElementById('edit-cidade'), optionToSelect.value, cidadeNome);
             }
-            
             openModal('edit-event-modal');
         }
 
         window.deleteEvent = async function(eventId) {
-            if (!eventId) {
-                alert('ID do evento não encontrado.');
-                return;
-            }
-
-            if (!token) {
-                alert('Erro de autenticação. Por favor, faça login novamente.');
-                return;
-            }
-
-            const bodyData = { evento_id: eventId };
-
+            if (!eventId || !token) { alert('Erro de autenticação ou ID inválido.'); return; }
             try {
                 const response = await fetch('http://127.0.0.1:5000/evento/deletarEvento', {
-                    method: 'DELETE',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(bodyData)
+                    method: 'DELETE', headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ evento_id: eventId })
                 });
-
                 const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.erro || 'Não foi possível excluir o evento.');
-                }
-
+                if (!response.ok) throw new Error(result.erro || 'Não foi possível excluir.');
                 alert('Evento excluído com sucesso!');
-                
                 document.querySelector('.filter-btn.active').click();
-
-            } catch (error) {
-                console.error('Erro ao excluir evento:', error);
-                alert(`Falha ao excluir o evento: ${error.message}`);
-            }
+            } catch (error) { alert(`Falha ao excluir o evento: ${error.message}`); }
         }
         
         async function handleEventActionClick(event) {
             const button = event.target;
-            const eventId = button.dataset.eventId;
-            const action = button.dataset.action;
-
-            if (!eventId || !action) {
-                alert('Erro: Ação ou ID do evento não encontrados.');
-                return;
-            }
-
-            if (!token) {
-                alert('Erro de autenticação. Por favor, faça login novamente.');
-                return;
-            }
-            
-            const endpoint = action === 'participate' 
-                ? 'http://127.0.0.1:5000/evento/participarEvento' 
-                : 'http://127.0.0.1:5000/evento/cancelarParticipacao';
-            
+            const { eventId, action } = button.dataset;
+            if (!eventId || !action || !token) { alert('Erro: Ação, ID ou autenticação inválidos.'); return; }
+            const endpoint = action === 'participate' ? 'http://127.0.0.1:5000/evento/participarEvento' : 'http://127.0.0.1:5000/evento/cancelarParticipacao';
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = 'Processando...';
-
             try {
                 const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ evento_id: eventId })
                 });
-
                 const result = await response.json();
-
-                if (!response.ok) {
-                    throw new Error(result.erro || 'Ocorreu um erro na solicitação.');
-                }
-
+                if (!response.ok) throw new Error(result.erro || 'Ocorreu um erro.');
                 alert(result.mensagem);
                 closeModal('event-details-modal');
-                
                 document.querySelector('.filter-btn.active').click();
-
             } catch (error) {
-                console.error(`Erro ao ${action} do evento:`, error);
-                alert(`Falha ao processar a solicitação: ${error.message}`);
-            } finally {
+                alert(`Falha ao processar: ${error.message}`);
                 button.disabled = false;
                 button.textContent = originalText;
             }
         }
-
         document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
 
+        // --- LÓGICA DO EVENTO PRIVADO ---
+        document.getElementById('manage-requests-btn').addEventListener('click', async function() {
+            const eventId = this.dataset.eventId;
+            const pendingList = document.getElementById('pending-list');
+            pendingList.innerHTML = '<li>Carregando solicitações...</li>';
+            openModal('pending-requests-modal');
 
-        async function populateSportsDropdown(selectElement, selectedValue = null) {
-            if (allSports.length === 0) {
-                if (!token) { console.error('Erro de autenticação: Token não encontrado.'); selectElement.innerHTML = '<option value="" disabled selected>Falha ao carregar</option>'; return; }
+            try {
+                const response = await fetch('http://127.0.0.1:5000/evento/pendentes', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ evento_id: eventId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Erro ao buscar pendentes.');
+
+                pendingList.innerHTML = '';
+                if (result.pendentes && result.pendentes.length > 0) {
+                    result.pendentes.forEach(pendingUser => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'pending-item';
+                        listItem.dataset.userId = pendingUser.id;
+                        const profilePic = pendingUser.foto_perfil || 'https://via.placeholder.com/40';
+                        listItem.innerHTML = `
+                            <div class="pending-item-info">
+                                <img src="${profilePic}" alt="Foto de ${pendingUser.username}" class="pending-user-img">
+                                <span>${pendingUser.username}</span>
+                            </div>
+                            <div class="pending-item-actions">
+                                <button class="pending-action-btn pending-accept-btn" data-action="aceitar">Aceitar</button>
+                                <button class="pending-action-btn pending-reject-btn" data-action="recusar">Recusar</button>
+                            </div>
+                        `;
+                        pendingList.appendChild(listItem);
+                    });
+                } else {
+                    pendingList.innerHTML = '<li>Nenhuma solicitação pendente.</li>';
+                }
+            } catch (error) {
+                pendingList.innerHTML = `<li>Erro: ${error.message}</li>`;
+            }
+        });
+
+        document.getElementById('pending-list').addEventListener('click', async function(e) {
+            if (e.target.matches('.pending-action-btn')) {
+                const button = e.target;
+                const action = button.dataset.action;
+                const listItem = button.closest('.pending-item');
+                const userId = listItem.dataset.userId;
+                const eventId = document.getElementById('manage-requests-btn').dataset.eventId;
+                button.disabled = true;
+                button.textContent = '...';
                 try {
-                    const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', { method: 'GET', headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
-                    if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
-                    allSports = await response.json();
-                } catch (error) {
-                    console.error('Falha ao buscar esportes:', error);
-                    selectElement.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>';
-                    return;
+                     const response = await fetch('http://127.0.0.1:5000/evento/decidirParticipante', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ evento_id: eventId, usuario_id: userId, acao: action })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.erro || 'Erro ao processar.');
+                    listItem.remove();
+                    if(document.getElementById('pending-list').children.length === 0){
+                        document.getElementById('pending-list').innerHTML = '<li>Nenhuma solicitação pendente.</li>';
+                    }
+                } catch(error) {
+                    alert(`Erro: ${error.message}`);
+                    button.disabled = false;
+                    button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
                 }
             }
-            selectElement.innerHTML = '<option value="" disabled>Selecione o esporte</option>';
-            allSports.forEach(sport => { if (sport && sport.nome) { const option = document.createElement('option'); option.value = sport.nome; option.textContent = sport.nome; if(sport.nome === selectedValue) { option.selected = true; }; selectElement.appendChild(option); } });
-             if (!selectedValue) {
-                selectElement.selectedIndex = 0;
+        });
+
+        // --- LÓGICA DOS FORMULÁRIOS ---
+        async function populateSportsDropdown(selectElement, selectedValue = null) {
+            if (allSports.length === 0) {
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
+                    if (!response.ok) throw new Error('Erro na API');
+                    allSports = await response.json();
+                } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; return; }
             }
+            selectElement.innerHTML = '<option value="" disabled>Selecione o esporte</option>';
+            allSports.forEach(sport => { if (sport && sport.nome) { const option = new Option(sport.nome, sport.nome); if(sport.nome === selectedValue) { option.selected = true; }; selectElement.appendChild(option); } });
+            if (!selectedValue) selectElement.selectedIndex = 0;
         }
-        
         populateSportsDropdown(document.getElementById('nome_esporte'));
         populateSportsDropdown(document.getElementById('edit-nome_esporte'));
 
         async function loadStates(selectElement) {
              try {
                 const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
-                if (!response.ok) throw new Error('Não foi possível carregar os estados.');
                 const states = await response.json();
-                selectElement.innerHTML = '<option value="" disabled selected>Selecione o estado</option>';
-                states.forEach(state => { const option = document.createElement('option'); option.value = state.id; option.textContent = state.nome; option.dataset.uf = state.sigla; selectElement.appendChild(option); });
-            } catch (error) { console.error('Erro ao carregar estados:', error); selectElement.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>'; }
+                selectElement.innerHTML = '<option value="" disabled selected>Selecione</option>';
+                states.forEach(state => { const option = new Option(state.nome, state.id); option.dataset.uf = state.sigla; selectElement.appendChild(option); });
+            } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; }
         }
 
         async function loadCities(selectElement, stateId, selectedValue = null) {
@@ -1144,12 +1030,11 @@
             selectElement.disabled = true;
             try {
                 const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios?orderBy=nome`);
-                if (!response.ok) throw new Error('Não foi possível carregar as cidades.');
                 const cities = await response.json();
-                selectElement.innerHTML = '<option value="" disabled selected>Selecione a cidade</option>';
-                cities.forEach(city => { const option = document.createElement('option'); option.value = city.nome; option.textContent = city.nome; if(city.nome === selectedValue){ option.selected = true; } selectElement.appendChild(option); });
+                selectElement.innerHTML = '<option value="" disabled selected>Selecione</option>';
+                cities.forEach(city => { const option = new Option(city.nome, city.nome); if(city.nome === selectedValue){ option.selected = true; } selectElement.appendChild(option); });
                 selectElement.disabled = false;
-            } catch (error) { console.error('Erro ao carregar cidades:', error); selectElement.innerHTML = '<option value="" disabled selected>Erro ao carregar</option>'; }
+            } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; }
         }
 
         document.getElementById('estado').addEventListener('change', (e) => loadCities(document.getElementById('cidade'), e.target.value));
@@ -1157,25 +1042,22 @@
         document.getElementById('edit-estado').addEventListener('change', (e) => loadCities(document.getElementById('edit-cidade'), e.target.value));
         loadStates(document.getElementById('edit-estado'));
 
-        function setupConditionalField(checkboxId, groupId, inputId) {
+        function setupConditionalField(checkboxId, groupId) {
             const checkbox = document.getElementById(checkboxId);
             const group = document.getElementById(groupId);
-            const input = document.getElementById(inputId);
             checkbox.addEventListener('change', function() {
                 group.classList.toggle('visible', this.checked);
-                input.required = this.checked;
-                if (!this.checked) input.value = '';
+                if (!this.checked) group.querySelector('input').value = '';
             });
         }
-        setupConditionalField('torneio-checkbox', 'premiacao-group', 'premiacao');
-        setupConditionalField('edit-torneio-checkbox', 'edit-premiacao-group', 'edit-premiacao');
+        setupConditionalField('torneio-checkbox', 'premiacao-group');
+        setupConditionalField('edit-torneio-checkbox', 'edit-premiacao-group');
 
         function setupImagePreview(uploadAreaId, fileInputId, previewId) {
             const uploadArea = document.getElementById(uploadAreaId);
             const fileInput = document.getElementById(fileInputId);
             const imagePreview = document.getElementById(previewId);
             const uploadText = uploadArea.querySelector('span');
-
             uploadArea.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', () => {
                 const file = fileInput.files[0];
@@ -1189,115 +1071,51 @@
         setupImagePreview('create-upload-area', 'arquivo_foto', 'create-image-preview');
         setupImagePreview('edit-upload-area', 'edit-arquivo_foto', 'edit-image-preview');
 
-        document.getElementById('eventForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const submitButton = event.target.querySelector('.submit-btn');
+        async function handleFormSubmit(form, url, method) {
+            const submitButton = form.querySelector('.submit-btn');
+            const originalButtonText = submitButton.textContent;
             submitButton.disabled = true;
-            submitButton.textContent = 'Enviando...';
+            submitButton.textContent = method === 'POST' ? 'Enviando...' : 'Salvando...';
+            if (!token) { alert('Erro de autenticação.'); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
             
-            if (!token) { alert('Erro de autenticação. Por favor, faça login novamente.'); submitButton.disabled = false; submitButton.textContent = 'Criar Evento'; return; }
-            
-            const formData = new FormData(event.target);
-
-            const isTournament = document.getElementById('torneio-checkbox').checked;
-            if (isTournament) {
-                if (!formData.get('premiacao')) formData.set('premiacao', '0');
-            } else {
-                formData.delete('premiacao');
-            }
-
+            const formData = new FormData(form);
+            const isTournament = form.querySelector('input[name="torneio"]').checked;
+            if (isTournament) { if (!formData.get('premiacao')) formData.set('premiacao', '0'); } 
+            else { formData.delete('premiacao'); }
             const dataHoraInput = formData.get('data_hora_str');
             if (dataHoraInput) { formData.set('data_hora_str', `${dataHoraInput}:00`); }
             
-            const cidadeSelect = document.getElementById('cidade');
-            const estadoSelect = document.getElementById('estado');
+            const cidadeSelect = form.querySelector('select[name="cidade"]');
+            const estadoSelect = form.querySelector('select[name="estado"]');
             const cidadeNome = cidadeSelect.value;
-            const estadoUf = estadoSelect.options[estadoSelect.selectedIndex].dataset.uf;
+            const estadoUf = estadoSelect.options[estadoSelect.selectedIndex]?.dataset.uf;
             if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); } 
-            else { alert('Por favor, selecione um estado e uma cidade.'); submitButton.disabled = false; submitButton.textContent = 'Criar Evento'; return; }
-
+            
             try {
-                const response = await fetch('http://127.0.0.1:5000/evento/AdicionarEvento', { method: 'POST', headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+                const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` }, body: formData });
                 const result = await response.json();
-                if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro desconhecido.'); }
-                alert('Evento criado com sucesso!');
-                closeModal('create-event-modal');
+                if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro.'); }
+                alert(`Evento ${method === 'POST' ? 'criado' : 'atualizado'} com sucesso!`);
+                closeModal(form.closest('.modal-overlay').id);
                 document.querySelector('.filter-btn.active').click();
-                event.target.reset();
-                document.getElementById('create-image-preview').style.display = 'none';
-                document.querySelector('#create-upload-area span').style.display = 'block';
-
+                form.reset();
+                form.querySelector('.image-preview').style.display = 'none';
+                form.querySelector('.image-upload-container span').style.display = 'block';
             } catch (error) {
-                console.error('Erro ao criar evento:', error);
-                alert(`Falha ao criar evento: ${error.message}`);
+                alert(`Falha: ${error.message}`);
             } finally {
                 submitButton.disabled = false;
-                submitButton.textContent = 'Criar Evento';
+                submitButton.textContent = originalButtonText;
             }
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'http://127.0.0.1:5000/evento/AdicionarEvento', 'POST');
         });
-
-        document.getElementById('editEventForm').addEventListener('submit', async function(event) {
-            event.preventDefault();
-            const submitButton = event.target.querySelector('.submit-btn');
-            submitButton.disabled = true;
-            submitButton.textContent = 'Salvando...';
-
-            if (!token) { 
-                alert('Erro de autenticação. Por favor, faça login novamente.'); 
-                submitButton.disabled = false; 
-                submitButton.textContent = 'Salvar Alterações'; 
-                return; 
-            }
-
-            const formData = new FormData(event.target);
-            
-            const dataHoraInput = formData.get('data_hora_str');
-            if (!dataHoraInput) {
-                alert('O campo de Data e Hora é obrigatório.');
-                submitButton.disabled = false;
-                submitButton.textContent = 'Salvar Alterações';
-                return;
-            }
-            formData.set('data_hora_str', `${dataHoraInput}:00`);
-            
-            const isTournament = document.getElementById('edit-torneio-checkbox').checked;
-            formData.set('torneio', isTournament); 
-
-            if (isTournament) {
-                if (!formData.get('premiacao')) {
-                    formData.set('premiacao', '0');
-                }
-            } else {
-                formData.delete('premiacao');
-            }
-            
-            const cidadeSelect = document.getElementById('edit-cidade');
-            const estadoSelect = document.getElementById('edit-estado');
-            const cidadeNome = cidadeSelect.value;
-            const estadoUf = estadoSelect.options[estadoSelect.selectedIndex].dataset.uf;
-            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); }
-            
-            try {
-                const response = await fetch('http://127.0.0.1:5000/evento/editarEvento', { 
-                    method: 'PUT',
-                    headers: { 'Authorization': `Bearer ${token}` }, 
-                    body: formData 
-                });
-                const result = await response.json();
-                if (!response.ok) { 
-                    const errorMessage = result.erro || result.message || 'Ocorreu um erro desconhecido.';
-                    throw new Error(errorMessage);
-                }
-                alert('Evento atualizado com sucesso!');
-                closeModal('edit-event-modal');
-                document.querySelector('.filter-btn.active').click();
-            } catch (error) {
-                console.error('Erro ao atualizar evento:', error);
-                alert(`Falha ao atualizar evento: ${error.message}`);
-            } finally {
-                submitButton.disabled = false;
-                submitButton.textContent = 'Salvar Alterações';
-            }
+        document.getElementById('editEventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'http://127.0.0.1:5000/evento/editarEvento', 'PUT');
         });
 
     });

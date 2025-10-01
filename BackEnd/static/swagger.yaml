@@ -2057,6 +2057,177 @@ paths:
                   erro:
                     type: string
                     example: "Erro ao listar eventos participando: <detalhes>"
+
+  /evento/pendentes:
+    post:
+      summary: Lista usuários pendentes de um evento privado
+      description: Retorna informações dos usuários que solicitaram participar de um evento privado, apenas acessível pelo dono do evento.
+      tags:
+        - Eventos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - evento_id
+              properties:
+                evento_id:
+                  type: string
+                  example: abc123
+                  description: ID do evento privado
+      responses:
+        '200':
+          description: Lista de usuários pendentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  pendentes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: user1
+                        nome_completo:
+                          type: string
+                          example: Paulo Eduardo Palauro
+                        username:
+                          type: string
+                          example: paulopalauro
+                        foto_perfil:
+                          type: string
+                          example: https://linkdapefoto.com/abc.jpg
+        '400':
+          description: Requisição inválida (campo faltando)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: O campo 'evento_id' é obrigatório.
+        '403':
+          description: Acesso não autorizado (usuário não é dono do evento)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Apenas o dono do evento pode ver os pendentes.
+        '404':
+          description: Evento não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Evento não encontrado.
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro ao listar pendentes.
+
+  /evento/decidirParticipante:
+    post:
+      summary: Aprovar ou recusar um participante de evento privado
+      description: Endpoint para que o dono de um evento privado aceite ou recuse usuários que solicitaram participação.
+      tags:
+        - Eventos
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - evento_id
+                - usuario_id
+                - acao
+              properties:
+                evento_id:
+                  type: string
+                  example: abc123
+                  description: ID do evento privado
+                usuario_id:
+                  type: string
+                  example: user1
+                  description: ID do usuário que solicitou participação
+                acao:
+                  type: string
+                  enum: [aceitar, recusar]
+                  example: aceitar ou recusar
+                  description: Ação a ser realizada pelo dono do evento
+      responses:
+        '200':
+          description: Usuário aceito ou recusado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Usuário aceito no evento.
+        '400':
+          description: Requisição inválida (usuário não pendente ou ação inválida)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Usuário não está na lista de pendentes.
+        '403':
+          description: Acesso não autorizado (usuário não é dono do evento)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Apenas o dono pode aprovar ou recusar.
+        '404':
+          description: Evento não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Evento não encontrado.
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro ao processar decisão do participante.
   
 # Posts 
   /postagem/ListarPostagens:

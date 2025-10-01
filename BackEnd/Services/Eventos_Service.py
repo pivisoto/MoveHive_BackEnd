@@ -295,55 +295,64 @@ def participar_evento(evento_id):
         return {"erro": "Evento não encontrado."}, 404
 
     evento_data = evento_doc.to_dict()
-
     dono_evento_id = evento_data.get("usuario_id")
+    privado = evento_data.get("privado", False)
 
     if dono_evento_id == usuario_id:
         return {"erro": "Você é o criador deste evento e já está participando."}, 400
 
     participantes = evento_data.get("participantes", [])
+    pendentes = evento_data.get("pendentes", [])
 
     if usuario_id in participantes:
         return {"erro": "Você já está participando deste evento."}, 400
+    
+    if usuario_id in pendentes:
+        return {"erro": "Você já solicitou participação e está aguardando aprovação."}, 400
 
     max_participantes = evento_data.get("max_participantes", 0)
     if len(participantes) >= max_participantes:
         return {"erro": "Limite de participantes atingido."}, 400
 
     try:
-        evento_ref.update({
-            'participantes': ArrayUnion([usuario_id])
-        })
+        if privado:
+            evento_ref.update({
+                'pendentes': ArrayUnion([usuario_id])
+            })
 
-        user_ref = db.collection('Usuarios').document(usuario_id)
-        user_ref.update({
-            'eventos_participando': ArrayUnion([evento_id])
-        })
+            user_ref = db.collection('Usuarios').document(usuario_id)
+            user_ref.update({
+                'eventos_pendentes': ArrayUnion([evento_id])
+            })
 
-        # 🔔 Criar notificação para o dono do evento
-        usuario_doc = user_ref.get()
-        usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
-        titulo_evento = evento_data.get('titulo', 'sem título')
+            return {"mensagem": "Solicitação enviada! Aguarde aprovação do dono do evento."}, 200
 
-        mensagem = f"{usuario_nome} está participando do seu evento '{titulo_evento}'"
-        tipo = "participacao_evento"
-        referencia_id = evento_id
-
-        resultado_notif = criar_notificacao(
-            usuario_destino_id=dono_evento_id,
-            tipo=tipo,
-            referencia_id=referencia_id,
-            mensagem=mensagem
-        )
-
-        if isinstance(resultado_notif, tuple):
-            notif_resposta, notif_status = resultado_notif
-            if notif_status >= 400:
-                print("Aviso: falha ao criar notificação:", notif_resposta)
         else:
-            notif_resposta = resultado_notif
+            evento_ref.update({
+                'participantes': ArrayUnion([usuario_id])
+            })
 
-        return {"mensagem": "Participação confirmada com sucesso!"}, 200
+            user_ref = db.collection('Usuarios').document(usuario_id)
+            user_ref.update({
+                'eventos_participando': ArrayUnion([evento_id])
+            })
+
+            usuario_doc = user_ref.get()
+            usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
+            titulo_evento = evento_data.get('titulo', 'sem título')
+
+            mensagem = f"{usuario_nome} está participando do seu evento '{titulo_evento}'"
+            tipo = "participacao_evento"
+            referencia_id = evento_id
+
+            criar_notificacao(
+                usuario_destino_id=dono_evento_id,
+                tipo=tipo,
+                referencia_id=referencia_id,
+                mensagem=mensagem
+            )
+
+            return {"mensagem": "Participação confirmada com sucesso!"}, 200
 
     except Exception as e:
         return {"erro": f"Erro ao participar do evento: {str(e)}"}, 500
@@ -418,3 +427,72 @@ def listar_eventos_participando():
 
     except Exception as e:
         return {"erro": f"Erro ao listar eventos participando: {str(e)}"}, 500
+    
+
+# Implementado
+@token_required
+def decidir_participante(evento_id, usuario_id, acao):
+    usuario_dono = g.user_id
+    evento_ref = db.collection("Eventos").document(evento_id)
+    evento_data = evento_ref.get().to_dict()
+
+    if evento_data["usuario_id"] != usuario_dono:
+        return {"erro": "Apenas o dono pode aprovar ou recusar."}, 403
+
+    pendentes = evento_data.get("pendentes", [])
+    if usuario_id not in pendentes:
+        return {"erro": "Usuário não está na lista de pendentes."}, 400
+
+    if acao == "aceitar":
+        evento_ref.update({
+            "pendentes": firestore.ArrayRemove([usuario_id]),
+            "participantes": ArrayUnion([usuario_id])
+        })
+        db.collection("Usuarios").document(usuario_id).update({
+            "eventos_pendentes": firestore.ArrayRemove([evento_id]),
+            "eventos_participando": ArrayUnion([evento_id])
+        })
+        return {"mensagem": "Usuário aceito no evento."}, 200
+
+    elif acao == "recusar":
+        evento_ref.update({
+            "pendentes": firestore.ArrayRemove([usuario_id])
+        })
+        db.collection("Usuarios").document(usuario_id).update({
+            "eventos_pendentes": firestore.ArrayRemove([evento_id])
+        })
+        return {"mensagem": "Usuário recusado."}, 200
+
+    else:
+        return {"erro": "Ação inválida"}, 400
+    
+# Implementado
+@token_required
+def listar_pendentes(evento_id):
+    usuario_dono = g.user_id
+    evento_ref = db.collection("Eventos").document(evento_id)
+    evento_doc = evento_ref.get()
+
+    if not evento_doc.exists:
+        return {"erro": "Evento não encontrado."}, 404
+
+    evento_data = evento_doc.to_dict()
+
+    if evento_data.get("usuario_id") != usuario_dono:
+        return {"erro": "Apenas o dono do evento pode ver os pendentes."}, 403
+
+    pendentes_ids = evento_data.get("pendentes", [])
+    pendentes_info = []
+
+    for user_id in pendentes_ids:
+        user_doc = db.collection("Usuarios").document(user_id).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            pendentes_info.append({
+                "id": user_id,
+                "nome_completo": user_data.get("nome_completo"),
+                "username": user_data.get("username"),
+                "foto_perfil": user_data.get("foto_perfil")
+            })
+
+    return {"pendentes": pendentes_info}, 200

@@ -146,7 +146,33 @@ def cancelar_participacao_evento():
     return Eventos_Service.cancelar_participacao(evento_id)
 
 
-
+# Implementado
 @evento_bp.route('/participando', methods=['GET'])
 def get_eventos_participando():
     return Eventos_Service.listar_eventos_participando()
+
+
+# Implementado
+@evento_bp.route('/pendentes', methods=['POST'])
+def listar_pendentes_controller():
+    dados = request.get_json()
+    
+    if not dados or 'evento_id' not in dados:
+        return jsonify({"erro": "O campo 'evento_id' é obrigatório."}), 400
+
+    evento_id = dados['evento_id']
+    return Eventos_Service.listar_pendentes(evento_id)
+
+
+# Implementado
+@evento_bp.route('/decidirParticipante', methods=['POST'])
+def decidir_participante_controller():
+    dados = request.get_json()
+    evento_id = dados.get("evento_id")
+    usuario_id = dados.get("usuario_id")
+    acao = dados.get("acao")  
+
+    if not evento_id or not usuario_id or not acao:
+        return jsonify({"erro": "Campos 'evento_id', 'usuario_id' e 'acao' são obrigatórios"}), 400
+
+    return Eventos_Service.decidir_participante(evento_id, usuario_id, acao)
