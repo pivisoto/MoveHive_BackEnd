@@ -699,7 +699,7 @@ def solicitar_reset_senha(email):
 
     if not query:
         logger.info(f"Solicitação de reset para e-mail não cadastrado: {email}")
-        return msg_retorno
+        return msg_retorno, 404
 
     try:
         usuario_doc = query[0]
@@ -727,8 +727,9 @@ def solicitar_reset_senha(email):
                 "reset_code_hash": firestore.DELETE_FIELD,
                 "reset_code_exp": firestore.DELETE_FIELD
             })
+        return msg_retorno, 500
             
-    return msg_retorno
+    return msg_retorno, 200
 
 
 # Implementado
