@@ -8,6 +8,8 @@ info:
 tags:
   - name: Usuário
     description: Operações relacionadas a usuários
+  - name: UsuárioEmpresa
+    description: Operações relacionadas a Empresas
   - name: Esporte
     description: Operações relacionadas a esportes
   - name: Eventos
@@ -1275,6 +1277,78 @@ paths:
                   erro:
                     type: string
                     example: "Ocorreu um erro interno ao processar o perfil."
+
+
+# UsuarioEmpresa
+  /usuarioEmpresa/RegistrarUsuarioEmpresa:
+    post:
+      summary: Registrar usuário empresa
+      description: Endpoint para registrar um usuário do tipo empresa no sistema.
+      tags:
+        - UsuárioEmpresa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - nome
+                - username
+                - email
+                - senha
+                - cnpj
+              properties:
+                nome:
+                  type: string
+                  example: "Empresa X"
+                username:
+                  type: string
+                  example: "empresa_x"
+                email:
+                  type: string
+                  format: email
+                  example: "contato@empresax.com"
+                senha:
+                  type: string
+                  format: password
+                  example: "SenhaSegura123"
+                cnpj:
+                  type: string
+                  example: "33.096.646/0001-73"
+      responses:
+        "201":
+          description: Usuário empresa registrado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    description: Token de autenticação do usuário
+                    example: "eyJhbGciOiJIUzI1NiIsInR..."
+        "400":
+          description: Erro de validação ou dados ausentes/duplicados
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "E-mail já cadastrado"
+        "500":
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao registrar usuário empresa"
+
 
 # Esporte
  
@@ -2955,9 +3029,6 @@ paths:
                   mensagem:
                     type: string
                     example: Você não segue ninguém ainda.
-
-
-
 
 # Notificações
   /notificacao/MinhaNotificacoes:

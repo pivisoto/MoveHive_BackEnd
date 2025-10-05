@@ -189,6 +189,69 @@
             background-color: #dc3545; 
             color: white;
         }
+
+        /* === Estilos do Modal Adicionados === */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none; /* Escondido por padrão */
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: #2c2c2c;
+            padding: 30px 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            width: 420px;
+            text-align: center;
+            position: relative;
+            color: #f0f0f0;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            font-size: 1.5em;
+            color: #ffffff;
+        }
+
+        .modal-content p {
+            color: #d0d0d0;
+            margin-bottom: 30px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 15px; /* Espaço entre os botões */
+        }
+        
+        .modal-buttons .btn {
+            width: auto;
+            flex-grow: 1;
+            padding: 12px 20px;
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 2em;
+            color: #a0a0a0;
+            cursor: pointer;
+            line-height: 1;
+            transition: color 0.2s ease;
+        }
+
+        .close-modal:hover {
+            color: #ffffff;
+        }
     </style>
 </head>
 <body>
@@ -211,7 +274,8 @@
             </div>
             <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/resetSenhaSolicitar.html" class="forgot-password">Esqueceu sua senha?</a>
             <button type="submit" class="btn btn-primary">Entrar</button>
-            <button type="button" class="btn btn-secondary" onclick="window.location.href='http://127.0.0.1:5500/BackEnd/Views/Social_media/Register.html'">Cadastrar-se</button>
+            <!-- O onclick foi removido daqui e será controlado pelo JavaScript -->
+            <button type="button" id="registerBtn" class="btn btn-secondary">Cadastrar-se</button>
             <div class="divider">ou</div>
             <button type="button" class="btn btn-google">
                 <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDQ4IDQ4Ij48cGF0aCBmaWxsPSIjRkJCQzA1IiBkPSJNNCAyNGMwIDExLjA0NiA4Ljk1NCAyMCAyMCAyMHMyMC04Ljk1NCAyMC0yMFM0NS4wNDYgNCAyNCA0IDQgMTIuOTU0IDQgMjRaIi8+PHBhdGggZmlsbD0iI0UyNTcyQiIgZD0iTTIyIDIwaDR2MTRoLTR6Ii8+PHBhdGggZmlsbD0iIzQyODVGNCIgZD0iTTQ4IDI0YzAgMTEuMDQ2LTguOTU0IDIwLTIwIDIwUzQgMzUuMDQ2IDQgMjQgOC45NTQgNCAyMCA0czIwIDguOTU0IDIwIDIweiIvPjxwYXRoIGZpbGw9IiNGRkYiIGQ9Ik0yNCAxMGMtMy44NjYgMC03IDMuMTM0LTcgN3MzLjEzNCA3IDcgN2MxLjg1NiAwIDMuNTM0LS43NDYgNC43NjYtMS45NzRsLTIuODMtMi44M0MyNS4yMTQgMjIuNjg4IDI0LjY2IDIyIDI0IDIyYy0xLjY1NyAwLTMtMS4zNDMtMy0zczEuMzQzLTMgMy0zYzEuMjMgMCAyLjI4Mi43NDMgMi43MyAzLjAzMmwyLjg3Ny0xLjA2OEMyOC42MDQgMTQuMzY4IDI2LjQ3OCAxMCAyNCAxMFoiLz48cGF0aCBmaWxsPSIjM0E3OUUyIiBkPSJNMjQgNDRjLTEwLjQ3NyAwLTE5LTguNTIzLTE5LTE5czguNTIzLTE5IDE5LTE5YzUuMjg1IDAgOS44NjYgMi4xNiAxMy4xODIgNS42OTRsLTQuMzg0IDQuMzg0QzI5LjQ0NyAxMi42NTcgMjYuODc0IDEyIDI0IDEyYy02LjYyNyAwLTEyIDUuMzczLTEyIDEyczUuMzczIDEyIDEyIDEyYzMuNTMgMCA2LjYxNC0xLjUyOCA4LjgwOC0zLjk1Nkw0MS44MiAyOC4zMDZDMTQuNzE1IDM3LjU2MiAyNCA0NCAyNCA0NFoiLz48L3N2Zz4=" alt="Google icon">
@@ -219,6 +283,19 @@
             </button>
             <div id="messageArea" class="message-area"></div>
         </form>
+    </div>
+
+    <!-- === Estrutura do Modal Adicionada === -->
+    <div id="choiceModal" class="modal-overlay">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Como você deseja se cadastrar?</h2>
+            <p>Escolha uma opção para continuar o seu registro na Move Hive.</p>
+            <div class="modal-buttons">
+                <button id="pessoaBtn" class="btn btn-primary">Pessoa</button>
+                <button id="empresaBtn" class="btn btn-primary">Empresa</button>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -269,13 +346,8 @@
                 if (response.ok) { 
                     if (result.token) {
                         
-                        // Recebendo TokenJWT para identificação e Salvando no LocalStorage, igual no Register
                         localStorage.setItem('jwtToken', result.token);
                         
-                        // Como ja estou registrado, **NÃO** preciso do modal para complementar as informações, ja passei por isso.
-                        // sessionStorage.setItem('showProfileModal', 'true');
-
-
                         window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
                         return; 
                     } else if (result.erro) {
@@ -296,6 +368,48 @@
                 messageArea.textContent = 'Ocorreu um erro ao tentar conectar com o servidor. Tente novamente.';
                 messageArea.classList.add('message-error');
             }
+        });
+
+        // ============================ SCRIPT DO MODAL ADICIONADO ============================
+        document.addEventListener('DOMContentLoaded', () => {
+            const registerBtn = document.getElementById('registerBtn');
+            const choiceModal = document.getElementById('choiceModal');
+            const closeModalBtn = document.querySelector('.close-modal');
+            const pessoaBtn = document.getElementById('pessoaBtn');
+            const empresaBtn = document.getElementById('empresaBtn');
+            
+            const registerUrl = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Register.html';
+
+            // Mostra o modal quando o botão de registro é clicado
+            registerBtn.addEventListener('click', (event) => {
+                event.preventDefault(); 
+                choiceModal.style.display = 'flex';
+            });
+
+            // Função para fechar o modal
+            const closeModal = () => {
+                choiceModal.style.display = 'none';
+            };
+
+            // Eventos para fechar o modal
+            closeModalBtn.addEventListener('click', closeModal);
+            choiceModal.addEventListener('click', (event) => {
+                // Fecha se o fundo (overlay) for clicado
+                if (event.target === choiceModal) {
+                    closeModal();
+                }
+            });
+
+            // Redireciona com base na escolha
+            pessoaBtn.addEventListener('click', () => {
+                // Redireciona para a página de registro de pessoa
+                window.location.href = `http://127.0.0.1:5500/BackEnd/Views/Social_media/Register.html`;
+            });
+            
+            empresaBtn.addEventListener('click', () => {
+                // Redireciona para a página de registro de empresa
+                window.location.href = `http://127.0.0.1:5500/BackEnd/Views/Social_media/RegisterEmpresa.html`;
+            });
         });
     </script>
 </body>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Move Hive - Cadastro de Empresa</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #ffffff;
+        }
+
+        .form-container {
+            background-color: #2d2d2d;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            text-align: center;
+        }
+
+        .logo {
+            margin-bottom: 30px;
+        }
+
+        .logo .move {
+            font-size: 3.5em;
+            font-weight: bold;
+            color: #ffffff;
+            display: block;
+        }
+
+        .logo .hive {
+            font-size: 3em;
+            font-weight: bold;
+            color: #FACC15;
+            display: block;
+            margin-top: -10px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+            color: #e0e0e0;
+        }
+
+        .input-group input[type="email"],
+        .input-group input[type="password"],
+        .input-group input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #444444;
+            border-radius: 8px;
+            background-color: #3a3a3a;
+            color: #ffffff;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+
+        .input-group input::placeholder {
+            color: #888888;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            box-sizing: border-box;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: #FACC15;
+            color: #000000;
+            margin-bottom: 15px;
+        }
+
+        .btn-primary:hover {
+            background-color: #e0b40d;
+        }
+
+        .btn-secondary {
+            background-color: transparent;
+            color: #ffffff;
+            border: 2px solid #ffffff;
+        }
+
+        .btn-secondary:hover {
+            background-color: #ffffff;
+            color: #2d2d2d;
+        }
+
+        .senha-feedback {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85em;
+            height: 1em;
+        }
+        .senha-feedback.erro {
+            color: #ff6b6b;
+        }
+        .senha-feedback.sucesso {
+            color: #86dc3d;
+        }
+        input.erro-borda {
+            border-color: #ff6b6b !important;
+        }
+        input.sucesso-borda {
+            border-color: #86dc3d !important;
+        }
+        .form-feedback-general {
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-weight: bold;
+            min-height: 1em;
+        }
+        .form-feedback-general.erro {
+            color: #ff6b6b;
+        }
+        .form-feedback-general.sucesso {
+            color: #86dc3d;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="form-container">
+        <div class="logo">
+            <span class="move">MOVE</span>
+            <span class="hive">HIVE</span>
+        </div>
+
+        <form id="cadastroForm" action="#" method="post">
+            <div class="input-group">
+                <label for="nomeEmpresa">Nome da Empresa</label>
+                <input type="text" id="nomeEmpresa" name="nome" placeholder="Nome da sua Empresa" required>
+            </div>
+
+            <div class="input-group">
+                <label for="username">Username (@)</label>
+                <input type="text" id="username" name="username" placeholder="Digite o Username da Empresa @" required>
+            </div>
+            
+            <div class="input-group">
+                <label for="cnpj">CNPJ</label>
+                <input type="text" id="cnpj" name="cnpj" placeholder="00.000.000/0000-00" required>
+            </div>
+
+            <div class="input-group">
+                <label for="email">E-mail Comercial</label>
+                <input type="email" id="email" name="email" placeholder="Digite o E-mail comercial" required>
+            </div>
+
+            <div class="input-group">
+                <label for="senha">Senha</label>
+                <input type="password" id="senha" name="senha" placeholder="Digite sua Senha" required>
+            </div>
+
+            <div class="input-group">
+                <label for="confirme-senha">Confirme sua senha</label>
+                <input type="password" id="confirme-senha" name="confirme_senha" placeholder="Confirme sua senha" required>
+                <small id="senha-feedback" class="senha-feedback"></small>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Cadastrar Empresa</button>
+            <button type="button" class="btn btn-secondary" onclick="window.history.back();">Voltar</button>
+        </form>
+        <div id="form-feedback" class="form-feedback-general"></div>
+    </div>
+
+<script>
+    const baseUrl = 'http://127.0.0.1:5000';
+    const apiUrl = `${baseUrl}/usuarioEmpresa/RegistrarUsuarioEmpresa`;
+
+    const senhaInput = document.getElementById('senha');
+    const confirmeSenhaInput = document.getElementById('confirme-senha');
+    const senhaFeedback = document.getElementById('senha-feedback');
+    const cadastroForm = document.getElementById('cadastroForm');
+    const formFeedback = document.getElementById('form-feedback');
+
+    const nomeEmpresaInput = document.getElementById('nomeEmpresa');
+    const usernameInput = document.getElementById('username');
+    const emailInput = document.getElementById('email');
+    const cnpjInput = document.getElementById('cnpj');
+
+    function verificarSenhas() {
+        const senhaVal = senhaInput.value;
+        const confirmeSenhaVal = confirmeSenhaInput.value;
+
+        confirmeSenhaInput.classList.remove('erro-borda', 'sucesso-borda');
+
+        if (confirmeSenhaVal === "" && senhaVal === "") {
+            senhaFeedback.textContent = "";
+            senhaFeedback.className = 'senha-feedback';
+            return true;
+        }
+
+        if (confirmeSenhaVal === "" && senhaVal !== "") {
+             senhaFeedback.textContent = "Confirme sua senha.";
+             senhaFeedback.className = 'senha-feedback erro';
+             confirmeSenhaInput.classList.add('erro-borda');
+             return false;
+        }
+
+        if (senhaVal === confirmeSenhaVal) {
+            senhaFeedback.textContent = "As senhas coincidem!";
+            senhaFeedback.className = 'senha-feedback sucesso';
+            confirmeSenhaInput.classList.add('sucesso-borda');
+            return true;
+        } else {
+            senhaFeedback.textContent = "As senhas não coincidem.";
+            senhaFeedback.className = 'senha-feedback erro';
+            confirmeSenhaInput.classList.add('erro-borda');
+            return false;
+        }
+    }
+
+    senhaInput.addEventListener('input', verificarSenhas);
+    confirmeSenhaInput.addEventListener('input', verificarSenhas);
+
+    cadastroForm.addEventListener('submit', async function(event) {
+        event.preventDefault();
+        formFeedback.textContent = ''; 
+        formFeedback.className = 'form-feedback-general';
+
+        if (!verificarSenhas()) {
+            formFeedback.textContent = "As senhas não coincidem. Por favor, verifique.";
+            formFeedback.className = 'form-feedback-general erro';
+            confirmeSenhaInput.focus();
+            return;
+        }
+
+        if (!nomeEmpresaInput.value || !usernameInput.value || !emailInput.value || !cnpjInput.value || !senhaInput.value) {
+            formFeedback.textContent = "Por favor, preencha todos os campos obrigatórios.";
+            formFeedback.className = 'form-feedback-general erro';
+            return;
+        }
+
+        const dadosEmpresa = {
+            nome: nomeEmpresaInput.value,
+            username: usernameInput.value,
+            email: emailInput.value,
+            senha: senhaInput.value,
+            cnpj: cnpjInput.value
+        };
+
+        try {
+            formFeedback.textContent = 'Enviando dados...';
+            formFeedback.className = 'form-feedback-general'; 
+
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify(dadosEmpresa)
+            });
+
+            const responseData = await response.json();
+
+            if (response.ok && responseData.token) {
+                localStorage.setItem('jwtToken', responseData.token);
+                sessionStorage.setItem('showProfileModal', 'true'); 
+                
+                formFeedback.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
+                formFeedback.className = 'form-feedback-general sucesso';
+                
+                setTimeout(() => {
+                    window.location.href = 'http://127.0.0.1:5500/BackEnd/Views/Social_media/Feed.html';
+                }, 2000);
+
+            } else {
+                formFeedback.textContent = responseData.erro || `Erro ${response.status}: Não foi possível registrar.`;
+                formFeedback.className = 'form-feedback-general erro';
+            }
+
+        } catch (error) {
+            console.error('Erro na requisição:', error);
+            formFeedback.textContent = 'Erro ao conectar com o servidor. Tente novamente.';
+            formFeedback.className = 'form-feedback-general erro';
+        }
+    });
+</script>
+
+</body>
+</html>
