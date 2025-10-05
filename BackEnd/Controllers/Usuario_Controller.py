@@ -162,9 +162,9 @@ def esqueci_senha():
     if not email:
         return jsonify({"erro": "Formato de e-mail inválido ou ausente."}), 400
 
-    resultado = usuario_service.solicitar_reset_senha(email)
+    resultado, status = usuario_service.solicitar_reset_senha(email)
 
-    return jsonify(resultado), 200
+    return jsonify(resultado), status
 
 # Implementado
 @usuario_bp.route('/verificarCodigo', methods=['POST'])
