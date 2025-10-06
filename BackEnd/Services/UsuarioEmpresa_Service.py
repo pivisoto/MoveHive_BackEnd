@@ -60,3 +60,37 @@ def registrar_empresa(nome, username, email, senha, cnpj, setor="", biografia=""
 
     return {"token": token}, 201
 
+
+# Implementado
+@token_required
+def adicionar_dados_modal_empresa(dados_modal=None, arquivo_foto=None):
+    empresa_id = g.user_id  
+    doc_ref = db.collection('UsuariosEmpresa').document(empresa_id)
+
+    if not doc_ref.get().exists:
+        return {"erro": "Empresa não encontrada"}, 404
+
+    dados_para_adicionar = {}
+
+    if arquivo_foto:
+        caminho = f"UsuariosEmpresa/{empresa_id}/Fotos/foto_perfil.jpg"
+        blob = bucket.blob(caminho)
+        blob.upload_from_file(arquivo_foto, content_type=arquivo_foto.content_type)
+        blob.make_public()
+        dados_para_adicionar['foto_perfil'] = blob.public_url
+
+    if dados_modal:
+        campos = ['biografia', 'setor']
+        for campo in campos:
+            if campo in dados_modal and dados_modal[campo]:
+                dados_para_adicionar[campo] = dados_modal[campo]
+
+    if dados_para_adicionar:
+        doc_ref.update(dados_para_adicionar)
+
+    return {
+        "status": "sucesso",
+        "mensagem": "Informações da empresa atualizadas com sucesso"
+    }, 200
+
+

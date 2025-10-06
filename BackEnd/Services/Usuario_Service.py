@@ -86,23 +86,28 @@ def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha
 
 
 
-# Função para Logar Usuario
-# Implementado
-def login_usuario(email, senha):
-    usuarios_ref = db.collection('Usuarios')
-    docs = usuarios_ref.where('email', '==', email).limit(1).stream()
-    usuario_doc = next(docs, None)
+# Função para Logar Usuarios
+def login_usuarios(email, senha):
+    usuario_doc = db.collection('Usuarios').where('email', '==', email).limit(1).stream()
+    usuario_doc = next(usuario_doc, None)
+    tipo_usuario = "usuario"
+
+    if not usuario_doc:
+        usuario_doc = db.collection('UsuariosEmpresa').where('email', '==', email).limit(1).stream()
+        usuario_doc = next(usuario_doc, None)
+        tipo_usuario = "empresa"
 
     if not usuario_doc:
         return {"erro": "E-mail não encontrado"}, 404
 
     dados = usuario_doc.to_dict()
+
     if not bcrypt.checkpw(senha.encode('utf-8'), dados['senha'].encode('utf-8')):
         return {"erro": "Senha incorreta"}, 401
 
-    token = generate_token(usuario_doc.id)
+    token = generate_token(usuario_doc.id, tipo_usuario=tipo_usuario)
 
-    return {"token": token}, 200
+    return {"token": token, "tipo_usuario": tipo_usuario}, 200
 
 
 # Implementado

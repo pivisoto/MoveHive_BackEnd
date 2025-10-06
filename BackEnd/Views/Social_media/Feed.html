@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Feed Claro com Modal Atualizado - Único Arquivo</title>
+    <title>Move Hive - Feed</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         :root {
@@ -61,6 +61,18 @@
             text-align: center;
             max-height: 90vh;
             overflow-y: auto;
+        }
+        
+        #profilePicPreview,
+        #companyLogoPreview {
+            width: 100px;
+            height: 100px;
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            object-fit: cover;
+            margin: 10px auto;
+            display: none;
+            background-color: #f0f0f0;
         }
 
         .modal-step {
@@ -178,17 +190,6 @@
 
         #addSportButton i {
             margin-right: 5px;
-        }
-
-        #profilePicPreview {
-            width: 100px;
-            height: 100px;
-            border: 1px solid var(--border-color);
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 10px auto;
-            display: block;
-            background-color: #f0f0f0;
         }
 
         .app-container {
@@ -345,7 +346,6 @@
             font-size: 1rem;
         }
 
-        /* INÍCIO: Estilos para os botões de filtro */
         .feed-filters {
             display: flex;
             justify-content: center;
@@ -376,7 +376,6 @@
             border-color: #e6c300;
             color: #333;
         }
-        /* FIM: Estilos para os botões de filtro */
 
         .feed {
             padding: 0 0 70px 0;
@@ -562,10 +561,42 @@
             <div class="welcome-animation">
                 <i class="fas fa-hands-helping"></i>
             </div>
-            <h2>Olá! Vamos Configurar Seu Perfil!</h2>
-            <p>Para aproveitar ao máximo nossa comunidade e encontrar parceiros de esporte ideais, precisamos de algumas informações sobre você. </p>
-            <p>Este rápido passo a passo nos ajudará a personalizar sua experiência. Prometemos que será rápido!</p>
+            <h2 id="introModalTitle">Olá! Vamos Configurar Seu Perfil!</h2>
+            <p id="introModalText">Para aproveitar ao máximo nossa comunidade, precisamos de algumas informações sobre você. Este rápido passo a passo nos ajudará a personalizar sua experiência.</p>
             <button class="modal-button" id="startProfileSetupButton">Entendi, Vamos Lá!</button>
+        </div>
+    </div>
+    
+    <div class="modal-overlay hidden" id="companySetupModalOverlay">
+        <div class="modal-content">
+            <h2>Complete o Perfil da Sua Empresa</h2>
+            <p>Forneça alguns detalhes para que os usuários possam conhecer melhor o seu negócio.</p>
+            
+            <div>
+                <label for="companySector" class="field-label">Setor de Atuação</label>
+                <select id="companySector" required>
+                    <option value="">Selecione um setor</option>
+                    <option value="Tecnologia">Tecnologia</option>
+                    <option value="Saúde e Bem-estar">Saúde e Bem-estar</option>
+                    <option value="Varejo Esportivo">Varejo Esportivo</option>
+                    <option value="Educação e Treinamento">Educação e Treinamento</option>
+                    <option value="Eventos Esportivos">Eventos Esportivos</option>
+                    <option value="Outro">Outro</option>
+                </select>
+            </div>
+            
+            <div>
+                <label for="companyBio" class="field-label">Biografia</label>
+                <textarea id="companyBio" placeholder="Descreva sua empresa, sua missão e o que ela oferece..." required></textarea>
+            </div>
+
+            <div>
+                <label for="companyLogo" class="field-label">Logo da Empresa <span class="optional-text">(Opcional)</span></label>
+                <input type="file" id="companyLogo" accept="image/*">
+                <img id="companyLogoPreview" src="#" alt="Prévia do logo">
+            </div>
+
+            <button class="modal-button" id="finishCompanySetupButton">Salvar e Continuar</button>
         </div>
     </div>
 
@@ -634,9 +665,7 @@
     <div class="modal-overlay hidden" id="notificationModalOverlay">
         <div class="modal-content">
             <h2>Notificações</h2>
-            <div id="notificationListContainer" class="notification-list">
-                <!-- As notificações serão inseridas aqui pelo JavaScript -->
-            </div>
+            <div id="notificationListContainer" class="notification-list"></div>
             <button class="modal-button" id="closeNotificationModalButton">Fechar</button>
         </div>
     </div>
@@ -648,7 +677,7 @@
                     <div></div><div></div><div></div>
                     <div></div><div></div><div></div><div></div>
                 </div>
-                <h1>Feed Claro</h1>
+                <h1>Feed</h1>
             </div>
             <div class="header-actions">
                 <i class="fas fa-search"></i>
@@ -660,16 +689,13 @@
             </div>
         </header>
         
-        <!-- INÍCIO: Botões de Filtro Adicionados -->
         <div class="feed-filters">
             <button class="filter-button" id="followingFeedBtn">Seguindo</button>
             <button class="filter-button active" id="discoverFeedBtn">Descobrir</button>
         </div>
-        <!-- FIM: Botões de Filtro Adicionados -->
         
-        <main class="feed">
-            <!-- Os posts serão inseridos aqui dinamicamente pelo JavaScript -->
-        </main>
+        <main class="feed"></main>
+
         <nav class="bottom-nav">
             <a href="#" class="nav-item active"><i class="fas fa-home"></i></a>
             <a href="#" class="nav-item"><i class="fas fa-dumbbell"></i></a>
@@ -686,11 +712,10 @@
     <script>
         const baseUrl = 'http://127.0.0.1:5000'; 
         const usuarioApiUrl = `${baseUrl}/usuario`;
+        const empresaApiUrl = `${baseUrl}/usuarioEmpresa`;
         const esportesApiUrl = `${baseUrl}/esportes/ListarEsportes`;
         const postagemApiUrl = `${baseUrl}/postagem`;
         const notificacaoApiUrl = `${baseUrl}/notificacao`;
-
-        // URLs específicas do feed
         const feedSeguindoApiUrl = `${postagemApiUrl}/FeedSeguindo`;
         const feedDescobrirApiUrl = `${postagemApiUrl}/FeedSemFiltro`;
 
@@ -699,19 +724,9 @@
 
         function formatTimeAgo(timestamp) {
             if (!timestamp) return '';
-            
-            let date;
-            if (typeof timestamp === 'object' && timestamp._seconds) {
-                date = new Date(timestamp._seconds * 1000);
-            } else {
-                date = new Date(timestamp);
-            }
-
+            let date = (typeof timestamp === 'object' && timestamp._seconds) ? new Date(timestamp._seconds * 1000) : new Date(timestamp);
             if (isNaN(date.getTime())) return '';
-
-            const now = new Date();
-            const seconds = Math.floor((now - date) / 1000);
-
+            const seconds = Math.floor((new Date() - date) / 1000);
             let interval = seconds / 31536000;
             if (interval > 1) return `HÁ ${Math.floor(interval)} ANOS`;
             interval = seconds / 2592000;
@@ -725,266 +740,133 @@
             return `HÁ POUCOS SEGUNDOS`;
         }
         
+        // ============================ FUNÇÃO CORRIGIDA ============================
         function createPostElement(item) {
+            // VERIFICAÇÃO: Garante que o item e suas propriedades essenciais (postagem, usuario) existem.
+            if (!item || !item.postagem || !item.usuario) {
+                console.warn('Item de postagem inválido recebido da API. Pulando renderização:', item);
+                return null; // Retorna nulo para que esta postagem não seja adicionada ao DOM.
+            }
+
             const { postagem, usuario } = item;
+            
+            // As variáveis de fallback (||) agora funcionarão com segurança.
             const userAvatar = usuario.foto_perfil || 'https://via.placeholder.com/40/cccccc/FFFFFF?Text=U';
-            const postImage = postagem.imagem || 'https://via.placeholder.com/600x400/cccccc/FFFFFF?Text=Sem+Imagem';
+            const postImage = postagem.imagem || 'https://via.placeholder.com/600x400/cccccc/FFFFFF?Text=IMG';
             const userName = usuario.username || 'usuário_anônimo';
             const postDescription = postagem.descricao || '';
             const likeCount = postagem.contador_curtidas || 0;
             const commentCount = Array.isArray(postagem.comentarios) ? postagem.comentarios.length : 0;
             const timeAgo = formatTimeAgo(postagem.data_criacao);
+            
             const postElement = document.createElement('article');
             postElement.className = 'post';
-
             postElement.innerHTML = `
-                <div class="post-header">
-                    <img src="${userAvatar}" alt="Avatar ${userName}" class="post-avatar">
-                    <span class="post-username">${userName}</span>
-                </div>
-                <img src="${postImage}" alt="Postagem de ${userName}" class="post-image">
-                <div class="post-actions">
-                    <i class="far fa-heart"></i>
-                    <i class="far fa-comment"></i>
-                    <i class="far fa-paper-plane"></i>
-                </div>
-                <div class="post-likes">
-                    ${likeCount} curtidas
-                </div>
-                <div class="post-caption">
-                    <p><strong>${userName}</strong> ${postDescription}</p>
-                </div>
-                <div class="post-comments-summary">
-                    ${commentCount > 0 ? `<a href="#">Ver todos os ${commentCount} comentários</a>` : '<span>Nenhum comentário ainda</span>'}
-                </div>
-                <div class="post-timestamp">
-                    ${timeAgo}
-                </div>
-                <div class="post-add-comment">
-                     <img src="${userAvatar}" alt="Avatar ${userName}" class="comment-avatar">
-                     <span>Adicionar um comentário...</span>
-                </div>
-            `;
+                <div class="post-header"><img src="${userAvatar}" alt="Avatar" class="post-avatar"><span class="post-username">${userName}</span></div>
+                <img src="${postImage}" alt="Postagem" class="post-image">
+                <div class="post-actions"><i class="far fa-heart"></i><i class="far fa-comment"></i><i class="far fa-paper-plane"></i></div>
+                <div class="post-likes">${likeCount} curtidas</div>
+                <div class="post-caption"><p><strong>${userName}</strong> ${postDescription}</p></div>
+                <div class="post-comments-summary"><span>${commentCount > 0 ? `Ver todos os ${commentCount} comentários` : 'Nenhum comentário'}</span></div>
+                <div class="post-timestamp">${timeAgo}</div>
+                <div class="post-add-comment"><img src="${userAvatar}" alt="Avatar" class="comment-avatar"><span>Adicionar um comentário...</span></div>`;
             return postElement;
         }
+        // =========================================================================
 
         async function fetchAndDisplayFeed(token, apiUrl) {
             const feedContainer = document.querySelector('.feed');
             feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Carregando feed...</p>';
-
             try {
-                const response = await fetch(apiUrl, { // Usa a URL passada como argumento
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
-                }
-
+                const response = await fetch(apiUrl, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
+                if (!response.ok) throw new Error((await response.json()).erro || `Erro: ${response.statusText}`);
                 const feedData = await response.json();
-                feedContainer.innerHTML = ''; 
-
+                feedContainer.innerHTML = '';
                 if (Array.isArray(feedData) && feedData.length > 0) {
                     feedData.forEach(item => {
                         const postElement = createPostElement(item);
-                        feedContainer.appendChild(postElement);
+                        // VERIFICAÇÃO: Só adiciona o elemento se ele não for nulo.
+                        if (postElement) {
+                            feedContainer.appendChild(postElement);
+                        }
                     });
                 } else {
-                    feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Não há nenhuma postagem para exibir aqui.</p>';
+                    feedContainer.innerHTML = '<p style="text-align: center; padding: 20px;">Não há postagens para exibir.</p>';
                 }
-
             } catch (error) {
                 console.error("Falha ao carregar o feed:", error);
-                feedContainer.innerHTML = `<p style="text-align: center; color: red; padding: 20px;">Não foi possível carregar o feed. Erro: ${error.message}</p>`;
+                feedContainer.innerHTML = `<p style="text-align: center; color: red; padding: 20px;">Não foi possível carregar o feed: ${error.message}</p>`;
             }
         }
         
         function displayNotifications() {
-            const notificationList = document.getElementById('notificationListContainer');
-            notificationList.innerHTML = ''; 
-
-            if (_notificationsData.length === 0) {
-                notificationList.innerHTML = '<p>Você não tem nenhuma notificação.</p>';
-                return;
-            }
-
-            _notificationsData.forEach(notification => {
+            const list = document.getElementById('notificationListContainer');
+            list.innerHTML = _notificationsData.length === 0 ? '<p>Você não tem notificações.</p>' : '';
+            _notificationsData.forEach(n => {
                 const item = document.createElement('div');
-                item.className = `notification-item ${!notification.lida ? 'unread' : ''}`;
-                item.setAttribute('data-id', notification.id);
-
+                item.className = `notification-item ${!n.lida ? 'unread' : ''}`;
+                item.dataset.id = n.id;
                 item.innerHTML = `
-                    <div class="notification-icon">
-                        <i class="fas fa-info-circle"></i>
-                    </div>
-                    <div class="notification-text">
-                        ${notification.mensagem || 'Notificação sem mensagem.'}
-                        <span class="notification-timestamp">${formatTimeAgo(notification.data_criacao)}</span>
-                    </div>
+                    <div class="notification-icon"><i class="fas fa-info-circle"></i></div>
+                    <div class="notification-text">${n.mensagem}<span class="notification-timestamp">${formatTimeAgo(n.data_criacao)}</span></div>
                     <div class="notification-actions">
-                        ${!notification.lida ? `<span class="mark-as-read" data-id="${notification.id}">Marcar como lido</span>` : ''}
-                        <i class="fas fa-trash-alt delete-notification" data-id="${notification.id}" title="Excluir notificação"></i>
-                    </div>
-                `;
-                notificationList.appendChild(item);
+                        ${!n.lida ? `<span class="mark-as-read" data-id="${n.id}">Marcar como lido</span>` : ''}
+                        <i class="fas fa-trash-alt delete-notification" data-id="${n.id}"></i>
+                    </div>`;
+                list.appendChild(item);
             });
         }
         
         async function checkNotifications() {
             const token = localStorage.getItem('jwtToken');
             if (!token) return;
-
-            const notificationBadge = document.getElementById('notificationBadge');
-
+            const badge = document.getElementById('notificationBadge');
             try {
-                const response = await fetch(`${notificacaoApiUrl}/MinhaNotificacoes`, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
+                const response = await fetch(`${notificacaoApiUrl}/MinhaNotificacoes`, { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
                 if (!response.ok) {
-                    console.warn(`Aviso ao checar notificações: ${response.statusText}`);
-                    notificationBadge.classList.remove('visible');
+                    badge.classList.remove('visible');
                     _notificationsData = [];
                     return;
                 }
-
                 const notifications = await response.json();
                 _notificationsData = Array.isArray(notifications) ? notifications : [];
-                
                 const unreadCount = _notificationsData.filter(n => !n.lida).length;
-
                 if (unreadCount > 0) {
-                    notificationBadge.textContent = unreadCount;
-                    notificationBadge.classList.add('visible');
+                    badge.textContent = unreadCount;
+                    badge.classList.add('visible');
                 } else {
-                    notificationBadge.classList.remove('visible');
+                    badge.classList.remove('visible');
                 }
-
             } catch (error) {
                 console.error("Falha ao verificar notificações:", error);
-                notificationBadge.classList.remove('visible');
-                _notificationsData = [];
+                badge.classList.remove('visible');
             }
         }
 
-        async function markNotificationAsRead(notificationId) {
+        async function updateNotification(notificationId, action) {
             const token = localStorage.getItem('jwtToken');
             if (!token) return;
-
+            const url = action === 'read' ? `${notificacaoApiUrl}/NotificacaoLida` : `${notificacaoApiUrl}/DeletarNotificacao`;
+            const method = action === 'read' ? 'PUT' : 'DELETE';
             try {
-                const response = await fetch(`${notificacaoApiUrl}/NotificacaoLida`, {
-                    method: 'PUT',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ "notificacao_id": notificationId })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Falha ao marcar como lida. Status: ${response.status}`);
-                }
-                
-                const notificationInList = _notificationsData.find(n => n.id === notificationId);
-                if (notificationInList) {
-                    notificationInList.lida = true;
-                }
-                
-                const itemElement = document.querySelector(`.notification-item[data-id="${notificationId}"]`);
-                if(itemElement) {
-                    itemElement.classList.remove('unread');
-                    const markAsReadButton = itemElement.querySelector('.mark-as-read');
-                    if(markAsReadButton) markAsReadButton.remove();
-                }
-
+                const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ "notificacao_id": notificationId }) });
+                if (!response.ok) throw new Error(`Falha na ação: ${action}`);
+                if (action === 'delete') _notificationsData = _notificationsData.filter(n => n.id !== notificationId);
+                else { const notification = _notificationsData.find(n => n.id === notificationId); if(notification) notification.lida = true; }
+                displayNotifications();
                 await checkNotifications();
-                
             } catch (error) {
-                console.error("Erro em markNotificationAsRead:", error);
-                alert('Não foi possível marcar a notificação como lida.');
-            }
-        }
-        
-        async function deleteNotification(notificationId) {
-            if (!confirm('Tem certeza que deseja excluir esta notificação?')) return;
-
-            const token = localStorage.getItem('jwtToken');
-            if (!token) {
-                alert("Sessão inválida. Por favor, faça login novamente.");
-                return;
-            }
-
-            try {
-                const response = await fetch(`${notificacaoApiUrl}/DeletarNotificacao`, {
-                    method: 'DELETE',
-                    headers: { 
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json' 
-                    },
-                    body: JSON.stringify({ "notificacao_id": notificationId })
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.erro || 'Falha ao excluir a notificação.');
-                }
-
-                _notificationsData = _notificationsData.filter(n => n.id !== notificationId);
-                
-                document.querySelector(`.notification-item[data-id="${notificationId}"]`)?.remove();
-                
-                await checkNotifications();
-
-            } catch (error) {
-                console.error("Erro em deleteNotification:", error);
-                alert(`Não foi possível excluir a notificação: ${error.message}`);
+                console.error(`Erro em ${action}:`, error);
+                alert(`Não foi possível ${action === 'read' ? 'marcar como lida' : 'excluir'} a notificação.`);
             }
         }
        
         function setupNotificationPolling() {
             checkNotifications();
-            setInterval(checkNotifications, 10000);
+            setInterval(checkNotifications, 30000);
         }
 
-        async function fetchSports() {
-            try {
-                const response = await fetch(esportesApiUrl, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/json' }
-                });
-                if (!response.ok) throw new Error(`Erro ao buscar esportes: ${response.statusText}`);
-                _availableSports = await response.json();
-            } catch (error) {
-                console.error("Falha ao carregar esportes:", error);
-                alert("Não foi possível carregar la lista de esportes.");
-            }
-        }
-
-        function populateSportSelect(selectElement, sportsList) {
-            while (selectElement.options.length > 1) selectElement.remove(1);
-            sportsList.forEach(sport => {
-                const option = document.createElement('option');
-                if (typeof sport === 'string') {
-                    option.value = sport;
-                    option.textContent = sport;
-                } else if (typeof sport === 'object' && sport !== null && sport.hasOwnProperty('nome')) {
-                    option.value = sport.nome; 
-                    option.textContent = sport.nome;
-                }
-                selectElement.appendChild(option);
-            });
-        }
-
-        async function fetchIBGE(url, errorMessage) {
+        async function fetchApiData(url, errorMessage) {
             try {
                 const response = await fetch(url);
                 if (!response.ok) throw new Error(errorMessage);
@@ -996,242 +878,148 @@
             }
         }
 
-        function populateDropdown(selectElement, items, valueKey, textKey) {
-            while (selectElement.options.length > 1) selectElement.remove(1);
+        function populateDropdown(select, items, valueKey, textKey) {
+            select.innerHTML = '<option value="">Selecione...</option>';
             items.forEach(item => {
                 const option = document.createElement('option');
                 option.value = item[valueKey];
                 option.textContent = item[textKey];
-                selectElement.appendChild(option);
+                select.appendChild(option);
             });
+        }
+        
+        async function populateSportSelects() {
+             _availableSports = await fetchApiData(esportesApiUrl, "Erro ao carregar esportes.");
+             document.querySelectorAll('.sport-select').forEach(select => populateDropdown(select, _availableSports, 'nome', 'nome'));
         }
 
         document.addEventListener('DOMContentLoaded', async () => {
             const token = localStorage.getItem('jwtToken');
             if (!token) {
-                alert("Autenticação necessária. Redirecionando para o login.");
-                // window.location.href = 'Login.html'; // Ajuste o caminho se necessário
+                alert("Autenticação necessária.");
                 return;
             }
 
             setupNotificationPolling();
+            populateSportSelects();
 
-            // --- Lógica dos Filtros do Feed ---
-            const followingFeedBtn = document.getElementById('followingFeedBtn');
-            const discoverFeedBtn = document.getElementById('discoverFeedBtn');
-
-            followingFeedBtn.addEventListener('click', () => {
-                followingFeedBtn.classList.add('active');
-                discoverFeedBtn.classList.remove('active');
-                fetchAndDisplayFeed(token, feedSeguindoApiUrl);
-            });
-
-            discoverFeedBtn.addEventListener('click', () => {
-                discoverFeedBtn.classList.add('active');
-                followingFeedBtn.classList.remove('active');
-                fetchAndDisplayFeed(token, feedDescobrirApiUrl);
-            });
-            // --- Fim da Lógica dos Filtros ---
-
-
-            const notificationBell = document.getElementById('notificationBell');
-            const notificationModalOverlay = document.getElementById('notificationModalOverlay');
-            const closeNotificationModalButton = document.getElementById('closeNotificationModalButton');
-            const notificationListContainer = document.getElementById('notificationListContainer');
-
-            notificationBell.addEventListener('click', async () => {
-                await checkNotifications(); 
-                displayNotifications();
-                notificationModalOverlay.classList.remove('hidden');
-            });
-
-
-            notificationListContainer.addEventListener('click', (event) => {
-                const markAsReadButton = event.target.closest('.mark-as-read');
-                if (markAsReadButton) {
-                    const notificationId = markAsReadButton.dataset.id;
-                    if (notificationId) {
-                        markNotificationAsRead(notificationId);
-                    }
-                    return; 
-                }
-
-                const deleteButton = event.target.closest('.delete-notification');
-                if (deleteButton) {
-                    const notificationId = deleteButton.dataset.id;
-                    if (notificationId) {
-                        deleteNotification(notificationId);
-                    }
-                }
-            });
-
-            const closeNotificationModal = () => notificationModalOverlay.classList.add('hidden');
-            closeNotificationModalButton.addEventListener('click', closeNotificationModal);
-            notificationModalOverlay.addEventListener('click', (event) => {
-                if (event.target === notificationModalOverlay) closeNotificationModal();
-            });
-
-            await fetchSports();
-
-            const introModalOverlay = document.getElementById('introModalOverlay');
-            const profileSetupModalOverlay = document.getElementById('profileSetupModalOverlay');
             const appContainer = document.getElementById('appContainer');
             const bottomNav = document.querySelector('.bottom-nav');
+            const introModalOverlay = document.getElementById('introModalOverlay');
             const startProfileSetupButton = document.getElementById('startProfileSetupButton');
-            const modalSteps = profileSetupModalOverlay.querySelectorAll('.modal-step');
-            const nextButtons = profileSetupModalOverlay.querySelectorAll('.next-step');
-            const prevButtons = profileSetupModalOverlay.querySelectorAll('.prev-step');
-            const finishButton = profileSetupModalOverlay.querySelector('.finish-modal');
-            const addSportButton = document.getElementById('addSportButton');
-            const sportsContainer = document.getElementById('sportsContainer');
-            const profilePicInput = document.getElementById('profilePic');
-            const profilePicPreview = document.getElementById('profilePicPreview');
-            const stateSelect = document.getElementById('state');
-            const citySelect = document.getElementById('city');
-            let currentStep = 1;
-            const totalSteps = modalSteps.length;
+            const profileSetupModalOverlay = document.getElementById('profileSetupModalOverlay');
+            const companySetupModalOverlay = document.getElementById('companySetupModalOverlay');
 
-            profilePicPreview.style.display = 'none';
-            populateSportSelect(sportsContainer.querySelector('.sport-select'), _availableSports);
-            
-            const ibgeStates = await fetchIBGE('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome', 'Erro ao carregar estados');
-            populateDropdown(stateSelect, ibgeStates, 'sigla', 'nome');
+            const shouldShowUserProfile = sessionStorage.getItem('showProfileModal') === 'true';
+            const shouldShowCompanyProfile = sessionStorage.getItem('showCompanyProfileModal') === 'true';
 
-            stateSelect.addEventListener('change', async function() {
-                const selectedStateUF = this.value;
-                citySelect.disabled = true;
-                if (selectedStateUF) {
-                    const ibgeCities = await fetchIBGE(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${selectedStateUF}/municipios?orderBy=nome`, 'Erro ao carregar cidades');
-                    populateDropdown(citySelect, ibgeCities, 'nome', 'nome');
-                    citySelect.disabled = false;
-                }
-            });
-
-            if (sessionStorage.getItem('showProfileModal') === 'true') {
-                introModalOverlay.classList.remove('hidden');
+            if (shouldShowUserProfile || shouldShowCompanyProfile) {
                 appContainer.style.display = 'none';
                 if (bottomNav) bottomNav.style.display = 'none';
+                if (shouldShowCompanyProfile) {
+                    document.getElementById('introModalTitle').textContent = 'Bem-vinda, Empresa!';
+                    document.getElementById('introModalText').innerHTML = 'Para que seu negócio se destaque, precisamos de algumas informações. Vamos configurar seu perfil comercial rapidinho!';
+                }
+                introModalOverlay.classList.remove('hidden');
             } else {
-                fetchAndDisplayFeed(token, feedDescobrirApiUrl); // Carrega o feed "Descobrir" por padrão
+                fetchAndDisplayFeed(token, feedDescobrirApiUrl);
             }
 
             startProfileSetupButton.addEventListener('click', () => {
                 introModalOverlay.classList.add('hidden');
-                profileSetupModalOverlay.classList.remove('hidden');
-                currentStep = 1;
-                showStep(currentStep);
+                if (shouldShowUserProfile) profileSetupModalOverlay.classList.remove('hidden');
+                else if (shouldShowCompanyProfile) companySetupModalOverlay.classList.remove('hidden');
             });
 
-            function showStep(stepNumber) {
-                modalSteps.forEach(step => step.classList.remove('active-step'));
-                profileSetupModalOverlay.querySelector(`.modal-step[data-step="${stepNumber}"]`)?.classList.add('active-step');
-            }
-
-            function validateStep(stepNumber) {
-                if (stepNumber === 2) {
-                    const isValid = Array.from(sportsContainer.querySelectorAll('.sport-entry')).some(entry => 
-                        entry.querySelector('.sport-select').value && entry.querySelector('.level-select').value
-                    );
-                    if (!isValid) alert('Adicione pelo menos um esporte com nível.');
-                    return isValid;
+            document.getElementById('companyLogo').addEventListener('change', e => {
+                const preview = document.getElementById('companyLogoPreview');
+                if (e.target.files[0]) {
+                    preview.src = URL.createObjectURL(e.target.files[0]);
+                    preview.style.display = 'block';
                 }
-                if (stepNumber === 3) {
-                    if (!stateSelect.value || !citySelect.value) {
-                        alert('Selecione estado e cidade.');
-                        return false;
-                    }
-                }
-                return true;
-            }
+            });
 
-            nextButtons.forEach(button => button.addEventListener('click', () => {
-                if (validateStep(currentStep) && currentStep < totalSteps) {
-                    currentStep++;
-                    showStep(currentStep);
-                }
-            }));
-
-            prevButtons.forEach(button => button.addEventListener('click', () => {
-                if (currentStep > 1) {
-                    currentStep--;
-                    showStep(currentStep);
-                }
-            }));
-
-            addSportButton.addEventListener('click', () => {
-                const newSportEntry = sportsContainer.firstElementChild.cloneNode(true);
-                newSportEntry.querySelectorAll('select').forEach(select => select.selectedIndex = 0);
-                populateSportSelect(newSportEntry.querySelector('.sport-select'), _availableSports);
+            document.getElementById('finishCompanySetupButton').addEventListener('click', async () => {
+                const sector = document.getElementById('companySector').value;
+                const bio = document.getElementById('companyBio').value.trim();
+                const logoFile = document.getElementById('companyLogo').files[0];
+                if (!sector || !bio) { alert('Setor e biografia são obrigatórios.'); return; }
                 
-                let removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'remove-sport-button';
-                removeButton.innerHTML = '&times;';
-                removeButton.onclick = () => newSportEntry.remove();
-                newSportEntry.appendChild(removeButton);
-
-                sportsContainer.appendChild(newSportEntry);
-            });
-
-            profilePicInput.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        profilePicPreview.src = e.target.result;
-                        profilePicPreview.style.display = 'block';
-                    }
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            finishButton.addEventListener('click', async () => {
-                if (!validateStep(1) || !validateStep(2) || !validateStep(3)) return;
-
-                const textualData = {
-                    biografia: document.getElementById('bio').value.trim(),
-                    cidade: citySelect.value,
-                    estado: stateSelect.options[stateSelect.selectedIndex].text,
-                    esportes_praticados: {}
-                };
-
-                sportsContainer.querySelectorAll('.sport-entry').forEach(entry => {
-                    const sport = entry.querySelector('.sport-select').value;
-                    const level = entry.querySelector('.level-select').value;
-                    if (sport && level) { 
-                        textualData.esportes_praticados[sport.toLowerCase().replace(/\s+/g, '_')] = level.toLowerCase();
-                    }
-                });
-
                 const formData = new FormData();
-                formData.append('dados', JSON.stringify(textualData));
-                if (profilePicInput.files[0]) {
-                    formData.append('foto', profilePicInput.files[0]);
-                }
+                formData.append('dados', JSON.stringify({ setor: sector, biografia: bio }));
+                if (logoFile) formData.append('foto', logoFile);
 
                 try {
-                    const response = await fetch(`${usuarioApiUrl}/DadosModal`, {
-                        method: 'POST',
-                        headers: {
-                            'Accept': 'application/json', 
-                            'Authorization': `Bearer ${token}`
-                        },
-                        body: formData, 
-                    });
-
-                    const responseData = await response.json(); 
-                    if (!response.ok) throw new Error(responseData.erro || responseData.message || 'Erro HTTP');
-
-                    profileSetupModalOverlay.classList.add('hidden');
-                    appContainer.style.display = 'block'; 
+                    const response = await fetch(`${empresaApiUrl}/DadosModalEmpresa`, { method: 'POST', headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }, body: formData });
+                    const data = await response.json();
+                    if (!response.ok) throw new Error(data.erro || 'Erro ao salvar.');
+                    
+                    alert("Perfil da empresa atualizado!");
+                    companySetupModalOverlay.classList.add('hidden');
+                    appContainer.style.display = 'block';
                     if (bottomNav) bottomNav.style.display = 'flex';
-                    fetchAndDisplayFeed(token, feedDescobrirApiUrl); // Carrega o feed ao finalizar o modal
-                    sessionStorage.setItem('showProfileModal', 'false'); 
-                    alert("Perfil atualizado com sucesso!"); 
-
+                    fetchAndDisplayFeed(token, feedDescobrirApiUrl);
+                    sessionStorage.removeItem('showCompanyProfileModal');
                 } catch (error) {
-                    console.error("Erro ao enviar dados:", error);
-                    alert(`Ocorreu um erro: ${error.message}.`);
+                    console.error("Erro ao enviar dados da empresa:", error);
+                    alert(`Erro: ${error.message}`);
+                }
+            });
+
+            const stateSelect = document.getElementById('state');
+            const citySelect = document.getElementById('city');
+            const ibgeStates = await fetchApiData('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome', 'Erro ao carregar estados.');
+            populateDropdown(stateSelect, ibgeStates, 'sigla', 'nome');
+
+            stateSelect.addEventListener('change', async function() {
+                citySelect.disabled = true;
+                if (this.value) {
+                    const cities = await fetchApiData(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${this.value}/municipios?orderBy=nome`, 'Erro ao carregar cidades.');
+                    populateDropdown(citySelect, cities, 'nome', 'nome');
+                    citySelect.disabled = false;
+                }
+            });
+
+            document.querySelector('.finish-modal').addEventListener('click', async () => {
+                 const textualData = { biografia: document.getElementById('bio').value.trim(), cidade: citySelect.value, estado: stateSelect.options[stateSelect.selectedIndex].text, esportes_praticados: {} };
+                 document.querySelectorAll('#sportsContainer .sport-entry').forEach(entry => {
+                    const sport = entry.querySelector('.sport-select').value;
+                    const level = entry.querySelector('.level-select').value;
+                    if (sport && level) textualData.esportes_praticados[sport] = level;
+                 });
+                const formData = new FormData();
+                formData.append('dados', JSON.stringify(textualData));
+                const profilePicFile = document.getElementById('profilePic').files[0];
+                if (profilePicFile) formData.append('foto', profilePicFile);
+
+                try {
+                    const response = await fetch(`${usuarioApiUrl}/DadosModal`, { method: 'POST', headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }, body: formData });
+                    if (!response.ok) throw new Error('Falha ao atualizar perfil de usuário');
+                    
+                    alert('Perfil de usuário atualizado!');
+                    profileSetupModalOverlay.classList.add('hidden');
+                    appContainer.style.display = 'block';
+                    if (bottomNav) bottomNav.style.display = 'flex';
+                    fetchAndDisplayFeed(token, feedDescobrirApiUrl);
+                    sessionStorage.removeItem('showProfileModal');
+                } catch (error) {
+                     alert(`Erro: ${error.message}`);
+                }
+            });
+            
+            document.getElementById('followingFeedBtn').addEventListener('click', (e) => { e.target.classList.add('active'); document.getElementById('discoverFeedBtn').classList.remove('active'); fetchAndDisplayFeed(token, feedSeguindoApiUrl); });
+            document.getElementById('discoverFeedBtn').addEventListener('click', (e) => { e.target.classList.add('active'); document.getElementById('followingFeedBtn').classList.remove('active'); fetchAndDisplayFeed(token, feedDescobrirApiUrl); });
+            
+            const notificationModalOverlay = document.getElementById('notificationModalOverlay');
+            document.getElementById('notificationBell').addEventListener('click', () => { displayNotifications(); notificationModalOverlay.classList.remove('hidden'); });
+            document.getElementById('closeNotificationModalButton').addEventListener('click', () => notificationModalOverlay.classList.add('hidden'));
+            notificationModalOverlay.addEventListener('click', e => { if (e.target === notificationModalOverlay) notificationModalOverlay.classList.add('hidden'); });
+            document.getElementById('notificationListContainer').addEventListener('click', e => {
+                const target = e.target.closest('[data-id]');
+                if (target) {
+                    const id = target.dataset.id;
+                    if (e.target.matches('.mark-as-read')) updateNotification(id, 'read');
+                    if (e.target.matches('.delete-notification')) if (confirm('Excluir notificação?')) updateNotification(id, 'delete');
                 }
             });
         });

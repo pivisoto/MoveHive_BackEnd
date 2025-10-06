@@ -5,7 +5,7 @@ import Services.UsuarioEmpresa_Service as usuarioEmpresa_service
 
 usuarioEmpresa_bp = Blueprint('usuarioEmpresa_bp', __name__, url_prefix="/usuarioEmpresa" )
 
-
+# Implementado
 @usuarioEmpresa_bp.route('/RegistrarUsuarioEmpresa', methods=['POST'])
 def registrarUsuarioEmpresa():
     data = request.get_json()
@@ -33,3 +33,22 @@ def registrarUsuarioEmpresa():
         return jsonify(resultado[0]), resultado[1]
 
     return jsonify(resultado), 400
+
+
+# Implementado
+@usuarioEmpresa_bp.route('/DadosModalEmpresa', methods=['POST'])
+def adicionar_informacoes_empresa():
+    try:
+        dados = json.loads(request.form.get('dados', '{}'))
+
+        arquivo_foto = request.files.get('foto')
+
+        resposta, status = usuarioEmpresa_service.adicionar_dados_modal_empresa(dados, arquivo_foto)
+
+        return jsonify(resposta), status
+
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+
+

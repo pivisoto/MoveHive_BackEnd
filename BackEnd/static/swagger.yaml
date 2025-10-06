@@ -1349,6 +1349,129 @@ paths:
                     type: string
                     example: "Erro ao registrar usuário empresa"
 
+  /usuarioEmpresa/LoginUsuario:
+    post:
+      summary: login de usuário empresa (É O MSM ENDPOINT DO USUARIO COMUM, SO ESTA AQUI PARA MOSTRAR OQUE O "UsuarioEmpresa" PODE FAZER. IGNORAR!)
+      description: Autentica o usuário através de email e senha. Retorna um token JWT em caso de sucesso.
+      tags:
+        - UsuárioEmpresa
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  example: usuario@email.com
+                  description: Email do usuário cadastrado
+                senha:
+                  type: string
+                  example: "senha123"
+                  description: Senha do usuário
+              required:
+                - email
+                - senha
+      responses:
+        '200':
+          description: Login realizado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+                    description: Token JWT para autenticação
+        '400':
+          description: Erro de validação - campos obrigatórios ausentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Campos 'email' e 'senha' são obrigatórios"
+        '401':
+          description: Credenciais inválidas
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Senha incorreta"
+        '404':
+          description: E-mail não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "E-mail não encontrado"
+
+  /usuarioEmpresa/DadosModalEmpresa:
+    post:
+      summary: Adiciona ou atualiza informações da empresa
+      description: Endpoint que permite enviar dados do modal da empresa e uma foto de perfil. Requer autenticação.
+      tags:
+        - UsuárioEmpresa
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dados:
+                  type: string
+                  format: json
+                  description: JSON contendo os campos "biografia" e "setor" da empresa
+                  example: '{"biografia": "Empresa de tecnologia focada em inovação", "setor": "TI"}'
+                foto:
+                  type: string
+                  format: binary
+                  description: Arquivo de foto de perfil da empresa
+      responses:
+        '200':
+          description: Informações da empresa atualizadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: sucesso
+                  mensagem:
+                    type: string
+                    example: Informações da empresa atualizadas com sucesso
+        '404':
+          description: Empresa não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Empresa não encontrada
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Mensagem de erro 
 
 # Esporte
  

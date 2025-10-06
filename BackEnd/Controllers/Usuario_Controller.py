@@ -32,7 +32,7 @@ def registrarUsuario():
 
 # Implementado
 @usuario_bp.route('/LoginUsuario', methods=['POST'])
-def loginUsuario():
+def loginUsuarios():
     data = request.get_json()
     email = data.get('email')
     senha = data.get('senha')
@@ -40,7 +40,7 @@ def loginUsuario():
     if not email or not senha:
         return jsonify({"erro": "Campos 'email' e 'senha' são obrigatórios"}), 400
 
-    resposta, status = usuario_service.login_usuario(email, senha)
+    resposta, status = usuario_service.login_usuarios(email, senha)
     return jsonify(resposta), status
 
 

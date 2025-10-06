@@ -3,13 +3,13 @@ import datetime
 
 SECRET_KEY = 'move'
 
-def generate_token(user_id):
+def generate_token(user_id, tipo_usuario="usuario"):
 
     payload = {
         'user_id': user_id,
+        'tipo_usuario':tipo_usuario,
         'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=24) 
     }
 
     token = jwt.encode(payload, SECRET_KEY, algorithm="HS256")
-
     return token

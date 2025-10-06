@@ -279,7 +279,8 @@
 
             if (response.ok && responseData.token) {
                 localStorage.setItem('jwtToken', responseData.token);
-                sessionStorage.setItem('showProfileModal', 'true'); 
+                
+                sessionStorage.setItem('showCompanyProfileModal', 'true'); 
                 
                 formFeedback.textContent = 'Cadastro realizado com sucesso! Redirecionando...';
                 formFeedback.className = 'form-feedback-general sucesso';
