@@ -699,6 +699,12 @@ def competicao_usuarios_seguindo():
 def solicitar_reset_senha(email):
     usuarios_ref = db.collection('Usuarios')
     query = usuarios_ref.where('email', '==', email).limit(1).get()
+    tipo_usuario = "usuario"
+
+    if not query:
+        usuarios_ref = db.collection('UsuariosEmpresa')
+        query = usuarios_ref.where('email', '==', email).limit(1).get()
+        tipo_usuario = "empresa"
 
     msg_retorno = {"msg": "Se o e-mail estiver em nossa base, você receberá um código para redefinir sua senha."}
 
@@ -711,9 +717,8 @@ def solicitar_reset_senha(email):
         usuario_id = usuario_doc.id
 
         codigo = ''.join(random.choices(string.digits, k=6))
-        
         codigo_hash = bcrypt.hashpw(codigo.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        exp = datetime.now(timezone.utc) + timedelta(minutes=10)  
+        exp = datetime.now(timezone.utc) + timedelta(minutes=10)
 
         usuarios_ref.document(usuario_id).update({
             "reset_code_hash": codigo_hash,
@@ -721,9 +726,7 @@ def solicitar_reset_senha(email):
         })
 
         enviar_email.enviar_email_reset(destinatario=email, codigo=codigo)
-
-        
-        logger.info(f"E-mail de reset enviado com sucesso para {email}.")
+        logger.info(f"E-mail de reset enviado com sucesso para {email} ({tipo_usuario}).")
 
     except Exception as e:
         logger.error(f"Falha ao processar a solicitação de reset para {email}. Erro: {e}")
@@ -733,7 +736,7 @@ def solicitar_reset_senha(email):
                 "reset_code_exp": firestore.DELETE_FIELD
             })
         return msg_retorno, 500
-            
+
     return msg_retorno, 200
 
 
@@ -743,13 +746,17 @@ def verificar_codigo_reset(email, codigo):
     query = usuarios_ref.where('email', '==', email).limit(1).get()
 
     if not query:
+        usuarios_ref = db.collection('UsuariosEmpresa')
+        query = usuarios_ref.where('email', '==', email).limit(1).get()
+
+    if not query:
         return {"valido": False, "msg": "Código inválido ou expirado."}
 
     usuario_doc = query[0].to_dict()
 
     if "reset_code_hash" not in usuario_doc or "reset_code_exp" not in usuario_doc:
         return {"valido": False, "msg": "Código inválido ou expirado."}
-        
+
     if datetime.now(timezone.utc) > usuario_doc["reset_code_exp"]:
         return {"valido": False, "msg": "Código expirado. Solicite um novo."}
 
@@ -769,13 +776,16 @@ def redefinir_senha(email, codigo, nova_senha):
 
     usuarios_ref = db.collection('Usuarios')
     query = usuarios_ref.where('email', '==', email).limit(1).get()
-    
+
     if not query:
-         return {"sucesso": False, "msg": "Usuário não encontrado."}
+        usuarios_ref = db.collection('UsuariosEmpresa')
+        query = usuarios_ref.where('email', '==', email).limit(1).get()
+
+    if not query:
+        return {"sucesso": False, "msg": "Usuário não encontrado."}
 
     try:
         usuario_id = query[0].id
-        
         nova_senha_hash = bcrypt.hashpw(nova_senha.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
 
         usuarios_ref.document(usuario_id).update({
@@ -783,7 +793,7 @@ def redefinir_senha(email, codigo, nova_senha):
             "reset_code_hash": firestore.DELETE_FIELD,
             "reset_code_exp": firestore.DELETE_FIELD
         })
-        
+
         logger.info(f"Senha para o e-mail {email} alterada com sucesso.")
         return {"sucesso": True, "msg": "Sua senha foi alterada com sucesso!"}
 

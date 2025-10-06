@@ -1349,6 +1349,63 @@ paths:
                     type: string
                     example: "Erro ao registrar usuário empresa"
 
+  /usuarioEmpresa/DadosModalEmpresa:
+    post:
+      summary: Adiciona ou atualiza informações da empresa
+      description: Endpoint que permite enviar dados do modal da empresa e uma foto de perfil. Requer autenticação.
+      tags:
+        - UsuárioEmpresa
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                dados:
+                  type: string
+                  format: json
+                  description: JSON contendo os campos "biografia" e "setor" da empresa
+                  example: '{"biografia": "Empresa de tecnologia focada em inovação", "setor": "TI"}'
+                foto:
+                  type: string
+                  format: binary
+                  description: Arquivo de foto de perfil da empresa
+      responses:
+        '200':
+          description: Informações da empresa atualizadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: sucesso
+                  mensagem:
+                    type: string
+                    example: Informações da empresa atualizadas com sucesso
+        '404':
+          description: Empresa não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Empresa não encontrada
+        '500':
+          description: Erro interno do servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Mensagem de erro 
+            
   /usuarioEmpresa/LoginUsuario:
     post:
       summary: login de usuário empresa (É O MSM ENDPOINT DO USUARIO COMUM, SO ESTA AQUI PARA MOSTRAR OQUE O "UsuarioEmpresa" PODE FAZER. IGNORAR!)
@@ -1416,44 +1473,43 @@ paths:
                     type: string
                     example: "E-mail não encontrado"
 
-  /usuarioEmpresa/DadosModalEmpresa:
+  /usuarioEmpresa/esqueciSenha:
     post:
-      summary: Adiciona ou atualiza informações da empresa
-      description: Endpoint que permite enviar dados do modal da empresa e uma foto de perfil. Requer autenticação.
       tags:
         - UsuárioEmpresa
+      summary: Solicitar reset de senha (É O MSM ENDPOINT DO USUARIO COMUM, SO ESTA AQUI PARA MOSTRAR OQUE O "UsuarioEmpresa" PODE FAZER. IGNORAR!)
+      description: Permite que um usuário solicite a redefinição de senha fornecendo seu e-mail.
       requestBody:
         required: true
         content:
-          multipart/form-data:
+          application/json:
             schema:
               type: object
+              required:
+                - email
               properties:
-                dados:
+                email:
                   type: string
-                  format: json
-                  description: JSON contendo os campos "biografia" e "setor" da empresa
-                  example: '{"biografia": "Empresa de tecnologia focada em inovação", "setor": "TI"}'
-                foto:
-                  type: string
-                  format: binary
-                  description: Arquivo de foto de perfil da empresa
+                  format: email
+                  example: usuario@exemplo.com
+            examples:
+              emailExample:
+                summary: Exemplo de requisição
+                value:
+                  email: usuario@exemplo.com
       responses:
         '200':
-          description: Informações da empresa atualizadas com sucesso
+          description: Solicitação de reset de senha realizada com sucesso
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  status:
-                    type: string
-                    example: sucesso
                   mensagem:
                     type: string
-                    example: Informações da empresa atualizadas com sucesso
-        '404':
-          description: Empresa não encontrada
+                    example: Um e-mail de redefinição de senha foi enviado.
+        '400':
+          description: Erro na requisição
           content:
             application/json:
               schema:
@@ -1461,17 +1517,127 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: Empresa não encontrada
-        '500':
-          description: Erro interno do servidor
+                    example: Formato de e-mail inválido ou ausente.
+              
+  /usuarioEmpresa/verificarCodigo:
+     post:
+      tags:
+        - UsuárioEmpresa
+      summary: Verificar código (É O MSM ENDPOINT DO USUARIO COMUM, SO ESTA AQUI PARA MOSTRAR OQUE O "UsuarioEmpresa" PODE FAZER. IGNORAR!)
+      description: Verifica se o código de reset enviado pelo usuário é válido e não expirou.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - codigo
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@exemplo.com
+                codigo:
+                  type: string
+                  example: "123456"
+            examples:
+              exemploRequisicao:
+                summary: Exemplo de requisição
+                value:
+                  email: usuario@exemplo.com
+                  codigo: "123456"
+      responses:
+        '200':
+          description: Código válido
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  erro:
+                  valido:
+                    type: boolean
+                    example: true
+                  msg:
                     type: string
-                    example: Mensagem de erro 
+                    example: Código verificado com sucesso.
+        '400':
+          description: Código inválido ou expirado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  valido:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    example: Código inválido ou expirado.
+
+  /usuarioEmpresa/resetarSenha:
+    post:
+      tags:
+        - UsuárioEmpresa
+      summary: Redefinir senha (É O MSM ENDPOINT DO USUARIO COMUM, SO ESTA AQUI PARA MOSTRAR OQUE O "UsuarioEmpresa" PODE FAZER. IGNORAR!)
+      description: Permite que um usuário redefina sua senha utilizando o e-mail, código de verificação e nova senha.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - codigo
+                - nova_senha
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: usuario@exemplo.com
+                codigo:
+                  type: string
+                  example: "123456"
+                nova_senha:
+                  type: string
+                  format: password
+                  example: "NovaSenha123!"
+            examples:
+              exemploRequisicao:
+                summary: Exemplo de requisição
+                value:
+                  email: usuario@exemplo.com
+                  codigo: "123456"
+                  nova_senha: "NovaSenha123!"
+      responses:
+        '200':
+          description: Senha redefinida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: true
+                  msg:
+                    type: string
+                    example: Sua senha foi alterada com sucesso!
+        '400':
+          description: Erro ao redefinir a senha
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  sucesso:
+                    type: boolean
+                    example: false
+                  msg:
+                    type: string
+                    example: Todos os campos são obrigatórios.
 
 # Esporte
  
