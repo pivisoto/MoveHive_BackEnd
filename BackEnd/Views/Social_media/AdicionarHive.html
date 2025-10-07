@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hives</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Estilos Globais (sem alterações) */
+        :root {
+            --primary-color: #facc15; /* Amarelo principal */
+            --background-color: #f0f2f5;
+            --card-color: #ffffff;
+            --text-color: #1f2937;
+            --secondary-text-color: #6b7280;
+            --border-color: #e5e7eb;
+            --icon-color: #4b5563;
+            --tooltip-bg: #374151;
+            --tooltip-text-color: #ffffff;
+            --success-color: #10b981; /* Verde para aceitar */
+            --danger-color: #ef4444;  /* Vermelho para recusar */
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            padding-bottom: 60px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            max-width: 500px;
+            min-height: 100vh;
+            margin: 0 auto;
+            background-color: var(--card-color);
+            position: relative;
+        }
+
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: white;
+            border-color: var(--danger-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #dc2626; /* Vermelho mais escuro */
+            border-color: #dc2626;
+        }
+
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .main-header .title { font-size: 1.75rem; font-weight: 700; }
+        .main-header .header-icons { display: flex; align-items: center; gap: 1rem; }
+        .main-header .header-icons svg { width: 24px; height: 24px; color: var(--icon-color); cursor: pointer; }
+
+        .filter-container {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            background-color: var(--card-color);
+            overflow-x: auto;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 20px;
+            cursor: pointer;
+            border: 1px solid #d1d5db;
+            background-color: #f9fafb;
+            color: var(--secondary-text-color);
+            transition: background-color 0.3s, color 0.3s;
+            white-space: nowrap;
+        }
+
+        .filter-btn.active {
+            background-color: #374151;
+            color: #ffffff;
+            border-color: #374151;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            padding: 1.5rem;
+            color: var(--secondary-text-color);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+        }
+        
+        .main-content.text-center {
+             justify-content: center;
+             text-align: center;
+        }
+
+        .main-content p { margin: 0.5rem 0; }
+        
+        /* --- ESTILOS DO CARD DE HIVE --- */
+        .event-card {
+            background-color: var(--card-color);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            text-align: left;
+            width: 100%;
+            max-width: 450px;
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+
+        .event-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .event-image-container { position: relative; }
+
+        .event-image {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+            display: block;
+            background-color: #eee;
+        }
+
+        .event-date-badge {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            background-color: var(--primary-color);
+            color: #333;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .event-details { padding: 1rem 1.25rem; position: relative; }
+        
+        .card-actions {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 5;
+        }
+
+        .action-icon {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: var(--icon-color);
+            font-size: 15px;
+            transition: background-color 0.2s, color 0.2s, transform 0.2s;
+        }
+
+        .action-icon:hover {
+            transform: scale(1.1);
+            background-color: var(--secondary-text-color);
+            color: white;
+        }
+
+        .action-icon.delete-btn:hover {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .event-title-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .event-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+            color: var(--text-color);
+        }
+        
+        .event-title-container .private-icon {
+            color: var(--secondary-text-color);
+            font-size: 1.1rem;
+        }
+
+        .event-description {
+            font-size: 0.95rem;
+            color: var(--secondary-text-color);
+            margin: 0 0 1rem 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            min-height: 38px;
+        }
+        
+        .event-info {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            color: var(--secondary-text-color);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+        }
+
+        .event-info i {
+            font-size: 14px;
+            width: 16px;
+            text-align: center;
+            margin-top: 2px;
+            color: var(--icon-color);
+        }
+
+        .fab {
+            position: fixed;
+            bottom: 80px;
+            right: calc(50% - 220px);
+            width: 56px;
+            height: 56px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            cursor: pointer;
+            z-index: 101;
+            transition: transform 0.2s ease-in-out;
+        }
+        @media (max-width: 500px) { .fab { right: 20px; } }
+        .fab:hover { transform: scale(1.05); }
+        .fab svg { width: 28px; height: 28px; color: #333; }
+
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 500px;
+            background-color: var(--primary-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            border-top: 1px solid #cca300;
+            z-index: 100;
+        }
+        .nav-item { color: #333; font-size: 24px; text-decoration: none; transition: transform 0.2s; }
+        .nav-item:hover { transform: scale(1.1); }
+        
+        /* --- ESTILOS DOS MODAIS --- */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content { background: var(--card-color); padding: 1rem; border-radius: 12px; width: 90%; max-width: 500px; max-height: 90vh; display: flex; flex-direction: column; transform: scale(0.9); transition: transform 0.3s ease; }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 0 0.5rem 1rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .modal-header h2 { margin: 0; font-size: 1.5rem; }
+        .close-modal-btn { font-size: 2rem; line-height: 1; font-weight: 300; cursor: pointer; background: none; border: none; color: var(--secondary-text-color); }
+        .modal-body { overflow-y: auto; padding: 1.5rem 0.5rem 0.5rem 0.5rem; }
+        
+        #event-details-modal .modal-body { padding: 0; }
+        #event-details-modal .modal-header { border-bottom: none; position: absolute; top: 10px; right: 10px; z-index: 2; }
+        #event-details-modal .close-modal-btn { background-color: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 32px; height: 32px; font-size: 1.5rem; line-height: 32px; }
+        #details-image { width: 100%; height: 220px; object-fit: cover; background-color: #eee; }
+        #details-content { padding: 1.5rem; }
+        #details-title-container { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1rem; }
+        #details-title { font-size: 1.75rem; font-weight: 700; margin: 0; }
+        #details-info { display: flex; flex-direction: column; gap: 1rem; }
+        #details-description { font-size: 1rem; line-height: 1.5; }
+        .details-action-buttons { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
+        .action-btn { flex: 1; padding: 0.8rem; font-size: 1rem; font-weight: 600; border-radius: 25px; cursor: pointer; border: 1px solid; text-align: center; min-width: 120px; }
+        .btn-primary { background-color: var(--primary-color); color: #333; border-color: var(--primary-color); }
+        .btn-secondary { background-color: transparent; color: var(--text-color); border-color: var(--border-color); }
+        .btn-tertiary { background-color: #374151; color: white; border-color: #374151; flex-basis: 100%;}
+        .action-btn:disabled { background-color: #ccc; color: #666; border-color: #ccc; cursor: not-allowed; }
+
+        /* Estilos do formulário */
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-weight: 600; margin-bottom: 0.5rem; color: var(--secondary-text-color); }
+        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid var(--border-color); background-color: #f9fafb; font-size: 1rem; box-sizing: border-box; }
+        textarea { resize: vertical; min-height: 80px; }
+        .image-upload-container { border: 2px dashed var(--border-color); border-radius: 8px; padding: 1.5rem; text-align: center; cursor: pointer; position: relative; min-height: 100px; display: flex; align-items: center; justify-content: center;}
+        .image-upload-container span { z-index: 1; }
+        .image-preview { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 8px; object-fit: cover; display: none; }
+        .form-group input[type="file"] { display: none; }
+        .switch-group { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; }
+        .switch-label-group { display: flex; align-items: center; gap: 0.5rem; }
+        .switch-label { font-weight: 600; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 28px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--primary-color); }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .tooltip { position: relative; display: inline-flex; align-items: center; }
+        .tooltip .tooltip-icon { width: 18px; height: 18px; border-radius: 50%; background-color: var(--secondary-text-color); color: white; font-size: 12px; font-weight: bold; text-align: center; line-height: 18px; cursor: help; user-select: none; }
+        .tooltip .tooltip-text { visibility: hidden; opacity: 0; width: 220px; background-color: var(--tooltip-bg); color: var(--tooltip-text-color); text-align: center; border-radius: 6px; padding: 8px; position: absolute; z-index: 10; bottom: 150%; left: 50%; margin-left: -110px; transition: opacity 0.3s; font-size: 0.8rem; font-weight: 400; }
+        .tooltip .tooltip-text::after { content: ""; position: absolute; top: 100%; left: 50%; margin-left: -5px; border-width: 5px; border-style: solid; border-color: var(--tooltip-bg) transparent transparent transparent; }
+        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        .submit-btn { width: 100%; padding: 1rem; font-size: 1.1rem; font-weight: 700; color: #333; background-color: var(--primary-color); border: none; border-radius: 25px; cursor: pointer; transition: background-color 0.3s; margin-top: 1rem; }
+        .submit-btn:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        /* --- ESTILOS DO MODAL DE PENDENTES --- */
+        #pending-list { list-style-type: none; padding: 0; margin: 0; }
+        .pending-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .pending-item:last-child { border-bottom: none; }
+        .pending-item-actions { display: flex; gap: 0.5rem; }
+        .pending-action-btn { padding: 6px 12px; font-size: 14px; font-weight: 600; border-radius: 15px; cursor: pointer; border: none; color: white; }
+        .pending-accept-btn { background-color: var(--success-color); }
+        .pending-reject-btn { background-color: var(--danger-color); }
+
+        /* CSS ADICIONAL PARA A FOTO DE PERFIL NO MODAL DE PENDENTES */
+        .pending-item-info {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem; /* Espaço entre a imagem e o nome */
+        }
+        .pending-user-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: #eee; /* Cor de fundo para imagens que não carregam */
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="page-container">
+        <header class="main-header">
+            <span class="title">Hives</span>
+            <div class="header-icons">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 0 1-.659 1.591l-5.432 5.432a2.25 2.25 0 0 0-.659 1.591v2.927a2.25 2.25 0 0 1-1.244 2.013L9.75 21v-6.572a2.25 2.25 0 0 0-.659-1.591L3.659 7.409A2.25 2.25 0 0 1 3 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0 1 12 3Z" /></svg>
+            </div>
+        </header>
+
+        <div class="filter-container">
+            <button class="filter-btn active" data-filter="hives">Hives</button>
+            <button class="filter-btn" data-filter="my-hives">Minhas Hives</button>
+            <button class="filter-btn" data-filter="participating">Participando</button>
+        </div>
+
+        <main class="main-content" id="main-content">
+             <!-- O conteúdo será inserido dinamicamente aqui -->
+        </main>
+
+        <button class="fab" id="open-modal-btn" aria-label="Criar nova Hive">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+        </button>
+
+        <nav class="bottom-nav">
+            <a href="#" class="nav-item active"><i class="fas fa-home"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-dumbbell"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-image"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-trophy"></i></a>
+            <a href="#" class="nav-item"><i class="fas fa-user"></i></a>
+        </nav>
+    </div>
+
+    <!-- MODAL PARA CRIAÇÃO DE HIVE -->
+    <div class="modal-overlay" id="create-event-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-create">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-create">Criar Nova Hive</h2>
+                <button class="close-modal-btn" data-close-modal="create-event-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <form id="eventForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="titulo">Título da Atividade</label>
+                        <input type="text" id="titulo" name="titulo" placeholder="Ex: Jogo de Domingo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nome_esporte">Esporte</label>
+                        <select id="nome_esporte" name="esporte_nome" required>
+                            <option value="" disabled selected>Carregando esportes...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="descricao">Descrição</label>
+                        <textarea id="descricao" name="descricao" placeholder="Descreva os detalhes da sua atividade..." required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="arquivo_foto">Foto de Capa</label>
+                        <div class="image-upload-container" id="create-upload-area">
+                            <span>Clique para adicionar uma imagem</span>
+                             <img class="image-preview" id="create-image-preview" src="#" alt="Pré-visualização da imagem"/>
+                        </div>
+                        <input type="file" id="arquivo_foto" name="arquivo_foto" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="data_hora_str">Data e Hora</label>
+                        <input type="datetime-local" id="data_hora_str" name="data_hora_str" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="estado">Estado</label>
+                        <select id="estado" name="estado" required>
+                            <option value="" disabled selected>Carregando estados...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="cidade">Cidade</label>
+                        <select id="cidade" name="cidade" required disabled>
+                            <option value="" disabled selected>Selecione um estado primeiro</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="endereco">Endereço</label>
+                        <input type="text" id="endereco" name="endereco" placeholder="Ex: Rua Exemplo, 123, Bairro" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="observacoes">Observações/Ponto de referencia</label>
+                        <textarea id="observacoes" name="observacoes" placeholder="Informações adicionais, regras, etc."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="max_participantes">Máx. de Participantes</label>
+                        <input type="number" id="max_participantes" name="max_participantes" min="2" placeholder="Ex: 16" required>
+                    </div>
+                    <div class="form-group">
+                         <div class="switch-group">
+                            <div class="switch-label-group">
+                                <span class="switch-label">Atividade Privada?</span>
+                                 <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-text">Em atividades privadas, você precisa aprovar quem pode participar.</span>
+                                </div>
+                            </div>
+                            <label class="switch">
+                                <input type="checkbox" name="privado" value="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Criar Hive</button>
+                </form>
+            </main>
+        </div>
+    </div>
+    
+    <!-- MODAL PARA EDIÇÃO DE HIVE -->
+    <div class="modal-overlay" id="edit-event-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-edit">Editar Hive</h2>
+                <button class="close-modal-btn" data-close-modal="edit-event-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <form id="editEventForm" enctype="multipart/form-data">
+                    <input type="hidden" id="edit-event-id" name="id">
+                    <div class="form-group">
+                        <label for="edit-titulo">Título da Atividade</label>
+                        <input type="text" id="edit-titulo" name="titulo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-nome_esporte">Esporte</label>
+                         <select id="edit-nome_esporte" name="esporte_nome" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-descricao">Descrição</label>
+                        <textarea id="edit-descricao" name="descricao" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-arquivo_foto">Alterar Foto de Capa (opcional)</label>
+                         <div class="image-upload-container" id="edit-upload-area">
+                            <span>Clique para alterar a imagem</span>
+                            <img class="image-preview" id="edit-image-preview" src="#" alt="Pré-visualização da imagem"/>
+                        </div>
+                        <input type="file" id="edit-arquivo_foto" name="arquivo_foto" accept="image/*">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-data_hora">Data e Hora</label>
+                        <input type="datetime-local" id="edit-data_hora" name="data_hora" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-estado">Estado</label>
+                        <select id="edit-estado" name="estado" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-cidade">Cidade</label>
+                        <select id="edit-cidade" name="cidade" required disabled></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-endereco">Endereço</label>
+                        <input type="text" id="edit-endereco" name="endereco" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-observacoes">Observações/Ponto de referencia</label>
+                        <textarea id="edit-observacoes" name="observacoes"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-max_participantes">Máx. de Participantes</label>
+                        <input type="number" id="edit-max_participantes" name="max_participantes" min="2" required>
+                    </div>
+                    <div class="form-group">
+                         <div class="switch-group">
+                            <div class="switch-label-group"><span class="switch-label">Atividade Privada?</span></div>
+                            <label class="switch">
+                                <input type="checkbox" id="edit-privado-checkbox" name="privado" value="true">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                    <button type="submit" class="submit-btn">Salvar Alterações</button>
+                </form>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL PARA DETALHES DA HIVE -->
+    <div class="modal-overlay" id="event-details-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-details">
+        <div class="modal-content">
+             <header class="modal-header">
+                <button class="close-modal-btn" data-close-modal="event-details-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <img id="details-image" src="" alt="Foto da atividade">
+                <div id="details-content">
+                    <div id="details-title-container">
+                        <h2 id="details-title"></h2>
+                    </div>
+                    <p id="details-description"></p>
+                    <div id="details-info"></div>
+                </div>
+                <div class="details-action-buttons">
+                    <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
+                    <button id="participate-btn" class="action-btn btn-primary">Participar</button>
+                    <button id="manage-requests-btn" class="action-btn btn-tertiary" style="display: none;">Gerenciar Solicitações</button>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- MODAL PARA GERENCIAR PENDENTES -->
+    <div class="modal-overlay" id="pending-requests-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-pending">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-pending">Solicitações Pendentes</h2>
+                <button class="close-modal-btn" data-close-modal="pending-requests-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <ul id="pending-list">
+                    <!-- Usuários pendentes serão inseridos aqui -->
+                </ul>
+            </main>
+        </div>
+    </div>
+
+    <script>
+    const token = localStorage.getItem('jwtToken');
+
+    function getUserIdFromToken() {
+        if (!token) return null;
+        try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            return payload.user_id; 
+        } catch (e) {
+            console.error("Erro ao decodificar o token:", e);
+            return null;
+        }
+    }
+    
+    const currentUserId = getUserIdFromToken();
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const mainContent = document.getElementById('main-content');
+        const filterButtons = document.querySelectorAll('.filter-btn');
+        let currentHives = []; 
+        let activeFilter = 'hives'; 
+        let allSports = [];
+        
+        // --- FUNÇÕES DE EXIBIÇÃO ---
+        function showEmptyMessage(filterType = 'hives') {
+            let message = "Nenhuma Hive encontrada.";
+            let suggestion = "Que tal criar uma nova atividade no botão '+'?";
+            if (filterType === 'my-hives') {
+                 message = "Você ainda não criou nenhuma Hive.";
+                 suggestion = "Clique no botão '+' para criar sua primeira atividade!";
+            } else if (filterType === 'participating') {
+                 message = "Você não está participando de nenhuma Hive.";
+                 suggestion = "Explore as Hives para encontrar uma para você!";
+            }
+            mainContent.innerHTML = `<div class="text-center"><p>${message}</p><p>${suggestion}</p></div>`;
+            mainContent.classList.add('text-center');
+        }
+        
+        function showLoading() {
+            mainContent.innerHTML = '<p>Carregando Hives...</p>';
+            mainContent.classList.add('text-center');
+        }
+
+        function formatISODateToInput(isoString) {
+            if (!isoString) return '';
+            const date = new Date(isoString);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            return date.toISOString().slice(0, 16);
+        }
+
+        function formatHiveDate(isoString) {
+            if (!isoString) return 'Data não definida';
+            const date = new Date(isoString);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            const hours = String(date.getHours()).padStart(2, '0');
+            const minutes = String(date.getMinutes()).padStart(2, '0');
+            return `${day}/${month}/${year} - ${hours}:${minutes}`;
+        }
+        
+        function createHiveCard(hive, index, isMyHive = false) {
+            const card = document.createElement('div');
+            card.className = 'event-card'; 
+            card.dataset.index = index;
+
+            const participants = Array.isArray(hive.participantes) ? hive.participantes : [];
+            const fullLocation = `${hive.endereco ? hive.endereco + ', ' : ''}${hive.localizacao || 'Local não definido'}`;
+            
+            let infoHtml = `
+                <div class="event-info"><i class="fas fa-map-marker-alt"></i><span>${fullLocation}</span></div>
+                <div class="event-info"><i class="fas fa-users"></i><span>${participants.length} / ${hive.max_participantes} participantes</span></div>
+            `;
+
+            const actionsHtml = isMyHive ? `
+                <div class="card-actions">
+                    <button class="action-icon" onclick="event.stopPropagation(); window.openEditModal(${index});" title="Editar Hive"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="action-icon delete-btn" onclick="event.stopPropagation(); if(confirm('Tem certeza que deseja excluir a atividade \\'${hive.titulo}\\'?')) window.deleteHive('${hive.id}');" title="Excluir Hive"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            ` : '';
+
+            card.innerHTML = `
+                <div class="event-image-container">
+                    <img src="${hive.foto || 'https://via.placeholder.com/450x180.png?text=Sem+Imagem'}" alt="Foto da atividade ${hive.titulo}" class="event-image">
+                    <div class="event-date-badge">${formatHiveDate(hive.data_hora)}</div>
+                </div>
+                <div class="event-details">
+                    ${actionsHtml}
+                    <div class="event-title-container">
+                        ${hive.privado ? '<i class="fas fa-lock private-icon" title="Atividade Privada"></i>' : ''}
+                        <h3 class="event-title">${hive.titulo}</h3>
+                    </div>
+                    <p class="event-description">${hive.descricao}</p>
+                    ${infoHtml}
+                </div>
+            `;
+            
+            card.addEventListener('click', () => { displayHiveDetails(hive); });
+            return card;
+        }
+
+        async function fetchAndDisplay(endpoint, filter) {
+             showLoading();
+            try {
+                const response = await fetch(endpoint, { 
+                    method: 'GET' ,
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
+                
+                const hives = await response.json();
+                currentHives = Array.isArray(hives) ? hives : [];
+                mainContent.innerHTML = '';
+                mainContent.classList.remove('text-center');
+
+                if (currentHives.length > 0) {
+                     currentHives.forEach((hive, index) => {
+                        const isMyHive = currentUserId && hive.usuario_id === currentUserId;
+                        const hiveCard = createHiveCard(hive, index, isMyHive);
+                        mainContent.appendChild(hiveCard);
+                    });
+                } else {
+                    showEmptyMessage(filter);
+                }
+            } catch (error) {
+                console.error(`Falha ao buscar Hives para o filtro '${filter}':`, error);
+                mainContent.innerHTML = `<p>Ocorreu um erro ao carregar. Tente novamente.</p>`;
+                mainContent.classList.add('text-center');
+            }
+        }
+
+        filterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                activeFilter = button.getAttribute('data-filter');
+                let endpoint = '';
+                
+                switch(activeFilter) {
+                    case 'hives': endpoint = 'http://127.0.0.1:5000/hive/listarHives'; break;
+                    case 'my-hives': endpoint = 'http://127.0.0.1:5000/hive/meusHive'; break; 
+                    case 'participating': endpoint = 'http://127.0.0.1:5000/hive/participando'; break;
+                }
+                if (endpoint) fetchAndDisplay(endpoint, activeFilter);
+            });
+        });
+        document.querySelector('.filter-btn[data-filter="hives"]').click(); 
+
+        const modalOverlays = document.querySelectorAll('.modal-overlay');
+
+        window.openModal = function(modalId) { document.getElementById(modalId)?.classList.add('visible'); }
+        window.closeModal = function(modalId) { document.getElementById(modalId)?.classList.remove('visible'); }
+
+        document.getElementById('open-modal-btn').addEventListener('click', () => openModal('create-event-modal'));
+        document.querySelectorAll('[data-close-modal]').forEach(btn => {
+            btn.addEventListener('click', () => closeModal(btn.getAttribute('data-close-modal')));
+        });
+        modalOverlays.forEach(overlay => {
+            overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
+        });
+        
+        function displayHiveDetails(hive) {
+            document.getElementById('details-image').src = hive.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
+            document.getElementById('details-description').textContent = hive.descricao;
+            
+            const titleContainer = document.getElementById('details-title-container');
+            titleContainer.innerHTML = `<h2 id="details-title">${hive.titulo}</h2>`;
+
+            if (hive.privado) {
+                const privateIcon = document.createElement('i');
+                privateIcon.className = 'fas fa-lock private-icon';
+                privateIcon.title = 'Esta é uma atividade privada';
+                titleContainer.prepend(privateIcon);
+            }
+
+            const infoContainer = document.getElementById('details-info');
+            infoContainer.innerHTML = '';
+            const participants = Array.isArray(hive.participantes) ? hive.participantes : [];
+            const pendentes = Array.isArray(hive.pendentes) ? hive.pendentes : [];
+            const fullLocation = `${hive.endereco ? hive.endereco + ', ' : ''}${hive.localizacao || 'Local não definido'}`;
+            
+            const detailsList = [
+                { icon: 'fa-calendar-alt', text: formatHiveDate(hive.data_hora) },
+                { icon: 'fa-map-marker-alt', text: fullLocation },
+                { icon: 'fa-users', text: `${participants.length} de ${hive.max_participantes} participantes` },
+                { icon: 'fa-futbol', text: `Esporte: ${hive.esporte_nome}` },
+                hive.observacoes ? { icon: 'fa-info-circle', text: `Observações: ${hive.observacoes}` } : null
+            ].filter(Boolean);
+
+            detailsList.forEach(detail => {
+                infoContainer.innerHTML += `<div class="event-info"><i class="fas ${detail.icon}"></i> <span>${detail.text}</span></div>`;
+            });
+
+            const actionButton = document.getElementById('participate-btn');
+            const manageButton = document.getElementById('manage-requests-btn');
+            actionButton.dataset.hiveId = hive.id;
+            manageButton.dataset.hiveId = hive.id;
+            manageButton.style.display = 'none';
+
+            const isParticipating = currentUserId && participants.includes(currentUserId);
+            const isPending = currentUserId && pendentes.some(p => p.id === currentUserId);
+            const isCreator = currentUserId && hive.usuario_id === currentUserId;
+
+            if (isCreator) {
+                actionButton.style.display = 'none';
+                if (hive.privado) manageButton.style.display = 'block';
+            } else {
+                 actionButton.style.display = 'block';
+                 actionButton.disabled = false;
+                 actionButton.className = 'action-btn';
+                 if (isParticipating) {
+                    actionButton.textContent = 'Cancelar Inscrição';
+                    actionButton.classList.add('btn-danger');
+                    actionButton.dataset.action = 'cancel';
+                } else if (isPending) {
+                    actionButton.textContent = 'Aguardando Aprovação';
+                    actionButton.classList.add('btn-secondary');
+                    actionButton.disabled = true;
+                } else {
+                    actionButton.textContent = hive.privado ? 'Solicitar Participação' : 'Participar';
+                    actionButton.classList.add('btn-primary');
+                    actionButton.dataset.action = 'participate';
+                }
+            }
+            openModal('event-details-modal');
+        }
+
+        window.openEditModal = async function(index) {
+            const hive = currentHives[index];
+            if (!hive) return;
+            document.getElementById('edit-event-id').value = hive.id;
+            document.getElementById('edit-titulo').value = hive.titulo;
+            document.getElementById('edit-descricao').value = hive.descricao;
+            document.getElementById('edit-data_hora').value = formatISODateToInput(hive.data_hora);
+            document.getElementById('edit-endereco').value = hive.endereco || '';
+            document.getElementById('edit-observacoes').value = hive.observacoes || '';
+            document.getElementById('edit-max_participantes').value = hive.max_participantes;
+            populateSportsDropdown(document.getElementById('edit-nome_esporte'), hive.esporte_nome);
+            const preview = document.getElementById('edit-image-preview');
+            preview.src = hive.foto || '';
+            preview.style.display = hive.foto ? 'block' : 'none';
+            document.querySelector('#edit-upload-area span').style.display = hive.foto ? 'none' : 'block';
+            document.getElementById('edit-privado-checkbox').checked = (hive.privado === true || hive.privado === 'true');
+            const [cidadeNome, estadoUf] = (hive.localizacao || ',').split(', ');
+            const estadoSelect = document.getElementById('edit-estado');
+            await loadStates(estadoSelect);
+            const optionToSelect = Array.from(estadoSelect.options).find(opt => opt.dataset.uf === estadoUf);
+            if (optionToSelect) {
+                optionToSelect.selected = true;
+                await loadCities(document.getElementById('edit-cidade'), optionToSelect.value, cidadeNome);
+            }
+            openModal('edit-event-modal');
+        }
+
+        window.deleteHive = async function(hiveId) {
+            if (!hiveId || !token) { alert('Erro de autenticação ou ID inválido.'); return; }
+            try {
+                const response = await fetch('http://127.0.0.1:5000/hive/deletarHive', {
+                    method: 'DELETE', 
+                    headers: { 
+                        'Authorization': `Bearer ${token}`, 
+                        'Content-Type': 'application/json' 
+                    },
+                    body: JSON.stringify({ hive_id: hiveId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Não foi possível excluir.');
+                alert('Hive excluída com sucesso!');
+                document.querySelector('.filter-btn.active').click();
+            } catch (error) { 
+                alert(`Falha ao excluir a Hive: ${error.message}`); 
+            }
+        }
+        
+        async function handleHiveActionClick(event) {
+            const button = event.target;
+            const { hiveId, action } = button.dataset;
+            if (!hiveId || !action || !token) { alert('Erro: Ação, ID ou autenticação inválidos.'); return; }
+            const endpoint = action === 'participate' ? 'http://127.0.0.1:5000/hive/participarHive' : 'http://127.0.0.1:5000/hive/cancelarParticipacao';
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = 'Processando...';
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ evento_id: hiveId }) 
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Ocorreu um erro.');
+                alert(result.mensagem);
+                closeModal('event-details-modal');
+                document.querySelector('.filter-btn.active').click();
+            } catch (error) {
+                alert(`Falha ao processar: ${error.message}`);
+                button.disabled = false;
+                button.textContent = originalText;
+            }
+        }
+        document.getElementById('participate-btn').addEventListener('click', handleHiveActionClick);
+
+        // --- LÓGICA DA HIVE PRIVADA ---
+        document.getElementById('manage-requests-btn').addEventListener('click', async function() {
+            const hiveId = this.dataset.hiveId;
+            const pendingList = document.getElementById('pending-list');
+            pendingList.innerHTML = '<li>Carregando solicitações...</li>';
+            openModal('pending-requests-modal');
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/hive/pendentes', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ evento_id: hiveId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Erro ao buscar pendentes.');
+
+                pendingList.innerHTML = '';
+                if (result.pendentes && result.pendentes.length > 0) {
+                    result.pendentes.forEach(pendingUser => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'pending-item';
+                        listItem.dataset.userId = pendingUser.id;
+                        const profilePic = pendingUser.foto_perfil || 'https://via.placeholder.com/40';
+                        listItem.innerHTML = `
+                            <div class="pending-item-info">
+                                <img src="${profilePic}" alt="Foto de ${pendingUser.username}" class="pending-user-img">
+                                <span>${pendingUser.username}</span>
+                            </div>
+                            <div class="pending-item-actions">
+                                <button class="pending-action-btn pending-accept-btn" data-action="aceitar">Aceitar</button>
+                                <button class="pending-action-btn pending-reject-btn" data-action="recusar">Recusar</button>
+                            </div>
+                        `;
+                        pendingList.appendChild(listItem);
+                    });
+                } else {
+                    pendingList.innerHTML = '<li>Nenhuma solicitação pendente.</li>';
+                }
+            } catch (error) {
+                pendingList.innerHTML = `<li>Erro: ${error.message}</li>`;
+            }
+        });
+
+        document.getElementById('pending-list').addEventListener('click', async function(e) {
+            if (e.target.matches('.pending-action-btn')) {
+                const button = e.target;
+                const action = button.dataset.action;
+                const listItem = button.closest('.pending-item');
+                const userId = listItem.dataset.userId;
+                const hiveId = document.getElementById('manage-requests-btn').dataset.hiveId;
+                button.disabled = true;
+                button.textContent = '...';
+                try {
+                     const response = await fetch('http://127.0.0.1:5000/hive/decidirParticipante', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ evento_id: hiveId, usuario_id: userId, acao: action })
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.erro || 'Erro ao processar.');
+                    listItem.remove();
+                    if(document.getElementById('pending-list').children.length === 0){
+                        document.getElementById('pending-list').innerHTML = '<li>Nenhuma solicitação pendente.</li>';
+                    }
+                } catch(error) {
+                    alert(`Erro: ${error.message}`);
+                    button.disabled = false;
+                    button.textContent = action.charAt(0).toUpperCase() + action.slice(1);
+                }
+            }
+        });
+
+        // --- LÓGICA DOS FORMULÁRIOS ---
+        async function populateSportsDropdown(selectElement, selectedValue = null) {
+            if (allSports.length === 0) {
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/esportes/ListarEsportes', { headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` } });
+                    if (!response.ok) throw new Error('Erro na API');
+                    allSports = await response.json();
+                } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; return; }
+            }
+            selectElement.innerHTML = '<option value="" disabled>Selecione o esporte</option>';
+            allSports.forEach(sport => { if (sport && sport.nome) { const option = new Option(sport.nome, sport.nome); if(sport.nome === selectedValue) { option.selected = true; }; selectElement.appendChild(option); } });
+            if (!selectedValue) selectElement.selectedIndex = 0;
+        }
+        populateSportsDropdown(document.getElementById('nome_esporte'));
+        populateSportsDropdown(document.getElementById('edit-nome_esporte'));
+
+        async function loadStates(selectElement) {
+             try {
+                const response = await fetch('https://servicodados.ibge.gov.br/api/v1/localidades/estados?orderBy=nome');
+                const states = await response.json();
+                selectElement.innerHTML = '<option value="" disabled selected>Selecione</option>';
+                states.forEach(state => { const option = new Option(state.nome, state.id); option.dataset.uf = state.sigla; selectElement.appendChild(option); });
+            } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; }
+        }
+
+        async function loadCities(selectElement, stateId, selectedValue = null) {
+            if (!stateId) return;
+            selectElement.innerHTML = '<option value="" disabled selected>Carregando...</option>';
+            selectElement.disabled = true;
+            try {
+                const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${stateId}/municipios?orderBy=nome`);
+                const cities = await response.json();
+                selectElement.innerHTML = '<option value="" disabled selected>Selecione</option>';
+                cities.forEach(city => { const option = new Option(city.nome, city.nome); if(city.nome === selectedValue){ option.selected = true; } selectElement.appendChild(option); });
+                selectElement.disabled = false;
+            } catch (error) { selectElement.innerHTML = '<option value="" disabled selected>Erro</option>'; }
+        }
+
+        document.getElementById('estado').addEventListener('change', (e) => loadCities(document.getElementById('cidade'), e.target.value));
+        loadStates(document.getElementById('estado'));
+        document.getElementById('edit-estado').addEventListener('change', (e) => loadCities(document.getElementById('edit-cidade'), e.target.value));
+        loadStates(document.getElementById('edit-estado'));
+
+        function setupImagePreview(uploadAreaId, fileInputId, previewId) {
+            const uploadArea = document.getElementById(uploadAreaId);
+            const fileInput = document.getElementById(fileInputId);
+            const imagePreview = document.getElementById(previewId);
+            const uploadText = uploadArea.querySelector('span');
+            uploadArea.addEventListener('click', () => fileInput.click());
+            fileInput.addEventListener('change', () => {
+                const file = fileInput.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => { imagePreview.src = e.target.result; imagePreview.style.display = 'block'; if(uploadText) uploadText.style.display = 'none'; };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+        setupImagePreview('create-upload-area', 'arquivo_foto', 'create-image-preview');
+        setupImagePreview('edit-upload-area', 'edit-arquivo_foto', 'edit-image-preview');
+
+        async function handleFormSubmit(form, url, method) {
+            const submitButton = form.querySelector('.submit-btn');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = method === 'POST' ? 'Enviando...' : 'Salvando...';
+            if (!token) { alert('Erro de autenticação.'); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
+            
+            const formData = new FormData(form);
+            
+            const privadoCheckbox = form.querySelector('input[name="privado"][type="checkbox"]');
+            if (privadoCheckbox) {
+                if (privadoCheckbox.checked) {
+                    formData.set('privado', 'true');
+                } else {
+                    formData.set('privado', '');
+                }
+            }
+            
+            const dataHoraCriacao = formData.get('data_hora_str');
+            if (dataHoraCriacao) { formData.set('data_hora_str', `${dataHoraCriacao}:00`); }
+
+            const dataHoraEdicao = formData.get('data_hora');
+            if (dataHoraEdicao) { formData.set('data_hora', `${dataHoraEdicao}:00`); }
+            
+            const cidadeSelect = form.querySelector('select[name="cidade"]');
+            const estadoSelect = form.querySelector('select[name="estado"]');
+            const cidadeNome = cidadeSelect.value;
+            const estadoUf = estadoSelect.options[estadoSelect.selectedIndex]?.dataset.uf;
+            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); } 
+            
+            try {
+                const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` }, body: formData });
+                const result = await response.json();
+                if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro.'); }
+                alert(`Hive ${method === 'POST' ? 'criada' : 'atualizada'} com sucesso!`);
+                closeModal(form.closest('.modal-overlay').id);
+                document.querySelector('.filter-btn.active').click();
+                form.reset();
+                form.querySelector('.image-preview').style.display = 'none';
+                form.querySelector('.image-upload-container span').style.display = 'block';
+            } catch (error) {
+                alert(`Falha: ${error.message}`);
+            } finally {
+                submitButton.disabled = false;
+                submitButton.textContent = originalButtonText;
+            }
+        }
+
+        document.getElementById('eventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'http://127.0.0.1:5000/hive/AdicionarHive', 'POST');
+        });
+
+        document.getElementById('editEventForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleFormSubmit(this, 'http://127.0.0.1:5000/hive/editarHive', 'PUT');
+        });
+
+    });
+    </script>
+</body>
+</html>

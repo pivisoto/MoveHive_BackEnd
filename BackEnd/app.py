@@ -15,6 +15,7 @@ from Controllers.Comentario_Controller import comentario_bp
 from Controllers.Treino_Controller import treino_bp
 from Controllers.Notificacao_Controller import notificacao_bp
 from Controllers.UsuarioEmpresa_Controller import usuarioEmpresa_bp
+from Controllers.Hive_controller import hive_bp
 
 
 app = Flask(__name__, template_folder='Views/Social_media')
@@ -38,6 +39,7 @@ app.register_blueprint(comentario_bp)
 app.register_blueprint(treino_bp)
 app.register_blueprint(notificacao_bp)
 app.register_blueprint(usuarioEmpresa_bp)
+app.register_blueprint(hive_bp)
 
 @app.route('/')
 def index():

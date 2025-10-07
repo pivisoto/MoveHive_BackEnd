@@ -15,9 +15,9 @@ class Usuario:
                  pontos = 0,
                  status_usuario='ativo',
                  post_criados = None,
-                 eventos_criados=None, 
-                 eventos_participando=None,
-                 eventos_pendentes=None,
+                 hive_criados=None, 
+                 hive_participando=None,
+                 hive_pendentes=None,
                  seguidores=None,
                  seguindo=None,
                  treinos_id=None):
@@ -40,9 +40,9 @@ class Usuario:
         self.seguidores = seguidores if seguidores is not None else []
         self.seguindo = seguindo if seguindo is not None else []
         self.esportes_praticados = esportes_praticados if esportes_praticados is not None else {}
-        self.eventos_criados = eventos_criados if eventos_criados is not None else []
-        self.eventos_participando = eventos_participando if eventos_participando is not None else []
-        self.eventos_pendentes = eventos_pendentes if eventos_pendentes is not None else []
+        self.hive_criados = hive_criados if hive_criados is not None else []
+        self.hive_participando = hive_participando if hive_participando is not None else []
+        self.hive_pendentes = hive_pendentes if hive_pendentes is not None else []
         self.treinos_id = treinos_id if treinos_id is not None else []
 
 
@@ -64,9 +64,9 @@ class Usuario:
             'status_usuario': self.status_usuario,
             'post_criados' : self.post_criados,
             'esportes_praticados': self.esportes_praticados,
-            'eventos_criados': self.eventos_criados,
-            'eventos_participando': self.eventos_participando,
-            'eventos_pendentes': self.eventos_pendentes,
+            'hive_criados': self.hive_criados,
+            'hive_participando': self.hive_participando,
+            'hive_pendentes': self.eventos_pendentes,
             'seguidores': self.seguidores,
             'seguindo': self.seguindo,
             'treinos_id': self.treinos_id,
