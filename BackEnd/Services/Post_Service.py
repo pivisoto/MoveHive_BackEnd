@@ -14,7 +14,19 @@ bucket = storage.bucket()
 @token_required
 def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0):
     usuario_id = g.user_id
+
+    # Tenta buscar usuário normal
     user_ref = db.collection('Usuarios').document(usuario_id)
+    user_doc = user_ref.get()
+    pasta_bucket = f"Usuarios/{usuario_id}/Fotos/"
+
+    # Se não existir, tenta empresa
+    if not user_doc.exists:
+        user_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+        user_doc = user_ref.get()
+        if not user_doc.exists:
+            return {"erro": "Usuário ou empresa não encontrado"}, 404
+        pasta_bucket = f"UsuariosEmpresa/{usuario_id}/Fotos/"
 
     postagem = Postagem(
         usuario_id=usuario_id,
@@ -25,17 +37,20 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
         contador_curtidas=contador_curtidas
     )
 
+    # Upload da imagem, se existir
     if imagem:
-        caminho = f"Usuarios/{usuario_id}/Fotos/post_{postagem.id}.jpg"
+        caminho = f"{pasta_bucket}post_{postagem.id}.jpg"
         blob = bucket.blob(caminho)
         blob.upload_from_file(imagem, content_type=imagem.content_type)
         blob.make_public()
         postagem.imagem = blob.public_url
 
+    # Salva postagem
     db.collection('Postagens').document(postagem.id).set(postagem.to_dict())
 
+    # Atualiza lista de post_criados na coleção correta
     user_ref.update({
-        'post_criados': ArrayUnion([postagem.id])
+        'post_criados': firestore.ArrayUnion([postagem.id])
     })
 
     return postagem.to_dict(), 201
@@ -236,18 +251,25 @@ def feed_sem_filtro():
 @token_required
 def feed_seguindos():
     usuario_id = g.user_id  # usuário logado
+
+    # Tenta buscar usuário normal
     usuario_ref = db.collection("Usuarios").document(usuario_id)
     usuario_doc = usuario_ref.get()
 
+    # Se não existe, tenta empresa
     if not usuario_doc.exists:
-        return {"erro": "Usuário não encontrado"}, 404
+        usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
+        usuario_doc = usuario_ref.get()
+        if not usuario_doc.exists:
+            return {"erro": "Usuário não encontrado"}, 404
 
     usuario_data = usuario_doc.to_dict()
-    seguindo = usuario_data.get("seguindo", [])  
+    seguindo = usuario_data.get("seguindo", [])
 
     if not seguindo:
-        return []  
+        return []
 
+    # Buscar postagens de todos que o usuário/empresa segue
     postagens_ref = (
         db.collection("Postagens")
         .where("usuario_id", "in", seguindo)
@@ -263,8 +285,15 @@ def feed_seguindos():
 
         usuario_id_post = postagem_data.get("usuario_id")
         if usuario_id_post:
+            # Primeiro busca na coleção Usuarios
             usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
             usuario_doc_post = usuario_ref_post.get()
+
+            # Se não existir, tenta UsuariosEmpresa
+            if not usuario_doc_post.exists:
+                usuario_ref_post = db.collection("UsuariosEmpresa").document(usuario_id_post)
+                usuario_doc_post = usuario_ref_post.get()
+
             if usuario_doc_post.exists:
                 usuario_data_post = usuario_doc_post.to_dict()
                 usuario_data_post["id"] = usuario_doc_post.id
