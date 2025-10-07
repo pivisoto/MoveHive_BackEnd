@@ -52,3 +52,7 @@ def adicionar_informacoes_empresa():
 
 
 
+@usuarioEmpresa_bp.route('/ListarEmpresas', methods=['GET'])
+def listar_usuarios_sem_filtro():
+    resposta, status = usuarioEmpresa_service.listar_empresas_sem_filtro()
+    return jsonify(resposta), status

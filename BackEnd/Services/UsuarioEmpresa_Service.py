@@ -94,3 +94,47 @@ def adicionar_dados_modal_empresa(dados_modal=None, arquivo_foto=None):
     }, 200
 
 
+@token_required
+def listar_empresas_sem_filtro():
+    try:
+        usuario_logado_id = g.user_id
+
+        usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
+        usuario_logado_doc = usuario_logado_ref.get()
+
+        if not usuario_logado_doc.exists:
+            usuario_logado_ref = db.collection('UsuariosEmpresa').document(usuario_logado_id)
+            usuario_logado_doc = usuario_logado_ref.get()
+            if not usuario_logado_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+
+        lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
+
+        todas_empresas_ref = db.collection('UsuariosEmpresa').stream()
+
+        empresas_sugeridas = []
+        for doc in todas_empresas_ref:
+            if doc.id == usuario_logado_id:
+                continue  
+            
+            if doc.id in lista_seguindo:
+                continue  
+
+            dados = doc.to_dict()
+
+            empresas_sugeridas.append({
+                'id': doc.id,
+                'nome': dados.get('nome'),
+                'username': dados.get('username'),
+                'foto_perfil': dados.get('foto_perfil', ''),
+                'biografia': dados.get('biografia', ''),
+                'setor': dados.get('setor', ''),
+                'seguidores': len(dados.get('seguidores', [])),
+            })
+
+        return {'empresas': empresas_sugeridas}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_empresas: {e}")
+        return {'erro': str(e)}, 500
