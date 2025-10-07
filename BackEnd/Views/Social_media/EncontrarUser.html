@@ -260,16 +260,39 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const baseUrl = 'http://127.0.0.1:5000';
             const token = localStorage.getItem('jwtToken');
 
+            // --- NOVA LÓGICA ADICIONADA AQUI ---
+            // Decodifica o token para verificar o tipo de usuário e ajustar a UI.
+            try {
+                if (token) {
+                    const decodedToken = jwt_decode(token);
+                    console.log("Token decodificado:", decodedToken); // Para depuração
+
+                    // Se o usuário for do tipo "empresa", esconde o botão de sugestões.
+                    if (decodedToken.tipo_usuario === 'empresa') {
+                        const suggestionsButton = document.getElementById('filter-suggestions');
+                        if (suggestionsButton) {
+                            suggestionsButton.style.display = 'none';
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error("Não foi possível decodificar o token:", error);
+                // O token pode ser inválido, continua a execução sem privilégios especiais.
+            }
+            // --- FIM DA NOVA LÓGICA ---
+
             // URLs da API
             const randomUsersApiUrl = `${baseUrl}/usuario/usuariosSemFiltro`;
             const suggestionsApiUrl = `${baseUrl}/usuario/usuariosComFiltro`; 
             const followingApiUrl = `${baseUrl}/usuario/usuariosSeguidos`;
-            const companiesApiUrl = `${baseUrl}/usuarioEmpresa/ListarEmpresas`; // Nova URL da API
+            const companiesApiUrl = `${baseUrl}/usuarioEmpresa/ListarEmpresas`;
             const followApiUrl = `${baseUrl}/usuario/follow`;
             const unfollowApiUrl = `${baseUrl}/usuario/unfollow`;
             
@@ -280,7 +303,7 @@
             const closeButton = document.querySelector('.close-button');
             const filterRandomBtn = document.getElementById('filter-random');
             const filterSuggestionsBtn = document.getElementById('filter-suggestions');
-            const filterCompaniesBtn = document.getElementById('filter-companies'); // Novo botão
+            const filterCompaniesBtn = document.getElementById('filter-companies');
             const filterFollowingBtn = document.getElementById('filter-following');
             const filterButtons = [filterRandomBtn, filterSuggestionsBtn, filterCompaniesBtn, filterFollowingBtn];
 
@@ -298,12 +321,11 @@
                 userEntry.className = 'user-entry';
                 userEntry.dataset.userId = entity.id;
 
-                const isCompany = !!entity.setor; // Verifica se é uma empresa pela existência do campo 'setor'
+                const isCompany = !!entity.setor;
                 const userName = entity.username || 'usuário';
                 const fullName = isCompany ? (entity.nome || 'Nome da empresa não informado') : (entity.nome_completo || 'Nome não informado');
                 const userAvatar = entity.foto_perfil || `https://ui-avatars.com/api/?name=${encodeURIComponent(userName)}&size=45&background=e0e0e0&color=333`;
                 
-                // A API de empresas já retorna apenas quem não seguimos, então 'is_followed_by_me' será falso.
                 const isFollowed = options.isFollowingList ? true : (entity.is_followed_by_me || false);
                 
                 let extraInfoElement = '';
@@ -374,7 +396,7 @@
             }
             
             /**
-             * Envia a requisição para a API para seguir/deixar de seguir.
+             * Envia a requisição para la API para seguir/deixar de seguir.
              */
             async function toggleFollowState(userId, follow, token) {
                 const url = follow ? followApiUrl : unfollowApiUrl;
@@ -463,10 +485,8 @@
                         throw new Error(errorData.erro || `Erro na API: ${response.statusText}`);
                     }
                     const data = await response.json();
-                    console.log(data);
                     const entities = data.usuarios || data.seguidores || data.usuarios_seguindo || data.empresas; // Generalizado
 
-                    // Limpa a mensagem de "carregando"
                     container.querySelector('.loading-message').remove();
 
                     if (Array.isArray(entities) && entities.length > 0) {

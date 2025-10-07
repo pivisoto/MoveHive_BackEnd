@@ -94,6 +94,7 @@ def adicionar_dados_modal_empresa(dados_modal=None, arquivo_foto=None):
     }, 200
 
 
+# Implementado
 @token_required
 def listar_empresas_sem_filtro():
     try:

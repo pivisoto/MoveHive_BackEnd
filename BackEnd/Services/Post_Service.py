@@ -181,14 +181,21 @@ def editar_postagem_por_id(post_id, descricao=None, imagem=None):
 @token_required
 def feed_sem_filtro():
     usuario_id = g.user_id  # usuário logado
+
     usuario_ref = db.collection("Usuarios").document(usuario_id)
     usuario_doc = usuario_ref.get()
 
+    # Se não existe, tenta empresa
     if not usuario_doc.exists:
-        return {"erro": "Usuário não encontrado"}, 404
+        usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
+        usuario_doc = usuario_ref.get()
+        if not usuario_doc.exists:
+            return {"erro": "Usuário não encontrado"}, 404
 
     usuario_data = usuario_doc.to_dict()
     seguindo = usuario_data.get("seguindo", [])
+    if not isinstance(seguindo, list):
+        seguindo = list(seguindo) if seguindo else []
 
     # Buscar todas postagens em ordem decrescente
     postagens_ref = db.collection("Postagens").order_by("data_criacao", direction=firestore.Query.DESCENDING)
@@ -202,10 +209,17 @@ def feed_sem_filtro():
 
         usuario_id_post = postagem_data.get("usuario_id")
 
-        # Ignorar posts de quem o usuário segue (e do próprio usuário, se quiser)
+        # Ignorar posts de quem o usuário/empresa segue ou do próprio
         if usuario_id_post and usuario_id_post not in seguindo and usuario_id_post != usuario_id:
+            # Primeiro tenta buscar na coleção Usuarios
             usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
             usuario_doc_post = usuario_ref_post.get()
+
+            # Se não existir, tenta UsuariosEmpresa
+            if not usuario_doc_post.exists:
+                usuario_ref_post = db.collection("UsuariosEmpresa").document(usuario_id_post)
+                usuario_doc_post = usuario_ref_post.get()
+
             if usuario_doc_post.exists:
                 usuario_data_post = usuario_doc_post.to_dict()
                 usuario_data_post["id"] = usuario_doc_post.id

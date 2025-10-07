@@ -449,38 +449,42 @@ def listar_usuarios_sem_filtro():
         usuario_logado_doc = usuario_logado_ref.get()
 
         if not usuario_logado_doc.exists:
-            return {'erro': 'Usuário autenticado não encontrado'}, 404
+            usuario_logado_ref = db.collection('UsuariosEmpresa').document(usuario_logado_id)
+            usuario_logado_doc = usuario_logado_ref.get()
+            if not usuario_logado_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
 
         lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
+        if not isinstance(lista_seguindo, list):
+            lista_seguindo = list(lista_seguindo) if lista_seguindo else []
 
         todos_os_usuarios_ref = db.collection('Usuarios').stream()
 
         usuarios_sugeridos = []
         for doc in todos_os_usuarios_ref:
-            
             if doc.id == usuario_logado_id:
-                continue  # não incluir eu mesmo
-            
+                continue
+
             if doc.id in lista_seguindo:
-                continue  # não incluir quem já sigo
+                continue
 
             dados = doc.to_dict()
 
             usuarios_sugeridos.append({
-                'id': doc.id, 
+                'id': doc.id,
                 'username': dados.get('username'),
                 'nome_completo': dados.get('nome_completo'),
-                'foto_perfil': dados.get('foto_perfil'),
+                'foto_perfil': dados.get('foto_perfil', ''),
                 'biografia': dados.get('biografia', ''),
                 'cidade': dados.get('cidade', ''),
                 'estado': dados.get('estado', ''),
-                'esportes_praticados': dados.get('esportes_praticados', {})
+                'esportes_praticados': dados.get('esportes_praticados', []),
             })
 
         return {'usuarios': usuarios_sugeridos}, 200
 
     except Exception as e:
-        print(f"Erro em listar_usuarios: {e}") 
+        print(f"Erro em listar_usuarios_sem_filtro: {e}")
         return {'erro': str(e)}, 500
         
 # Implementado
