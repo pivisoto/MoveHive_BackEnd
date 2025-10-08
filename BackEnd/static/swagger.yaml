@@ -3646,13 +3646,14 @@ paths:
                   erro:
                     type: string
                     example: "Erro de conexão com o banco de dados."
-  # Comentários
-  /comentario/AdicionarComentario:
+  #Comentarios
+  /postagem/AdicionarComentario:
     post:
       tags:
         - Comentário
       summary: Adicionar um novo comentário a uma postagem
-      description: Cria um comentário associado a uma postagem específica.
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3662,32 +3663,38 @@ paths:
               properties:
                 post_id:
                   type: string
-                  example: "abc123"
-                texto:
+                  example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                comentario:
                   type: string
-                  example: "Esse treino foi incrível!"
+                  example: "Comentário muito bom!"
               required:
                 - post_id
-                - texto
+                - comentario
       responses:
         '201':
-          description: Comentário criado com sucesso
+          description: Comentário adicionado com sucesso
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  comentario_id:
+                  mensagem:
                     type: string
-                    example: "def456"
-                  post_id:
-                    type: string
-                    example: "abc123"
-                  texto:
-                    type: string
-                    example: "Esse treino foi incrível!"
+                    example: "Comentário adicionado com sucesso!"
+                  comentario:
+                    type: object
+                    properties:
+                      comentario_id:
+                        type: string
+                        example: "398454ae-e7ed-4015-8749-06c357724b8e"
+                      usuario_id:
+                        type: string
+                        example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                      comentario:
+                        type: string
+                        example: "Comentário muito bom!"
         '400':
-          description: Erro na requisição (dados inválidos ou incompletos)
+          description: Requisição inválida (campos ausentes ou incorretos)
           content:
             application/json:
               schema:
@@ -3695,22 +3702,43 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "Campos obrigatórios ausentes"
+                    example: "Campos 'post_id' e 'comentario' são obrigatórios."
+        '404':
+          description: Postagem não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Postagem não encontrada."
+        '500':
+          description: Erro interno ao adicionar comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao adicionar comentário: Erro inesperado."
 
-  /comentario/ListarComentarios/{post_id}:
+  /postagem/ListarComentarios/{post_id}:
     get:
       tags:
         - Comentário
-      summary: Listar comentários de uma postagem
-      description: Retorna todos os comentários associados a um determinado post_id.
+      summary: Listar todos os comentários de uma postagem
+      security:
+        - bearerAuth: []
       parameters:
         - name: post_id
           in: path
           required: true
-          description: ID da postagem a ser consultada
           schema:
             type: string
-            example: "abc123"
+          description: ID da postagem para listar os comentários
+          example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
       responses:
         '200':
           description: Lista de comentários retornada com sucesso
@@ -3723,31 +3751,42 @@ paths:
                   properties:
                     comentario_id:
                       type: string
-                      example: "def456"
-                    texto:
+                      example: "398454ae-e7ed-4015-8749-06c357724b8e"
+                    usuario_id:
                       type: string
-                      example: "Muito bom!"
-                    data_criacao:
+                      example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                    comentario:
                       type: string
-                      format: date-time
-                      example: "2025-10-07T20:45:00Z"
+                      example: "Comentário muito bom!"
         '404':
-          description: Nenhum comentário encontrado
+          description: Postagem não encontrada
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  mensagem:
+                  erro:
                     type: string
-                    example: "Nenhum comentário encontrado para este post."
+                    example: "Postagem não encontrada."
+        '500':
+          description: Erro interno ao listar comentários
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao listar comentários: Erro inesperado."
 
-  /comentario/DeletarComentario:
+
+  /postagem/DeletarComentario:
     post:
       tags:
         - Comentário
-      summary: Deletar um comentário
-      description: Remove um comentário específico com base no seu ID.
+      summary: Deletar um comentário específico de uma postagem
+      security:
+        - bearerAuth: []
       requestBody:
         required: true
         content:
@@ -3755,14 +3794,18 @@ paths:
             schema:
               type: object
               properties:
+                post_id:
+                  type: string
+                  example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
                 comentario_id:
                   type: string
-                  example: "def456"
+                  example: "398454ae-e7ed-4015-8749-06c357724b8e"
               required:
+                - post_id
                 - comentario_id
       responses:
         '200':
-          description: Comentário deletado com sucesso
+          description: Comentário removido com sucesso
           content:
             application/json:
               schema:
@@ -3772,7 +3815,7 @@ paths:
                     type: string
                     example: "Comentário removido com sucesso."
         '400':
-          description: Erro na requisição (ID não fornecido ou inválido)
+          description: Requisição inválida (dados ausentes)
           content:
             application/json:
               schema:
@@ -3780,9 +3823,19 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "O campo 'comentario_id' é obrigatório."
+                    example: "Campos 'post_id' e 'comentario' são obrigatórios."
+        '403':
+          description: Usuário sem permissão para remover o comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para excluir este comentário."
         '404':
-          description: Comentário não encontrado
+          description: Postagem ou comentário não encontrado
           content:
             application/json:
               schema:
@@ -3791,6 +3844,16 @@ paths:
                   erro:
                     type: string
                     example: "Comentário não encontrado."
+        '500':
+          description: Erro interno ao deletar comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao deletar comentário: Erro inesperado."
 
 # Treinos
   /treino/AdicionarTreino:
