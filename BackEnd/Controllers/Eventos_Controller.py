@@ -12,22 +12,12 @@ def criar_evento():
     data_hora_str = request.form.get("data_hora_str")
     localizacao = request.form.get("localizacao")
     endereco = request.form.get("endereco")
-    max_participantes = request.form.get("max_participantes")
     torneio = request.form.get("torneio", "false").lower() == "true"
     premiacao = request.form.get("premiacao", 0)
-    privado = request.form.get("privado", "false").lower() == "true"
-    observacoes = request.form.get("observacoes", "")
+    link_oficial = request.form.get("link_oficial","")
 
-    print(titulo, descricao, esporte_nome, data_hora_str, localizacao, max_participantes, torneio, premiacao, privado, observacoes)
-    print("oiii")
-    
-    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, endereco, max_participantes]):
+    if not all([titulo, descricao, esporte_nome, data_hora_str, localizacao, endereco]):
         return {"erro": "Todos os campos obrigatórios devem ser preenchidos."}, 400
-
-    try:
-        max_participantes = int(max_participantes)
-    except ValueError:
-        return {"erro": "max_participantes deve ser um número inteiro."}, 400
 
     arquivo_foto = request.files.get("arquivo_foto")
 
@@ -38,15 +28,15 @@ def criar_evento():
         data_hora_str=data_hora_str,
         localizacao=localizacao,
         endereco=endereco,
-        max_participantes=max_participantes,
         torneio=torneio,
         premiacao=premiacao,
-        privado=privado,
-        observacoes=observacoes,
-        arquivo_foto=arquivo_foto
+        arquivo_foto=arquivo_foto,
+        link_oficial=link_oficial
     )
 
     return evento_dict, status
+
+
 
 # Implementado
 @evento_bp.route('/meusEventos', methods=['GET'])

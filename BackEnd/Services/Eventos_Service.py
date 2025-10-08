@@ -9,7 +9,7 @@ import firebase_admin
 from flask import g
 from google.cloud.firestore_v1 import ArrayUnion
 from datetime import datetime
-from Models.Eventos_Model import Evento  # ajuste o caminho se necessário
+from Models.Eventos_Model import Evento  
 from datetime import datetime
 import uuid
 from firebase_admin import firestore, credentials, storage
@@ -26,11 +26,15 @@ db = firestore.client()
 # Implementado
 @token_required
 def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, endereco, localizacao,
-                     max_participantes, torneio=False, premiacao=0, privado=False,
-                     observacoes=None, arquivo_foto=None):
+                    torneio=False, premiacao=0, link_oficial=None, arquivo_foto=None):
     
     usuario_id = g.user_id
-    user_ref = db.collection('Usuarios').document(usuario_id)
+
+    user_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        return {"erro": "Permissão negada. Somente empresas podem criar eventos."}, 200
 
     esportes_ref = db.collection('Esportes')
     esporte_query = esportes_ref.where('nome', '==', esporte_nome).limit(1).stream()
@@ -38,7 +42,6 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, endereco, l
 
     if esporte_doc is None:
         return {"erro": f"Esporte '{esporte_nome}' não encontrado."}, 404
-
 
     try:
         data_hora = datetime.strptime(data_hora_str, "%Y-%m-%dT%H:%M:%S")
@@ -51,9 +54,6 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, endereco, l
     except ValueError:
         return {"erro": "Formato de data_hora inválido. Use: YYYY-MM-DDTHH:MM:SS"}, 400
 
-    if max_participantes <= 0:
-        return {"erro": "Número máximo de participantes deve ser positivo."}, 400
-
     evento = Evento(
         usuario_id=usuario_id,
         titulo=titulo,
@@ -62,19 +62,17 @@ def adicionar_evento(titulo, descricao, esporte_nome, data_hora_str, endereco, l
         localizacao=localizacao,
         endereco=endereco,
         data_hora=data_hora,
-        max_participantes=max_participantes,
         torneio=torneio,
         premiacao=premiacao,
         foto=None,  
-        participantes=[usuario_id],
-        privado=privado,
-        observacoes=observacoes,
+        link_oficial=link_oficial,
+        interesse=[],
         status="Inscricoes_abertas"
     )
 
     # Upload da imagem
     if arquivo_foto:
-        caminho = f"Usuarios/{usuario_id}/Fotos/evento_{evento.id}.jpg"
+        caminho = f"UsuariosEmpresa/{usuario_id}/Fotos/evento_{evento.id}.jpg"
         blob = bucket.blob(caminho)
         blob.upload_from_file(arquivo_foto, content_type=arquivo_foto.content_type)
         blob.make_public()

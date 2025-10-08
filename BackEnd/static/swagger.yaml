@@ -1280,7 +1280,6 @@ paths:
                     type: string
                     example: "Ocorreu um erro interno ao processar o perfil."
 
-
 # UsuarioEmpresa
   /usuarioEmpresa/RegistrarUsuarioEmpresa:
     post:
@@ -1493,7 +1492,6 @@ paths:
                     type: string
                     example: "Erro inesperado ao listar empresas." 
   
-
 # Esporte
  
   /esportes/ListarEsportes:
@@ -2447,7 +2445,6 @@ paths:
                     type: string
                     example: Erro ao processar decisão do participante.
 
-  
 # Hive
   /hive/AdicionarHive:
     post:

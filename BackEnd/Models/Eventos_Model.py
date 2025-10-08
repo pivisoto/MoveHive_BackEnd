@@ -3,8 +3,7 @@ from datetime import datetime, timezone
 
 class Evento:
     def __init__(self, usuario_id, titulo, descricao, esporte_nome, localizacao, endereco, data_hora,
-                 max_participantes, torneio=False, premiacao=0, foto=None,
-                 participantes=None, pendentes=None, privado=False, observacoes=None, status=None):
+                torneio=False, premiacao=0, foto=None, link_oficial=None, interesse=None, status=None):
 
         self.id = str(uuid.uuid4())
         self.usuario_id = usuario_id
@@ -14,15 +13,12 @@ class Evento:
         self.localizacao = localizacao
         self.endereco = endereco
         self.data_hora = data_hora
-        self.max_participantes = max_participantes
         self.data_criacao = datetime.now(timezone.utc)
         self.torneio = torneio
         self.premiacao = premiacao if torneio else False
         self.foto = foto
-        self.participantes = participantes if participantes is not None else []
-        self.pendentes = pendentes if pendentes is not None else []
-        self.privado = privado
-        self.observacoes = observacoes if observacoes else ""
+        self.link_oficial = link_oficial
+        self.interesse = interesse if interesse is not None else []
         self.status = status
 
 
@@ -36,14 +32,11 @@ class Evento:
             'localizacao': self.localizacao,
             'endereco': self.endereco,
             'data_hora': self.data_hora.isoformat() if isinstance(self.data_hora, datetime) else self.data_hora,
-            'max_participantes': self.max_participantes,
             'data_criacao': self.data_criacao.isoformat(),
             'torneio': self.torneio,
             'premiacao': self.premiacao,
             'foto': self.foto,
-            'participantes': self.participantes,
-            'pendentes': self.pendentes,
-            'privado': self.privado,
-            'observacoes': self.observacoes,
+            'link_oficial': self.link_oficial,
+            'interesse': self.interesse,
             'status': self.status
         }
