@@ -3,7 +3,7 @@ from flask import g, jsonify
 from middlewares.auth_token import token_required
 from Models.Post_Model import Postagem
 from google.cloud.firestore import ArrayUnion
-
+import uuid
 
 db = firestore.client()
 bucket = storage.bucket()
@@ -14,7 +14,6 @@ bucket = storage.bucket()
 @token_required
 def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0):
     usuario_id = g.user_id
-
     # Tenta buscar usuário normal
     user_ref = db.collection('Usuarios').document(usuario_id)
     user_doc = user_ref.get()
@@ -55,6 +54,84 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
 
     return postagem.to_dict(), 201
 
+@token_required
+def adicionar_comentario(post_id, texto_comentario):
+    usuario_id = g.user_id
+    if not texto_comentario:
+        return {"erro": "O campo 'comentario' é obrigatório."}, 400
+
+    try:
+        post_ref = db.collection("Postagens").document(post_id)
+        post_doc = post_ref.get()
+
+        if not post_doc.exists:
+            return {"erro": "Postagem não encontrada."}, 404
+
+        comentario_id = str(uuid.uuid4())
+        novo_comentario = {
+            "comentario_id": comentario_id,
+            "usuario_id": usuario_id,
+            "comentario": texto_comentario
+        }
+
+        post_ref.update({
+            "comentarios": firestore.ArrayUnion([novo_comentario])
+        })
+
+        return {
+            "mensagem": "Comentário adicionado com sucesso!",
+            "comentario": novo_comentario
+        }, 201
+
+    except Exception as e:
+        return {"erro": f"Erro ao adicionar comentário: {str(e)}"}, 500
+
+
+def listar_comentarios_por_post(post_id):
+    try:
+        post_ref = db.collection("Postagens").document(post_id).get()
+        if not post_ref.exists:
+            return {"erro": "Postagem não encontrada."}, 404
+
+        post_data = post_ref.to_dict()
+        comentarios = post_data.get("comentarios", [])
+        return comentarios, 200
+    except Exception as e:
+        return {"erro": f"Erro ao listar comentários: {str(e)}"}, 500
+
+@token_required
+def deletar_comentario_por_id(post_id,comentario_id):
+    usuario_id = g.user_id
+    try:
+        post_ref = db.collection("Postagens").document(post_id)
+        post_doc = post_ref.get()
+
+        if not post_doc.exists:
+            return {"erro": "Postagem não encontrada."}, 404
+
+        post_data = post_doc.to_dict()
+        comentarios = post_data.get("comentarios", [])
+
+        comentario_encontrado = None
+        for comentario in comentarios:
+            if comentario.get("comentario_id") == comentario_id:
+                comentario_encontrado = comentario
+                break
+
+        if not comentario_encontrado:
+            return {"erro": "Comentário não encontrado."}, 404
+
+        if comentario_encontrado.get("usuario_id") != usuario_id:
+            return {"erro": "Você não tem permissão para excluir este comentário."}, 403
+
+        novos_comentarios = [comentario for comentario in comentarios if comentario.get("comentario_id") != comentario_id]
+
+        post_ref.update({"comentarios": novos_comentarios})
+
+        return {"mensagem": "Comentário removido com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao deletar comentário: {str(e)}"}, 500
 
 
 # Função para Listar Postagens
