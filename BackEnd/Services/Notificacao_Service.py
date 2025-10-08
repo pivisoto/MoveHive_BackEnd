@@ -13,13 +13,10 @@ bucket = storage.bucket()
 # Implementado
 @token_required
 def criar_notificacao(usuario_destino_id, tipo, referencia_id, mensagem):
-    
     usuario_origem_id = g.user_id
     user_ref = db.collection('Usuarios').document(usuario_destino_id)
-
     if not user_ref.get().exists:
         return {"erro": "Usuário destino não encontrado."}, 404
-
     notificacao = Notificacao(
         usuario_destino_id=usuario_destino_id,
         usuario_origem_id=usuario_origem_id,
@@ -27,10 +24,8 @@ def criar_notificacao(usuario_destino_id, tipo, referencia_id, mensagem):
         referencia_id=referencia_id,
         mensagem=mensagem
     )
-
     notificacoes_ref = db.collection('Notificacoes')
     notificacoes_ref.document(notificacao.id).set(notificacao.to_dict())
-
     return notificacao.to_dict(), 201
 
 

@@ -414,6 +414,39 @@
                 border-right: 1px solid var(--border-color);
             }
         }
+        .comments-section {
+            border-top: 1px solid var(--border-color);
+            padding: 10px 15px 15px 15px;
+            background-color: #fafafa;
+        }
+        .comment-item {
+            margin-bottom: 6px;
+            font-size: 0.9rem;
+        }
+        .comment-form {
+            display: flex;
+            margin-top: 10px;
+            gap: 8px;
+        }
+        .comment-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+        .comment-send-btn {
+            background-color: var(--accent-color);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .comment-send-btn:hover {
+            background-color: #e6c300;
+        }
+
     </style>
 </head>
 <body>
@@ -554,21 +587,21 @@
             // Esta função é o "molde" para cada post. Ela recebe um objeto 'post'
             // (que veio da API) e retorna uma string de HTML com os dados desse post.
             const createPostCardHTML = (post) => {
-                // Extrai os dados do objeto 'post' para variáveis locais para facilitar o uso.
                 const postId = post.id;
-                // Formata a data para um formato legível (ex: 25/07/2024, 15:30).
                 const formattedDateTime = formatDateTime(post.data_criacao);
-                // Cria um título dinâmico para o post usando a data formatada.
                 const postTitle = `Post - ${formattedDateTime}`;
-                // Define a imagem do post. Se a API não retornar uma imagem, usa uma imagem placeholder.
                 const postImage = post.imagem || "https://placehold.co/600x400/f0f2f5/333?text=Sem+Imagem";
                 const postDescription = post.descricao;
                 const likesCount = post.Contador_Curtida || 0;
-                // Conta o número de comentários. Garante que, se 'comentarios' não for um array, o resultado seja 0.
-                const commentsCount = Array.isArray(post.comentarios) ? post.comentarios.length : 0;
+                const comments = Array.isArray(post.comentarios) ? post.comentarios : [];
+                const commentsCount = comments.length;
 
-                // Retorna o bloco HTML completo do card do post, preenchido com as variáveis.
-                // Usamos template literals (crases ``) para construir o HTML de forma mais limpa.
+                const comentariosHTML = comments.map(c => `
+                    <div class="comment-item">
+                        <strong>${c.username || 'Usuário'}:</strong> ${c.texto}
+                    </div>
+                `).join('');
+                
                 return `
                     <article class="post-card" data-post-id="${postId}">
                         <div class="post-header">
@@ -582,13 +615,23 @@
                         <div class="post-description">
                             <p>${postDescription}</p>
                         </div>
+                    
                         <div class="post-social-actions">
                             <div class="social-item"><i class="far fa-heart"></i> <span>${likesCount}</span></div>
-                            <div class="social-item"><i class="far fa-comment"></i> <span>${commentsCount}</span></div>
+                            <div class="social-item"><i class="far fa-comment"></i> <span class="comment-count">${commentsCount}</span></div>
+                        </div>
+                    
+                        <div class="comments-section">
+                            <div class="comments-list">${comentariosHTML || '<p class="no-comments">Sem comentários ainda.</p>'}</div>
+                            <div class="comment-form">
+                                <input type="text" class="comment-input" placeholder="Escreva um comentário...">
+                                <button class="comment-send-btn"><i class="fas fa-paper-plane"></i></button>
+                            </div>
                         </div>
                     </article>
                 `;
             };
+
             // ===================================================================================
             // FIM DA SEÇÃO 2
             // ===================================================================================
@@ -703,6 +746,53 @@
                     if (deleteButton) {
                         postIdToDelete = deleteButton.closest('.post-card').dataset.postId;
                         deleteModalOverlay.style.display = 'flex';
+                    }
+                });
+                
+                // Envio de comentários
+                postsContainer.addEventListener('click', async (event) => {
+                    const sendBtn = event.target.closest('.comment-send-btn');
+                    if (!sendBtn) return;
+                
+                    const postCard = sendBtn.closest('.post-card');
+                    const postId = postCard.dataset.postId;
+                    const input = postCard.querySelector('.comment-input');
+                    const textoComentario = input.value.trim();
+                
+                    if (!textoComentario) {
+                        alert("Digite um comentário antes de enviar!");
+                        return;
+                    }
+                
+                    try {
+                        const response = await fetch(`http://127.0.0.1:5000/postagem/ComentarPostagem`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${jwtToken}`
+                            },
+                            body: JSON.stringify({
+                                postagem_id: postId,
+                                texto: textoComentario
+                            })
+                        });
+                    
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.erro || "Falha ao adicionar comentário.");
+                    
+                        // Atualiza a lista visualmente
+                        const commentsList = postCard.querySelector('.comments-list');
+                        const newCommentHTML = `<div class="comment-item"><strong>${result.username || 'Você'}:</strong> ${textoComentario}</div>`;
+                        commentsList.insertAdjacentHTML('beforeend', newCommentHTML);
+                    
+                        // Atualiza contador
+                        const countSpan = postCard.querySelector('.comment-count');
+                        countSpan.textContent = parseInt(countSpan.textContent) + 1;
+                    
+                        input.value = "";
+                    } catch (error) {
+                        console.error("Erro ao comentar:", error);
+                        alert(error.message);
                     }
                 });
 

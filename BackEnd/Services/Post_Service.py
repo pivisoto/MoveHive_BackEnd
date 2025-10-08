@@ -4,6 +4,8 @@ from middlewares.auth_token import token_required
 from Models.Post_Model import Postagem
 from google.cloud.firestore import ArrayUnion
 import uuid
+from .Notificacao_Service import criar_notificacao
+
 
 db = firestore.client()
 bucket = storage.bucket()
@@ -63,10 +65,10 @@ def adicionar_comentario(post_id, texto_comentario):
     try:
         post_ref = db.collection("Postagens").document(post_id)
         post_doc = post_ref.get()
-
+        dono_post = post_doc.to_dict().get("usuario_id")
         if not post_doc.exists:
             return {"erro": "Postagem não encontrada."}, 404
-
+        
         comentario_id = str(uuid.uuid4())
         novo_comentario = {
             "comentario_id": comentario_id,
@@ -78,6 +80,16 @@ def adicionar_comentario(post_id, texto_comentario):
             "comentarios": firestore.ArrayUnion([novo_comentario])
         })
 
+        usuario_ref = db.collection("Usuarios").document(usuario_id)
+        usuario_doc = usuario_ref.get()
+
+        if usuario_doc.exists:
+            username = usuario_doc.to_dict().get("username")
+            print(f"O nome de usuário é: {username}")
+        else:
+            print("Usuário não encontrado.")
+        mensagem = f"{username} comentou em seu post: {texto_comentario}"
+        criar_notificacao(dono_post,"Comentario",post_id,mensagem)
         return {
             "mensagem": "Comentário adicionado com sucesso!",
             "comentario": novo_comentario
