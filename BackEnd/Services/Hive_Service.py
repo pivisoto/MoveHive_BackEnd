@@ -114,7 +114,6 @@ def listar_MeusHive():
         if not hive:
             return jsonify({
                 "mensagem": "Nenhum hive encontrado para este usuário.",
-                "hives": []
             }), 200
 
         return jsonify(hive), 200
@@ -365,7 +364,7 @@ def cancelar_participacao(hive_id):
         return {"erro": f"Erro ao cancelar participação: {str(e)}"}, 500
 
 
-
+# Implementado
 @token_required
 def listarParticipandoHive():
     usuario_id = g.user_id  
@@ -396,3 +395,78 @@ def listarParticipandoHive():
 
     except Exception as e:
         return {"erro": f"Erro ao listar hive participando: {str(e)}"}, 500
+    
+
+# Implementado
+@token_required
+def decidirParticipantesHive(hive_id, usuario_id, acao):
+    usuario_dono = g.user_id
+    hive_ref = db.collection("Hive").document(hive_id)
+    hive_data = hive_ref.get().to_dict()
+
+    if hive_data["usuario_id"] != usuario_dono:
+        return {
+            "mensagem": "Apenas o dono do hive pode aprovar ou recusar participantes."
+        }, 200
+
+    pendentes = hive_data.get("pendentes", [])
+    if usuario_id not in pendentes:
+        return {
+            "mensagem": "Usuário não está na lista de pendentes.",
+        }, 200
+
+
+    if acao == "aceitar":
+        hive_ref.update({
+            "pendentes": firestore.ArrayRemove([usuario_id]),
+            "participantes": ArrayUnion([usuario_id])
+        })
+        db.collection("Usuarios").document(usuario_id).update({
+            "hive_pendentes": firestore.ArrayRemove([hive_id]),
+            "hive_participando": ArrayUnion([hive_id])
+        })
+        return {"mensagem": "Usuário aceito no hive."}, 200
+
+    elif acao == "recusar":
+        hive_ref.update({
+            "pendentes": firestore.ArrayRemove([usuario_id])
+        })
+        db.collection("Usuarios").document(usuario_id).update({
+            "hive_pendentes": firestore.ArrayRemove([hive_id])
+        })
+        return {"mensagem": "Usuário recusado."}, 200
+
+    else:
+        return {"erro": "Ação inválida"}, 400
+    
+
+# Implementado
+@token_required
+def listarPendentesHive(hive_id):
+    usuario_dono = g.user_id
+    hive_ref = db.collection("Hive").document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+
+    if hive_data.get("usuario_id") != usuario_dono:
+        return {"erro": "Apenas o dono do hive pode ver os pendentes."}, 200
+
+    pendentes_ids = hive_data.get("pendentes", [])
+    pendentes_info = []
+
+    for user_id in pendentes_ids:
+        user_doc = db.collection("Usuarios").document(user_id).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            pendentes_info.append({
+                "id": user_id,
+                "nome_completo": user_data.get("nome_completo"),
+                "username": user_data.get("username"),
+                "foto_perfil": user_data.get("foto_perfil")
+            })
+
+    return {"pendentes": pendentes_info}, 200

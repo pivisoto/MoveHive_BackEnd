@@ -3150,6 +3150,146 @@ paths:
                     type: string
                     description: Mensagem do erro.
 
+  /hive/decidirParticipanteHive:
+    post:
+      summary: Aprovar ou recusar participante pendente no Hive
+      description: Permite ao dono do Hive aceitar ou recusar participação de um usuário pendente.
+      tags:
+        - Hive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive onde será tomada a decisão.
+                usuario_id:
+                  type: string
+                  description: ID do usuário pendente a ser aceito ou recusado.
+                acao:
+                  type: string
+                  description: Ação a ser tomada, "aceitar" ou "recusar".
+                  enum: [aceitar, recusar]
+              required:
+                - hive_id
+                - usuario_id
+                - acao
+      responses:
+        '200':
+          description: Mensagem informativa da operação realizada.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    description: Status da aprovação ou recusa, ou aviso.
+        '400':
+          description: Requisição com dados inválidos.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro detalhando o problema.
+        '500':
+          description: Erro inesperado no servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem do erro.
+
+  /hive/listarPendentesHive:
+    post:
+      summary: Lista participantes pendentes do Hive
+      description: Permite ao dono do Hive obter detalhes dos usuários que solicitaram participação e estão pendentes de aprovação.
+      tags:
+        - Hive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive para listar pendentes.
+              required:
+                - hive_id
+      responses:
+        '200':
+          description: Lista de participantes pendentes ou mensagem de erro.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    properties:
+                      pendentes:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            id:
+                              type: string
+                              description: ID do usuário pendente.
+                            nome_completo:
+                              type: string
+                              description: Nome completo do usuário.
+                            username:
+                              type: string
+                              description: Nome de usuário.
+                            foto_perfil:
+                              type: string
+                              format: uri
+                              description: URL da foto de perfil do usuário.
+                  - type: object
+                    properties:
+                      erro:
+                        type: string
+                        description: Mensagem de erro ou aviso.
+        '400':
+          description: Requisição inválida pelo cliente.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro detalhada.
+        '404':
+          description: Hive não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro.
+        '500':
+          description: Erro inesperado no servidor.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem do erro.
+
 # Posts 
   /postagem/ListarPostagens:
     get:

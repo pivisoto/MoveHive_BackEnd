@@ -574,20 +574,33 @@
     <script>
     const token = localStorage.getItem('jwtToken');
 
-    function getUserIdFromToken() {
+    function decodeTokenPayload() {
         if (!token) return null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.user_id; 
+            console.log("JWT Decodificado:", payload);
+            return payload; 
         } catch (e) {
             console.error("Erro ao decodificar o token:", e);
             return null;
         }
     }
     
-    const currentUserId = getUserIdFromToken();
+    const tokenPayload = decodeTokenPayload();
+    const currentUserId = tokenPayload ? tokenPayload.user_id : null;
+    const currentUserType = tokenPayload ? tokenPayload.tipo_usuario : null;
 
     document.addEventListener('DOMContentLoaded', function () {
+        if (currentUserType === 'empresa') {
+            const myHivesBtn = document.querySelector('.filter-btn[data-filter="my-hives"]');
+            const participatingBtn = document.querySelector('.filter-btn[data-filter="participating"]');
+            const createHiveBtn = document.getElementById('open-modal-btn');
+
+            if (myHivesBtn) myHivesBtn.style.display = 'none';
+            if (participatingBtn) participatingBtn.style.display = 'none';
+            if (createHiveBtn) createHiveBtn.style.display = 'none';
+        }
+
         const mainContent = document.getElementById('main-content');
         const filterButtons = document.querySelectorAll('.filter-btn');
         let currentHives = []; 
@@ -774,9 +787,13 @@
             const isPending = currentUserId && pendentes.includes(currentUserId);
             const isCreator = currentUserId && hive.usuario_id === currentUserId;
 
-            if (isCreator) {
+            // --- MUDANÇA AQUI: Esconde o botão "Participar" para o criador OU para a empresa ---
+            if (isCreator || currentUserType === 'empresa') {
                 actionButton.style.display = 'none';
-                if (hive.privado) manageButton.style.display = 'block';
+                // Mostra o botão de gerenciar apenas para o criador (não para a empresa)
+                if (isCreator && hive.privado) {
+                    manageButton.style.display = 'block';
+                }
             } else {
                  actionButton.style.display = 'block';
                  actionButton.disabled = false;
@@ -857,7 +874,6 @@
                 ? 'http://127.0.0.1:5000/hive/participarHive'
                 : 'http://127.0.0.1:5000/hive/cancelarParticipacaoHive';
             
-            // CORREÇÃO: Ambos os endpoints esperam 'hive_id' no corpo da requisição.
             const payload = { hive_id: hiveId };
 
             const originalText = button.textContent;
@@ -896,9 +912,11 @@
             openModal('pending-requests-modal');
 
             try {
-                const response = await fetch('http://127.0.0.1:5000/hive/pendentes', {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ evento_id: hiveId })
+                // ATUALIZADO: Endpoint e corpo da requisição corrigidos
+                const response = await fetch('http://127.0.0.1:5000/hive/listarPendentesHive', {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ hive_id: hiveId })
                 });
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.erro || 'Erro ao buscar pendentes.');
@@ -913,7 +931,7 @@
                         listItem.innerHTML = `
                             <div class="pending-item-info">
                                 <img src="${profilePic}" alt="Foto de ${pendingUser.username}" class="pending-user-img">
-                                <span>${pendingUser.username}</span>
+                                <span>${pendingUser.username || pendingUser.nome_completo}</span>
                             </div>
                             <div class="pending-item-actions">
                                 <button class="pending-action-btn pending-accept-btn" data-action="aceitar">Aceitar</button>
@@ -937,16 +955,24 @@
                 const listItem = button.closest('.pending-item');
                 const userId = listItem.dataset.userId;
                 const hiveId = document.getElementById('manage-requests-btn').dataset.hiveId;
+                
                 button.disabled = true;
                 button.textContent = '...';
+                
                 try {
-                     const response = await fetch('http://127.0.0.1:5000/hive/decidirParticipante', {
-                        method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                        body: JSON.stringify({ evento_id: hiveId, usuario_id: userId, acao: action })
+                     // ATUALIZADO: Endpoint e corpo da requisição corrigidos
+                     const response = await fetch('http://127.0.0.1:5000/hive/decidirParticipanteHive', {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                        body: JSON.stringify({ hive_id: hiveId, usuario_id: userId, acao: action })
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.erro || 'Erro ao processar.');
-                    listItem.remove();
+                    
+                    alert(result.mensagem); // Informa o usuário sobre o sucesso
+                    listItem.remove(); // Remove o item da lista
+                    
+                    // Se a lista ficar vazia, exibe a mensagem
                     if(document.getElementById('pending-list').children.length === 0){
                         document.getElementById('pending-list').innerHTML = '<li>Nenhuma solicitação pendente.</li>';
                     }
