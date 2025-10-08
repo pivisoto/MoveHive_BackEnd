@@ -56,7 +56,7 @@ def registrar_empresa(nome, username, email, senha, cnpj, setor="", biografia=""
     blob = bucket.blob(f'UsuariosEmpresa/{empresa.id}/Fotos/.init')
     blob.upload_from_string('Pasta Fotos inicializada', content_type='text/plain')
 
-    token = generate_token(doc_ref.id)
+    token = generate_token(doc_ref.id, tipo_usuario="empresa")
 
     return {"token": token}, 201
 

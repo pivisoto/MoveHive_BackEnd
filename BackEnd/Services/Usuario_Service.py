@@ -80,7 +80,7 @@ def registrar_usuario(nome_completo, username, data_nascimento_str, email, senha
     blob = bucket.blob(f'Usuarios/{usuario.id}/Fotos/.init')
     blob.upload_from_string('Pasta Fotos inicializada', content_type='text/plain')
 
-    token = generate_token(doc_ref.id)
+    token = generate_token(doc_ref.id, tipo_usuario="usuario")
 
     return {"token": token}, 201
 
