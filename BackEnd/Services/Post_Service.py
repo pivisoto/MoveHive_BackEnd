@@ -4,7 +4,7 @@ from middlewares.auth_token import token_required
 from Models.Post_Model import Postagem
 from google.cloud.firestore import ArrayUnion
 import uuid
-from .Notificacao_Service import criar_notificacao
+from .Notificacao_Service import criar_notificacao, deletar_notificacao
 
 
 db = firestore.client()
@@ -57,6 +57,52 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
     return postagem.to_dict(), 201
 
 @token_required
+def toggle_curtida(post_id):
+    usuario_id = g.user_id
+    try:
+        post_ref = db.collection("Postagens").document(post_id)
+        post_doc = post_ref.get()
+        curtidas = post_doc.to_dict().get("curtidas", [])
+        dono_post = post_doc.to_dict().get("usuario_id")
+        if not post_doc.exists:
+            return {"erro": "Postagem não encontrada."}, 404
+        
+        requisicao_curtida = {"usuario_id": usuario_id,}
+
+        usuario_ref = db.collection("Usuarios").document(usuario_id)
+        usuario_doc = usuario_ref.get()
+        
+        if usuario_doc.exists:
+            username = usuario_doc.to_dict().get("username")
+            print(f"O nome de usuário é: {username}")
+        else:
+            print("Usuário não encontrado.")
+        
+        usuario_ja_curtiu = any(curtida.get("usuario_id") == usuario_id for curtida in curtidas)
+
+        if usuario_ja_curtiu:
+            post_ref.update({
+                "curtidas": firestore.ArrayRemove([requisicao_curtida]),
+                "contador_curtidas": firestore.Increment(-1)
+            })
+            notificacao_query = db.collection("Notificacoes").where("tipo", "==", "Curtida").where("referencia_id", "==", post_id).where("usuario_origem_id", "==", usuario_id).limit(1)
+            docs = notificacao_query.get()
+            notificacao_doc = docs[0]
+            deletar_notificacao(notificacao_doc.id)
+            return {"mensagem": "Removendo curtida."}, 200
+        else:
+            post_ref.update({
+                "curtidas": firestore.ArrayUnion([requisicao_curtida]),
+                "contador_curtidas": firestore.Increment(1)
+            })
+            mensagem = f"{username} curtiu seu post"
+            criar_notificacao(dono_post,"Curtida",post_id,mensagem)
+            return {"mensagem": "Post curtido com sucesso!"}, 201
+
+    except Exception as e:
+        return {"erro": f"Erro ao modificar curtida: {str(e)}"}, 500
+    
+@token_required
 def adicionar_comentario(post_id, texto_comentario):
     usuario_id = g.user_id
     if not texto_comentario:
@@ -97,8 +143,7 @@ def adicionar_comentario(post_id, texto_comentario):
 
     except Exception as e:
         return {"erro": f"Erro ao adicionar comentário: {str(e)}"}, 500
-
-
+    
 def listar_comentarios_por_post(post_id):
     try:
         post_ref = db.collection("Postagens").document(post_id).get()

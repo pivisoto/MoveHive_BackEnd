@@ -59,9 +59,20 @@ def adicionarComentario():
         return jsonify({"erro": "Campos 'post_id' e 'comentario' são obrigatórios."}), 400
     return Post_Service.adicionar_comentario(post_id, texto_comentario)
 
+@postagem_bp.route('/ToggleCurtida', methods=['POST'])
+def toggleCurtida():
+    dados = request.get_json()
+    if not dados:
+        return jsonify({"erro": "Dados não fornecidos."}), 400
+
+    post_id = dados.get("post_id")
+
+    if not post_id:
+        return jsonify({"erro": "Campo 'post_id' é obrigatório."}), 400
+    return Post_Service.toggle_curtida(post_id)
 
 @postagem_bp.route('/ListarComentarios/<string:post_id>', methods=['GET'])
-def listar_comentarios(post_id):
+def listarComentarios(post_id):
     try:
         comentarios = Post_Service.listar_comentarios_por_post(post_id)
         return jsonify(comentarios), 200
