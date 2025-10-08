@@ -3646,6 +3646,151 @@ paths:
                   erro:
                     type: string
                     example: "Erro de conexão com o banco de dados."
+  # Comentários
+  /comentario/AdicionarComentario:
+    post:
+      tags:
+        - Comentário
+      summary: Adicionar um novo comentário a uma postagem
+      description: Cria um comentário associado a uma postagem específica.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post_id:
+                  type: string
+                  example: "abc123"
+                texto:
+                  type: string
+                  example: "Esse treino foi incrível!"
+              required:
+                - post_id
+                - texto
+      responses:
+        '201':
+          description: Comentário criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  comentario_id:
+                    type: string
+                    example: "def456"
+                  post_id:
+                    type: string
+                    example: "abc123"
+                  texto:
+                    type: string
+                    example: "Esse treino foi incrível!"
+        '400':
+          description: Erro na requisição (dados inválidos ou incompletos)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Campos obrigatórios ausentes"
+
+  /comentario/ListarComentarios/{post_id}:
+    get:
+      tags:
+        - Comentário
+      summary: Listar comentários de uma postagem
+      description: Retorna todos os comentários associados a um determinado post_id.
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          description: ID da postagem a ser consultada
+          schema:
+            type: string
+            example: "abc123"
+      responses:
+        '200':
+          description: Lista de comentários retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    comentario_id:
+                      type: string
+                      example: "def456"
+                    texto:
+                      type: string
+                      example: "Muito bom!"
+                    data_criacao:
+                      type: string
+                      format: date-time
+                      example: "2025-10-07T20:45:00Z"
+        '404':
+          description: Nenhum comentário encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Nenhum comentário encontrado para este post."
+
+  /comentario/DeletarComentario:
+    post:
+      tags:
+        - Comentário
+      summary: Deletar um comentário
+      description: Remove um comentário específico com base no seu ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                comentario_id:
+                  type: string
+                  example: "def456"
+              required:
+                - comentario_id
+      responses:
+        '200':
+          description: Comentário deletado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Comentário removido com sucesso."
+        '400':
+          description: Erro na requisição (ID não fornecido ou inválido)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O campo 'comentario_id' é obrigatório."
+        '404':
+          description: Comentário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Comentário não encontrado."
 
 # Treinos
   /treino/AdicionarTreino:
