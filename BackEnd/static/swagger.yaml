@@ -3643,6 +3643,214 @@ paths:
                   erro:
                     type: string
                     example: "Erro de conexão com o banco de dados."
+  #Comentarios
+  /postagem/AdicionarComentario:
+    post:
+      tags:
+        - Comentário
+      summary: Adicionar um novo comentário a uma postagem
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post_id:
+                  type: string
+                  example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                comentario:
+                  type: string
+                  example: "Comentário muito bom!"
+              required:
+                - post_id
+                - comentario
+      responses:
+        '201':
+          description: Comentário adicionado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Comentário adicionado com sucesso!"
+                  comentario:
+                    type: object
+                    properties:
+                      comentario_id:
+                        type: string
+                        example: "398454ae-e7ed-4015-8749-06c357724b8e"
+                      usuario_id:
+                        type: string
+                        example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                      comentario:
+                        type: string
+                        example: "Comentário muito bom!"
+        '400':
+          description: Requisição inválida (campos ausentes ou incorretos)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Campos 'post_id' e 'comentario' são obrigatórios."
+        '404':
+          description: Postagem não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Postagem não encontrada."
+        '500':
+          description: Erro interno ao adicionar comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao adicionar comentário: Erro inesperado."
+
+  /postagem/ListarComentarios/{post_id}:
+    get:
+      tags:
+        - Comentário
+      summary: Listar todos os comentários de uma postagem
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: post_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID da postagem para listar os comentários
+          example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+      responses:
+        '200':
+          description: Lista de comentários retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    comentario_id:
+                      type: string
+                      example: "398454ae-e7ed-4015-8749-06c357724b8e"
+                    usuario_id:
+                      type: string
+                      example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                    comentario:
+                      type: string
+                      example: "Comentário muito bom!"
+        '404':
+          description: Postagem não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Postagem não encontrada."
+        '500':
+          description: Erro interno ao listar comentários
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao listar comentários: Erro inesperado."
+
+
+  /postagem/DeletarComentario:
+    post:
+      tags:
+        - Comentário
+      summary: Deletar um comentário específico de uma postagem
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post_id:
+                  type: string
+                  example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+                comentario_id:
+                  type: string
+                  example: "398454ae-e7ed-4015-8749-06c357724b8e"
+              required:
+                - post_id
+                - comentario_id
+      responses:
+        '200':
+          description: Comentário removido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Comentário removido com sucesso."
+        '400':
+          description: Requisição inválida (dados ausentes)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Campos 'post_id' e 'comentario' são obrigatórios."
+        '403':
+          description: Usuário sem permissão para remover o comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para excluir este comentário."
+        '404':
+          description: Postagem ou comentário não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Comentário não encontrado."
+        '500':
+          description: Erro interno ao deletar comentário
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao deletar comentário: Erro inesperado."
 
 # Treinos
   /treino/AdicionarTreino:
