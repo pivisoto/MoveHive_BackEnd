@@ -2834,11 +2834,321 @@ paths:
                     type: string
                     example: Erro ao excluir o hive descrição do erro.
         
-  /hive/
+  /hive/listarTodosHive:
+    get:
+      tags:
+        - Hive
+      summary: Listar todos os hives
+      description: Retorna todos os hives cadastrados com seus respectivos campos.
+      responses:
+        '200':
+          description: Lista de hives retornada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: ID único do hive.
+                    titulo:
+                      type: string
+                      description: Título do hive.
+                    descricao:
+                      type: string
+                      description: Descrição do hive.
+                    endereco:
+                      type: string
+                      description: Endereço do evento.
+                    localizacao:
+                      type: string
+                      description: Cidade/UF do evento.
+                    data_criacao:
+                      type: string
+                      format: date-time
+                      description: Data e hora de criação do hive.
+                    data_hora:
+                      type: string
+                      format: date-time
+                      description: Data e hora do evento.
+                    esporte_nome:
+                      type: string
+                      description: Nome do esporte.
+                    foto:
+                      type: string
+                      description: URL da foto do hive.
+                    max_participantes:
+                      type: number
+                      description: Número máximo de participantes.
+                    participantes:
+                      type: array
+                      items:
+                        type: string
+                      description: IDs dos participantes confirmados.
+                    pendentes:
+                      type: array
+                      items:
+                        type: string
+                      description: IDs dos usuários pendentes de confirmação.
+                    observacoes:
+                      type: string
+                      description: Observações gerais do evento.
+                    privado:
+                      type: boolean
+                      description: Indica se o hive é privado.
+                    status:
+                      type: string
+                      description: Status do evento (ex Aberto, Fechado).
+                    usuario_id:
+                      type: string
+                      description: ID do usuário criador do hive.
+                  required:
+                    - id
+                    - titulo
+                    - descricao
+                    - endereco
+                    - localizacao
+                    - data_criacao
+                    - data_hora
+                    - esporte_nome
+                    - foto
+                    - max_participantes
+                    - participantes
+                    - pendentes
+                    - observacoes
+                    - privado
+                    - status
+                    - usuario_id
+        '401':
+          description: Não autorizado. Token JWT ausente ou inválido.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token de autenticação inválido.
 
+  /hive/participarHive:
+    post:
+      summary: Solicita participação em um Hive.
+      description: Permite que o usuário solicite ou confirme participação em um Hive, dependendo da característica de privacidade e limite de participantes.
+      tags:
+        - Hive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive que deseja participar.
+              required:
+                - hive_id
+      responses:
+        '200':
+          description: Ação realizada com sucesso ou resposta informativa.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    description: Mensagem de status da operação.
+        '400':
+          description: Erro de validação do input.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Descrição do erro.
+        '404':
+          description: Hive não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro.
+        '500':
+          description: Erro inesperado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem do erro.
 
+  /hive/cancelarParticipacaoHive:
+    post:
+      summary: Cancela participação em um Hive.
+      description: Permite ao usuário cancelar sua participação em um Hive, desde que não seja o criador.
+      tags:
+        - Hive
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive que se deseja cancelar a participação.
+              required:
+                - hive_id
+      responses:
+        '200':
+          description: Ação realizada com sucesso ou resposta informativa.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    description: Mensagem de status da operação.
+        '400':
+          description: Erro de validação do input.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Descrição do erro.
+        '404':
+          description: Hive não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro.
+        '500':
+          description: Erro inesperado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem do erro.
       
-
+  /hive/ParticipandoHive:
+    get:
+      summary: Lista hives participando
+      description: Retorna todos os hives em que o usuário autenticado está participando, incluindo todos os detalhes do hive.
+      tags:
+        - Hive
+      responses:
+        '200':
+          description: Hives encontrados ou mensagem informativa.
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: ID do hive.
+                        data_criacao:
+                          type: string
+                          format: date-time
+                          description: Data de criação do hive.
+                        data_hora:
+                          type: string
+                          format: date-time
+                          description: Data e hora do evento.
+                        descricao:
+                          type: string
+                          description: Descrição do hive.
+                        endereco:
+                          type: string
+                          description: Endereço do evento.
+                        esporte_nome:
+                          type: string
+                          description: Nome do esporte.
+                        foto:
+                          type: string
+                          format: uri
+                          description: URL da imagem do hive.
+                        localizacao:
+                          type: string
+                          description: Localização do evento.
+                        max_participantes:
+                          type: integer
+                          description: Quantidade máxima de participantes.
+                        observacoes:
+                          type: string
+                          description: Observações do evento.
+                        participantes:
+                          type: array
+                          items:
+                            type: string
+                          description: Lista de IDs dos participantes.
+                        pendentes:
+                          type: array
+                          items:
+                            type: string
+                          description: Lista de IDs dos participantes pendentes.
+                        privado:
+                          type: boolean
+                          description: Indica se o hive é privado.
+                        status:
+                          type: string
+                          description: Situação atual do hive (ex Aberto).
+                        titulo:
+                          type: string
+                          description: Título do hive.
+                        usuario_id:
+                          type: string
+                          description: ID do usuário criador do hive.
+                  - type: object
+                    properties:
+                      mensagem:
+                        type: string
+                        description: Mensagem informativa quando não há hives.
+        '404':
+          description: Usuário não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem de erro.
+        '500':
+          description: Erro inesperado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    description: Mensagem do erro.
 
 # Posts 
   /postagem/ListarPostagens:

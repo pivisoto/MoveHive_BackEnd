@@ -77,7 +77,7 @@ def EditarHive():
 
 # Implementado
 @hive_bp.route('/deletarHive', methods=['DELETE'])
-def deletar_hive():
+def deletarHive():
     dados = request.get_json()
     
     hive_id = dados.get('hive_id') if dados else None
@@ -87,3 +87,40 @@ def deletar_hive():
 
     resposta, status = Hive_Service.deletar_hive(str(hive_id))
     return jsonify(resposta), status
+
+
+# Implementado
+@hive_bp.route('/listarTodosHive', methods=['GET'])
+def listarTodosHive():
+    return Hive_Service.listar_hives()
+
+
+# Implementado
+@hive_bp.route('/participarHive', methods=['POST'])
+def participarHive():
+    dados = request.get_json()
+    
+    if not dados or 'hive_id' not in dados:
+        return jsonify({"erro": "O campo 'hive_id' é obrigatório."}), 400
+
+    hive_id = dados['hive_id']
+    
+    return Hive_Service.participar_hive(hive_id)
+
+
+# Implementado
+@hive_bp.route('/cancelarParticipacaoHive', methods=['POST'])
+def cancelarParticipacaoHive():
+    dados = request.get_json()
+    
+    if not dados or 'hive_id' not in dados:
+        return jsonify({"erro": "O campo 'hive_id' é obrigatório."}), 400
+
+    hive_id = dados['hive_id']
+    
+    return Hive_Service.cancelar_participacao(hive_id)
+
+
+@hive_bp.route('/ParticipandoHive', methods=['GET'])
+def listarParticipandoHive():
+    return Hive_Service.listarParticipandoHive()

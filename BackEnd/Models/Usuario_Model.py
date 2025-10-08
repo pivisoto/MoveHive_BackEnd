@@ -66,7 +66,7 @@ class Usuario:
             'esportes_praticados': self.esportes_praticados,
             'hive_criados': self.hive_criados,
             'hive_participando': self.hive_participando,
-            'hive_pendentes': self.eventos_pendentes,
+            'hive_pendentes': self.hive_pendentes,
             'seguidores': self.seguidores,
             'seguindo': self.seguindo,
             'treinos_id': self.treinos_id,

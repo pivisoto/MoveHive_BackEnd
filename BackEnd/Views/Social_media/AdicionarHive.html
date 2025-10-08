@@ -710,9 +710,9 @@
                 let endpoint = '';
                 
                 switch(activeFilter) {
-                    case 'hives': endpoint = 'http://127.0.0.1:5000/hive/listarHives'; break;
+                    case 'hives': endpoint = 'http://127.0.0.1:5000/hive/listarTodosHive'; break;
                     case 'my-hives': endpoint = 'http://127.0.0.1:5000/hive/meusHive'; break; 
-                    case 'participating': endpoint = 'http://127.0.0.1:5000/hive/participando'; break;
+                    case 'participating': endpoint = 'http://127.0.0.1:5000/hive/ParticipandoHive'; break;
                 }
                 if (endpoint) fetchAndDisplay(endpoint, activeFilter);
             });
@@ -771,7 +771,7 @@
             manageButton.style.display = 'none';
 
             const isParticipating = currentUserId && participants.includes(currentUserId);
-            const isPending = currentUserId && pendentes.some(p => p.id === currentUserId);
+            const isPending = currentUserId && pendentes.includes(currentUserId);
             const isCreator = currentUserId && hive.usuario_id === currentUserId;
 
             if (isCreator) {
@@ -848,18 +848,35 @@
         async function handleHiveActionClick(event) {
             const button = event.target;
             const { hiveId, action } = button.dataset;
-            if (!hiveId || !action || !token) { alert('Erro: Ação, ID ou autenticação inválidos.'); return; }
-            const endpoint = action === 'participate' ? 'http://127.0.0.1:5000/hive/participarHive' : 'http://127.0.0.1:5000/hive/cancelarParticipacao';
+            if (!hiveId || !action || !token) {
+                alert('Erro: Ação, ID ou autenticação inválidos.');
+                return;
+            }
+
+            const endpoint = action === 'participate'
+                ? 'http://127.0.0.1:5000/hive/participarHive'
+                : 'http://127.0.0.1:5000/hive/cancelarParticipacaoHive';
+            
+            // CORREÇÃO: Ambos os endpoints esperam 'hive_id' no corpo da requisição.
+            const payload = { hive_id: hiveId };
+
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = 'Processando...';
+
             try {
                 const response = await fetch(endpoint, {
-                    method: 'POST', headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-                    body: JSON.stringify({ evento_id: hiveId }) 
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(payload)
                 });
                 const result = await response.json();
-                if (!response.ok) throw new Error(result.erro || 'Ocorreu um erro.');
+                if (!response.ok) {
+                    throw new Error(result.erro || 'Ocorreu um erro.');
+                }
                 alert(result.mensagem);
                 closeModal('event-details-modal');
                 document.querySelector('.filter-btn.active').click();

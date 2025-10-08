@@ -112,7 +112,10 @@ def listar_MeusHive():
 
 
         if not hive:
-            return jsonify({"mensagem": "Nenhum hive encontrado para este usuário."}), 404
+            return jsonify({
+                "mensagem": "Nenhum hive encontrado para este usuário.",
+                "hives": []
+            }), 200
 
         return jsonify(hive), 200
 
@@ -219,3 +222,177 @@ def deletar_hive(hive_id):
 
     except Exception as e:
         return {"erro": f"Erro ao excluir o hive: {str(e)}"}, 500
+
+
+# Implementado
+@token_required
+def listar_hives():
+
+    hive_ref = db.collection('Hive')
+    hive_docs = hive_ref.stream()  
+
+    lista_hive = []
+    for doc in hive_docs:
+        hive = doc.to_dict()
+        hive['id'] = doc.id
+        lista_hive.append(hive)
+
+    return jsonify(lista_hive), 200
+
+
+# Implementado
+@token_required
+def participar_hive(hive_id):
+    usuario_id = g.user_id
+
+    hive_ref = db.collection('Hive').document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+    dono_hive_id = hive_data.get("usuario_id")
+    privado = hive_data.get("privado", False)
+
+    if dono_hive_id == usuario_id:
+        return {
+            "mensagem": "Você é o criador deste hive e já está participando."
+        }, 200
+
+
+    participantes = hive_data.get("participantes", [])
+    pendentes = hive_data.get("pendentes", [])
+
+    if usuario_id in participantes:
+        return {
+            "mensagem": "Você já está participando deste hive."
+        }, 200
+    
+    if usuario_id in pendentes:
+        return {
+            "mensagem": "Você já solicitou participação e está aguardando aprovação."
+        }, 200
+
+    max_participantes = hive_data.get("max_participantes", 0)
+    if len(participantes) >= max_participantes:
+        return {
+            "mensagem": "Limite de participantes atingido.",
+        }, 200
+
+
+    try:
+        if privado:
+            hive_ref.update({
+                'pendentes': ArrayUnion([usuario_id])
+            })
+
+            user_ref = db.collection('Usuarios').document(usuario_id)
+            user_ref.update({
+                'hive_pendentes': ArrayUnion([hive_id])
+            })
+
+            return {"mensagem": "Solicitação enviada! Aguarde aprovação do dono do hive."}, 200
+
+        else:
+            hive_ref.update({
+                'participantes': ArrayUnion([usuario_id])
+            })
+
+            user_ref = db.collection('Usuarios').document(usuario_id)
+            user_ref.update({
+                'hive_participando': ArrayUnion([hive_id])
+            })
+
+            usuario_doc = user_ref.get()
+            usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
+            titulo_hive = hive_data.get('titulo', 'sem título')
+
+            mensagem = f"{usuario_nome} está participando do seu hive '{titulo_hive}'"
+            tipo = "participacao_hive"
+            referencia_id = hive_id
+
+            criar_notificacao(
+                usuario_destino_id=dono_hive_id,
+                tipo=tipo,
+                referencia_id=referencia_id,
+                mensagem=mensagem
+            )
+
+            return {"mensagem": "Participação confirmada com sucesso!"}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao participar do hive: {str(e)}"}, 500
+
+
+# Implementado
+@token_required
+def cancelar_participacao(hive_id):
+    usuario_id = g.user_id
+
+    hive_ref = db.collection('Hive').document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+    participantes = hive_data.get("participantes", [])
+
+    if usuario_id not in participantes:
+        return {
+            "mensagem": "Você não está participando deste hive."
+        }, 200
+
+    if hive_data.get("usuario_id") == usuario_id:
+        return {
+            "mensagem": "O criador do hive não pode cancelar a própria participação.",
+        }, 200
+
+    try:
+        hive_ref.update({
+            'participantes': firestore.ArrayRemove([usuario_id])
+        })
+
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_ref.update({
+            'hive_participando': firestore.ArrayRemove([hive_id])
+        })
+
+        return {"mensagem": "Participação cancelada com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao cancelar participação: {str(e)}"}, 500
+
+
+
+@token_required
+def listarParticipandoHive():
+    usuario_id = g.user_id  
+
+    try:
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return {"erro": "Usuário não encontrado."}, 404
+
+        user_data = user_doc.to_dict()
+        hive_ids = user_data.get('hive_participando', [])
+
+        if not hive_ids:
+            return jsonify({"mensagem": "Você não está participando de nenhum hive ou torneio."}), 200
+
+        hive_ref = db.collection('Hive')
+        hive = []
+        for hive_id in hive_ids:
+            hive_doc = hive_ref.document(hive_id).get()
+            if hive_doc.exists:
+                hive_data = hive_doc.to_dict()
+                hive_data['id'] = hive_doc.id
+                hive.append(hive_data)
+
+        return jsonify(hive), 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao listar hive participando: {str(e)}"}, 500
