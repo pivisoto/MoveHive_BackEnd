@@ -46,7 +46,42 @@ def ExcluirPostagem():
 
     return Post_Service.deletar_postagem_por_Postid(postagem_id)
 
+@postagem_bp.route('/AdicionarComentario', methods=['POST'])
+def adicionarComentario():
+    dados = request.get_json()
+    if not dados:
+        return jsonify({"erro": "Dados não fornecidos."}), 400
 
+    post_id = dados.get("post_id")
+    texto_comentario = dados.get("comentario")
+
+    if not post_id or not texto_comentario:
+        return jsonify({"erro": "Campos 'post_id' e 'comentario' são obrigatórios."}), 400
+    return Post_Service.adicionar_comentario(post_id, texto_comentario)
+
+
+@postagem_bp.route('/ListarComentarios/<string:post_id>', methods=['GET'])
+def listar_comentarios(post_id):
+    try:
+        comentarios = Post_Service.listar_comentarios_por_post(post_id)
+        return jsonify(comentarios), 200
+    except Exception as e:
+        return jsonify({"erro": str(e)}), 500
+
+@postagem_bp.route('/DeletarComentario', methods=['POST'])
+def deletarComentario():
+    dados = request.get_json()
+
+    if not dados:
+        return jsonify({"erro": "Dados não fornecidos."}), 400
+    
+    post_id = dados.get("post_id")
+    comentario_id = dados.get("comentario_id")
+
+    if not post_id or not comentario_id:
+        return jsonify({"erro": "Campos 'post_id' e 'comentario' são obrigatórios."}), 400
+    
+    return Post_Service.deletar_comentario_por_id(post_id,comentario_id)
 
 # Implementado
 @postagem_bp.route('/EditarPostagem', methods=['PUT'])
@@ -67,7 +102,6 @@ def EditarPostagem():
     )
 
     return jsonify(post_dict), status
-
 
 
 # Implementado
