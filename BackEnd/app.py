@@ -12,6 +12,7 @@ from Controllers.Esporte_Controller import esporte_bp
 from Controllers.Eventos_Controller import evento_bp
 from Controllers.Post_Controller import postagem_bp
 from Controllers.Comentario_Controller import comentario_bp
+from Controllers.Chat_Controller import chat_bp
 from Controllers.Treino_Controller import treino_bp
 from Controllers.Notificacao_Controller import notificacao_bp
 from Controllers.UsuarioEmpresa_Controller import usuarioEmpresa_bp
@@ -36,6 +37,7 @@ app.register_blueprint(esporte_bp)
 app.register_blueprint(evento_bp)
 app.register_blueprint(postagem_bp)
 app.register_blueprint(comentario_bp)
+app.register_blueprint(chat_bp)
 app.register_blueprint(treino_bp)
 app.register_blueprint(notificacao_bp)
 app.register_blueprint(usuarioEmpresa_bp)

@@ -3821,7 +3821,278 @@ paths:
                   erro:
                     type: string
                     example: "Erro ao deletar comentário: Erro inesperado."
+#Chat
+  /chat/CriarChat:
+    post:
+      tags:
+        - Chat
+      summary: Cria um novo grupo de chat.
+      description: Cria um novo documento de chat, adicionando o usuário autenticado como administrador e na lista de participantes.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nome_chat:
+                  type: string
+                  example: "Time de Corrida da Manhã"
+                  description: Nome do grupo de chat.
+                participantes:
+                  type: array
+                  items:
+                    type: string
+                    example: "def456-..."
+                  description: Lista de IDs dos usuários a serem convidados. O usuário logado é adicionado automaticamente.
+              required:
+                - nome_chat
+      responses:
+        '201':
+          description: Chat criado com sucesso
+          content:
+            application/json:
+              schema:
+                type: string
+                example: "Chat criado com sucesso"
+        '400':
+          description: Erro de validação - Nome do chat obrigatório
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Nome do chat é obrigatório"
+        '401':
+          description: Token JWT ausente ou inválido
 
+  /AdicionarParticipantes:
+    post:
+      tags:
+        - Chat
+      summary: Adiciona novos participantes a um grupo de chat.
+      description: Permite que o administrador do chat adicione novos usuários à lista de participantes.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat_id:
+                  type: string
+                  example: "81805a2e-3b04-4006-a808-ce49d25734ce"
+                  description: ID único do chat.
+                participantes_novos:
+                  type: array
+                  items:
+                    type: string
+                    example: "ghi789-..."
+                  description: Lista de IDs dos novos usuários a serem adicionados.
+              required:
+                - chat_id
+                - participantes_novos
+      responses:
+        '200':
+          description: Participante(s) adicionado(s) com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Participante(s) adicionado(s) com sucesso."
+        '400':
+          description: Erro de validação - Campos obrigatórios ausentes.
+        '403':
+          description: Proibido - Usuário não é o administrador do chat.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para adicionar este(s) usuário(s)."
+
+  /RemoverParticipantes:
+    post:
+      tags:
+        - Chat
+      summary: Remove um ou mais participantes de um grupo de chat.
+      description: O administrador pode remover qualquer usuário. Qualquer usuário pode se remover do chat.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat_id:
+                  type: string
+                  example: "81805a2e-3b04-4006-a808-ce49d25734ce"
+                  description: ID único do chat.
+                usuarios_remover:
+                  type: array
+                  items:
+                    type: string
+                    example: "jkl012-..."
+                  description: Lista de IDs dos usuários a serem removidos.
+              required:
+                - chat_id
+                - usuarios_remover
+      responses:
+        '200':
+          description: Participante(s) removido com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Participante(s) removido com sucesso."
+        '400':
+          description: Erro de validação - Campos obrigatórios ausentes.
+        '403':
+          description: Proibido - Usuário não é o administrador e está tentando remover outro usuário.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para remover este(s) usuário(s)."
+
+  /MudarNome:
+    post:
+      tags:
+        - Chat
+      summary: Altera o nome de um grupo de chat.
+      description: Somente o administrador do chat tem permissão para alterar o nome.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat_id:
+                  type: string
+                  example: "81805a2e-3b04-4006-a808-ce49d25734ce"
+                  description: ID único do chat.
+                nome_novo:
+                  type: string
+                  example: "Novo Nome do Grupo"
+                  description: O novo nome do chat.
+              required:
+                - chat_id
+                - nome_novo
+      responses:
+        '200':
+          description: Nome do chat atualizado com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Nome do chat atualizado com sucesso"
+        '400':
+          description: Erro de validação - Campos obrigatórios ausentes.
+        '403':
+          description: Proibido - Usuário não é o administrador do chat.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não tem permissão para mudar o nome do grupo."
+
+  /MandarMensagem:
+    post:
+      tags:
+        - Chat
+      summary: Envia uma nova mensagem para um chat.
+      description: Registra uma mensagem na subcoleção 'mensagens' e atualiza a 'ultima_mensagem' do chat principal.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                chat_id:
+                  type: string
+                  example: "81805a2e-3b04-4006-a808-ce49d25734ce"
+                  description: ID único do chat de destino.
+                texto_mensagem:
+                  type: string
+                  example: "Olá pessoal, treino amanhã às 7h!"
+                  description: O conteúdo da mensagem a ser enviada.
+              required:
+                - chat_id
+                - texto_mensagem
+      responses:
+        '201':
+          description: Mensagem enviada com sucesso.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Mensagem enviada com sucesso!"
+        '400':
+          description: Erro de validação - Campos obrigatórios ausentes.
+        '403':
+          description: Proibido - Usuário não é participante do chat.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não é participante deste chat e não pode enviar mensagens."
+        '404':
+          description: Chat não encontrado.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Chat não encontrado."
+        '500':
+          description: Erro interno no servidor ou no Firestore.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao enviar mensagem: Falha na comunicação com o banco de dados."
 # Treinos
   /treino/AdicionarTreino:
     post:
