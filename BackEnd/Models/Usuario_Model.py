@@ -20,7 +20,8 @@ class Usuario:
                  hive_pendentes=None,
                  seguidores=None,
                  seguindo=None,
-                 treinos_id=None):
+                 treinos_id=None,
+                 interesses=None):
         
         self.id = str(uuid.uuid4())
         self.nome_completo = nome_completo
@@ -44,6 +45,7 @@ class Usuario:
         self.hive_participando = hive_participando if hive_participando is not None else []
         self.hive_pendentes = hive_pendentes if hive_pendentes is not None else []
         self.treinos_id = treinos_id if treinos_id is not None else []
+        self.interesses = interesses if interesses is not None else []
 
 
     def to_dict(self):
@@ -70,4 +72,5 @@ class Usuario:
             'seguidores': self.seguidores,
             'seguindo': self.seguindo,
             'treinos_id': self.treinos_id,
+            'interesses': self.interesses
         }

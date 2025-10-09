@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-T">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eventos</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
@@ -301,7 +301,7 @@
         #details-info { display: flex; flex-direction: column; gap: 1rem; }
         #details-description { font-size: 1rem; line-height: 1.5; }
         .details-action-buttons { padding: 1rem 1.5rem; border-top: 1px solid var(--border-color); display: flex; gap: 1rem; flex-wrap: wrap; }
-        .action-btn { flex: 1; padding: 0.8rem; font-size: 1rem; font-weight: 600; border-radius: 25px; cursor: pointer; border: 1px solid; text-align: center; min-width: 120px; }
+        .action-btn { flex: 1; padding: 0.8rem; font-size: 1rem; font-weight: 600; border-radius: 25px; cursor: pointer; border: 1px solid; text-align: center; min-width: 120px; text-decoration: none; }
         .btn-primary { background-color: var(--primary-color); color: #333; border-color: var(--primary-color); }
         .btn-secondary { background-color: transparent; color: var(--text-color); border-color: var(--border-color); }
         .btn-tertiary { background-color: #374151; color: white; border-color: #374151; flex-basis: 100%;}
@@ -375,6 +375,8 @@
         <div class="filter-container">
             <button class="filter-btn active" data-filter="events">Eventos</button>
             <button class="filter-btn" data-filter="tournaments">Torneios</button>
+            <!-- NOVO BOTÃO: Fica escondido por padrão e será exibido via JS -->
+            <button class="filter-btn" data-filter="interested" id="interested-events-btn" style="display: none;">Lista de Interesse</button>
             <button class="filter-btn" data-filter="my-events">Meus Eventos</button>
             <button class="filter-btn" data-filter="participating">Participando</button>
         </div>
@@ -525,16 +527,18 @@
                         <input type="text" id="edit-endereco" name="endereco" required>
                     </div>
                     <div class="form-group">
-                        <label for="edit-observacoes">Observações/Ponto de referencia</label>
-                        <textarea id="edit-observacoes" name="observacoes"></textarea>
-                    </div>
-                    <div class="form-group">
-                        <label for="edit-max_participantes">Máx. de Participantes</label>
-                        <input type="number" id="edit-max_participantes" name="max_participantes" min="2" required>
+                        <label for="edit-link_oficial">Link Oficial (Opcional)</label>
+                        <input type="url" id="edit-link_oficial" name="link_oficial" placeholder="https://seusite.com/evento">
                     </div>
                     <div class="form-group">
                          <div class="switch-group">
-                            <div class="switch-label-group"> <span class="switch-label">É um torneio?</span> </div>
+                            <div class="switch-label-group">
+                                <span class="switch-label">É um torneio?</span>
+                                 <div class="tooltip">
+                                    <span class="tooltip-icon">?</span>
+                                    <span class="tooltip-text">Torneios são eventos competitivos com chaves e um campeão. Eventos normais são para jogos casuais.</span>
+                                </div>
+                            </div>
                             <label class="switch">
                                 <input type="checkbox" id="edit-torneio-checkbox" name="torneio" value="true">
                                 <span class="slider"></span>
@@ -545,13 +549,6 @@
                                 <label for="edit-premiacao">Valor da Premiação (R$)</label>
                                 <input type="number" id="edit-premiacao" name="premiacao" min="0" step="any">
                              </div>
-                        </div>
-                         <div class="switch-group">
-                            <div class="switch-label-group"><span class="switch-label">Evento Privado?</span></div>
-                            <label class="switch">
-                                <input type="checkbox" id="edit-privado-checkbox" name="privado" value="true">
-                                <span class="slider"></span>
-                            </label>
                         </div>
                     </div>
                     <button type="submit" class="submit-btn">Salvar Alterações</button>
@@ -576,9 +573,10 @@
                     <div id="details-info"></div>
                 </div>
                 <div class="details-action-buttons">
-                    <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
-                    <button id="participate-btn" class="action-btn btn-primary">Participar</button>
+                    <button id="interest-btn" class="action-btn btn-primary">Tenho interesse!</button>
+                    <a id="official-link-btn" class="action-btn btn-secondary" style="display: none;" target="_blank" rel="noopener noreferrer">Link Oficial</a>
                     <button id="manage-requests-btn" class="action-btn btn-tertiary" style="display: none;">Gerenciar Solicitações</button>
+                    <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
                 </div>
             </main>
         </div>
@@ -599,29 +597,84 @@
         </div>
     </div>
 
-    <script>
+<script>
     const token = localStorage.getItem('jwtToken');
 
-    function getUserIdFromToken() {
+    function getTokenPayload() {
         if (!token) return null;
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
-            return payload.user_id; 
+            return payload;
         } catch (e) {
             console.error("Erro ao decodificar o token:", e);
             return null;
         }
     }
-    
-    const currentUserId = getUserIdFromToken();
+
+    const tokenPayload = getTokenPayload();
+    const currentUserId = tokenPayload ? tokenPayload.user_id : null;
+    const userType = tokenPayload ? tokenPayload.tipo_usuario : null;
+
+    // --- NOVO ---
+    // Conjunto para armazenar os IDs dos eventos em que o usuário tem interesse.
+    // Usar um Set permite verificações de existência (has) muito rápidas.
+    let interestedEventsIds = new Set();
+
+    /**
+     * Busca os eventos em que o usuário está interessado e popula o 'interestedEventsIds'.
+     * É chamado uma vez quando a página carrega.
+     */
+    async function fetchInterestedEvents() {
+        if (!token) return;
+        try {
+            const response = await fetch('http://127.0.0.1:5000/evento/listarInteressados', {
+                method: 'GET',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            // Não tratamos o erro como crítico, a página pode funcionar sem essa lista.
+            if (!response.ok) {
+                console.error('Não foi possível buscar a lista de interesses do usuário.');
+                return;
+            }
+            const interestedEvents = await response.json();
+            // Limpa o conjunto e preenche com os IDs mais recentes.
+            interestedEventsIds.clear();
+            if (Array.isArray(interestedEvents)) {
+                interestedEvents.forEach(event => interestedEventsIds.add(event.id));
+            }
+        } catch (error) {
+            console.error("Falha ao buscar eventos de interesse:", error);
+        }
+    }
+
 
     document.addEventListener('DOMContentLoaded', function () {
+        // --- LÓGICA DE VISIBILIDADE DOS BOTÕES DE FILTRO ---
+        const myEventsButton = document.querySelector('button[data-filter="my-events"]');
+        const participatingButton = document.querySelector('button[data-filter="participating"]');
+        // MODIFICADO: Pega o novo botão
+        const interestedButton = document.getElementById('interested-events-btn');
+
+        if (participatingButton) {
+            participatingButton.remove();
+        }
+
+        // MODIFICADO: Lógica para mostrar/esconder botões baseada no tipo de usuário
+        if (userType === 'usuario') {
+            if (myEventsButton) myEventsButton.style.display = 'none';
+            if (interestedButton) interestedButton.style.display = 'inline-block'; // Mostra o botão
+        }
+
+        // --- NOVO ---
+        // Busca os interesses do usuário assim que o DOM estiver pronto.
+        fetchInterestedEvents();
+
         const mainContent = document.getElementById('main-content');
         const filterButtons = document.querySelectorAll('.filter-btn');
-        let currentEvents = []; 
-        let activeFilter = 'events'; 
+        let currentEvents = [];
+        let activeFilter = 'events';
         let allSports = [];
-        
+
         // --- FUNÇÕES DE EXIBIÇÃO ---
         function showEmptyMessage(filterType = 'events') {
             let message = "Nenhum evento encontrado.";
@@ -631,14 +684,15 @@
                  suggestion = "Clique no botão '+' para criar seu primeiro evento!";
             } else if (filterType === 'tournaments') {
                  message = "Nenhum torneio encontrado no momento.";
-            } else if (filterType === 'participating') {
-                 message = "Você não está participando de nenhum evento.";
-                 suggestion = "Explore os eventos e torneios para encontrar um para você!";
+            // MODIFICADO: Adiciona mensagem para a nova lista
+            } else if (filterType === 'interested') {
+                message = "Você ainda não demonstrou interesse em nenhum evento.";
+                suggestion = "Explore os eventos e clique em 'Tenho Interesse!' para adicioná-los aqui.";
             }
             mainContent.innerHTML = `<div class="text-center"><p>${message}</p><p>${suggestion}</p></div>`;
             mainContent.classList.add('text-center');
         }
-        
+
         function showLoading() {
             mainContent.innerHTML = '<p>Carregando eventos...</p>';
             mainContent.classList.add('text-center');
@@ -661,7 +715,7 @@
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${day}/${month}/${year} - ${hours}:${minutes}`;
         }
-        
+
         function createEventCard(event, index, isMyEvent = false) {
             const card = document.createElement('div');
             card.className = 'event-card';
@@ -669,10 +723,10 @@
 
             const participants = Array.isArray(event.participantes) ? event.participantes : [];
             const fullLocation = `${event.endereco ? event.endereco + ', ' : ''}${event.localizacao || 'Local não definido'}`;
-            
+
             let infoHtml = `
                 <div class="event-info"><i class="fas fa-map-marker-alt"></i><span>${fullLocation}</span></div>
-                <div class="event-info"><i class="fas fa-users"></i><span>${participants.length} / ${event.max_participantes} participantes</span></div>
+                <div class="event-info"><i class="fas fa-users"></i><span>${participants.length} participantes</span></div>
             `;
             if (event.torneio && event.premiacao > 0) {
                 const prizeFormatted = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(event.premiacao);
@@ -702,7 +756,7 @@
                     ${infoHtml}
                 </div>
             `;
-            
+
             card.addEventListener('click', () => { displayEventDetails(event); });
             return card;
         }
@@ -710,12 +764,12 @@
         async function fetchAndDisplay(endpoint, filter) {
              showLoading();
             try {
-                const response = await fetch(endpoint, { 
+                const response = await fetch(endpoint, {
                     method: 'GET' ,
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
-                
+
                 const events = await response.json();
                 currentEvents = Array.isArray(events) ? events : [];
                 mainContent.innerHTML = '';
@@ -743,16 +797,17 @@
                 button.classList.add('active');
                 activeFilter = button.getAttribute('data-filter');
                 let endpoint = '';
+                // MODIFICADO: Adiciona o case para o novo filtro
                 switch(activeFilter) {
                     case 'events': endpoint = 'http://127.0.0.1:5000/evento/listarEventos'; break;
                     case 'tournaments': endpoint = 'http://127.0.0.1:5000/evento/listarTorneios'; break;
+                    case 'interested': endpoint = 'http://127.0.0.1:5000/evento/listarInteressados'; break;
                     case 'my-events': endpoint = 'http://127.0.0.1:5000/evento/meusEventos'; break;
-                    case 'participating': endpoint = 'http://127.0.0.1:5000/evento/participando'; break;
                 }
                 if (endpoint) fetchAndDisplay(endpoint, activeFilter);
             });
         });
-        document.querySelector('.filter-btn[data-filter="events"]').click(); 
+        document.querySelector('.filter-btn[data-filter="events"]').click();
 
         const modalOverlays = document.querySelectorAll('.modal-overlay');
 
@@ -766,11 +821,11 @@
         modalOverlays.forEach(overlay => {
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
-        
+
         function displayEventDetails(event) {
             document.getElementById('details-image').src = event.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
             document.getElementById('details-description').textContent = event.descricao;
-            
+
             const titleContainer = document.getElementById('details-title-container');
             titleContainer.innerHTML = `<h2 id="details-title">${event.titulo}</h2>`;
 
@@ -790,14 +845,13 @@
             const infoContainer = document.getElementById('details-info');
             infoContainer.innerHTML = '';
             const participants = Array.isArray(event.participantes) ? event.participantes : [];
-            const pendentes = Array.isArray(event.pendentes) ? event.pendentes : [];
             const prizeFormatted = event.premiacao > 0 ? new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(event.premiacao) : null;
             const fullLocation = `${event.endereco ? event.endereco + ', ' : ''}${event.localizacao || 'Local não definido'}`;
-            
+
             const detailsList = [
                 { icon: 'fa-calendar-alt', text: formatEventDate(event.data_hora) },
                 { icon: 'fa-map-marker-alt', text: fullLocation },
-                { icon: 'fa-users', text: `${participants.length} de ${event.max_participantes} participantes` },
+                { icon: 'fa-users', text: `${participants.length} participantes` },
                 { icon: 'fa-futbol', text: `Esporte: ${event.esporte_nome}` },
                 (event.torneio && prizeFormatted) ? { icon: 'fa-trophy', text: `Premiação: ${prizeFormatted}` } : null,
                 event.observacoes ? { icon: 'fa-info-circle', text: `Observações: ${event.observacoes}` } : null
@@ -807,13 +861,25 @@
                 infoContainer.innerHTML += `<div class="event-info"><i class="fas ${detail.icon}"></i> <span>${detail.text}</span></div>`;
             });
 
-            const actionButton = document.getElementById('participate-btn');
+            const linkButton = document.getElementById('official-link-btn');
+            if (event.link_oficial) {
+                linkButton.href = event.link_oficial;
+                linkButton.style.display = 'block';
+            } else {
+                linkButton.style.display = 'none';
+            }
+
+            const actionButton = document.getElementById('interest-btn');
             const manageButton = document.getElementById('manage-requests-btn');
             actionButton.dataset.eventId = event.id;
             manageButton.dataset.eventId = event.id;
             manageButton.style.display = 'none';
 
-            const isParticipating = currentUserId && participants.includes(currentUserId);
+            // --- LÓGICA DO BOTÃO MODIFICADA ---
+            // Usa o 'interestedEventsIds' como fonte da verdade.
+            const isInterested = interestedEventsIds.has(event.id);
+            // Mantém a verificação de pendentes, pois é um estado específico.
+            const pendentes = Array.isArray(event.pendentes) ? event.pendentes : [];
             const isPending = currentUserId && pendentes.some(p => p.id === currentUserId);
             const isCreator = currentUserId && event.usuario_id === currentUserId;
 
@@ -824,16 +890,20 @@
                  actionButton.style.display = 'block';
                  actionButton.disabled = false;
                  actionButton.className = 'action-btn';
-                 if (isParticipating) {
-                    actionButton.textContent = 'Cancelar Inscrição';
-                    actionButton.classList.add('btn-danger');
-                    actionButton.dataset.action = 'cancel';
-                } else if (isPending) {
+
+                 // 1. Checa se o usuário está com a solicitação pendente
+                 if (isPending) {
                     actionButton.textContent = 'Aguardando Aprovação';
                     actionButton.classList.add('btn-secondary');
                     actionButton.disabled = true;
-                } else {
-                    actionButton.textContent = event.privado ? 'Solicitar Participação' : 'Participar';
+                 // 2. Se não estiver pendente, checa se já tem interesse
+                 } else if (isInterested) {
+                    actionButton.textContent = 'Não tenho interesse'; // Texto atualizado
+                    actionButton.classList.add('btn-danger');
+                    actionButton.dataset.action = 'cancel';
+                 // 3. Se não, mostra o botão para registrar interesse
+                 } else {
+                    actionButton.textContent = event.privado ? 'Solicitar Interesse' : 'Tenho Interesse!';
                     actionButton.classList.add('btn-primary');
                     actionButton.dataset.action = 'participate';
                 }
@@ -844,23 +914,26 @@
         window.openEditModal = async function(index) {
             const event = currentEvents[index];
             if (!event) return;
+
             document.getElementById('edit-event-id').value = event.id;
             document.getElementById('edit-titulo').value = event.titulo;
             document.getElementById('edit-descricao').value = event.descricao;
             document.getElementById('edit-data_hora_str').value = formatISODateToInput(event.data_hora_str);
             document.getElementById('edit-endereco').value = event.endereco || '';
-            document.getElementById('edit-observacoes').value = event.observacoes || '';
-            document.getElementById('edit-max_participantes').value = event.max_participantes;
+            document.getElementById('edit-link_oficial').value = event.link_oficial || '';
+
             populateSportsDropdown(document.getElementById('edit-nome_esporte'), event.esporte_nome);
+
             const preview = document.getElementById('edit-image-preview');
             preview.src = event.foto || '';
             preview.style.display = event.foto ? 'block' : 'none';
             document.querySelector('#edit-upload-area span').style.display = event.foto ? 'none' : 'block';
+
             const torneioCheckbox = document.getElementById('edit-torneio-checkbox');
             torneioCheckbox.checked = event.torneio;
             document.getElementById('edit-premiacao-group').classList.toggle('visible', event.torneio);
             document.getElementById('edit-premiacao').value = event.torneio ? (event.premiacao || '') : '';
-            document.getElementById('edit-privado-checkbox').checked = event.privado;
+
             const [cidadeNome, estadoUf] = (event.localizacao || ',').split(', ');
             const estadoSelect = document.getElementById('edit-estado');
             await loadStates(estadoSelect);
@@ -869,6 +942,7 @@
                 optionToSelect.selected = true;
                 await loadCities(document.getElementById('edit-cidade'), optionToSelect.value, cidadeNome);
             }
+
             openModal('edit-event-modal');
         }
 
@@ -885,12 +959,12 @@
                 document.querySelector('.filter-btn.active').click();
             } catch (error) { alert(`Falha ao excluir o evento: ${error.message}`); }
         }
-        
+
         async function handleEventActionClick(event) {
             const button = event.target;
             const { eventId, action } = button.dataset;
             if (!eventId || !action || !token) { alert('Erro: Ação, ID ou autenticação inválidos.'); return; }
-            const endpoint = action === 'participate' ? 'http://127.0.0.1:5000/evento/participarEvento' : 'http://127.0.0.1:5000/evento/cancelarParticipacao';
+            const endpoint = action === 'participate' ? 'http://127.0.0.1:5000/evento/tenhoInteresse' : 'http://127.0.0.1:5000/evento/cancelarInteresse';
             const originalText = button.textContent;
             button.disabled = true;
             button.textContent = 'Processando...';
@@ -902,6 +976,16 @@
                 const result = await response.json();
                 if (!response.ok) throw new Error(result.erro || 'Ocorreu um erro.');
                 alert(result.mensagem);
+
+                // --- NOVO: Atualiza o estado local ---
+                // Se a ação foi bem-sucedida, atualizamos nosso conjunto de IDs
+                // para manter o front-end sincronizado.
+                if (action === 'participate') {
+                    interestedEventsIds.add(eventId);
+                } else if (action === 'cancel') {
+                    interestedEventsIds.delete(eventId);
+                }
+
                 closeModal('event-details-modal');
                 document.querySelector('.filter-btn.active').click();
             } catch (error) {
@@ -910,9 +994,8 @@
                 button.textContent = originalText;
             }
         }
-        document.getElementById('participate-btn').addEventListener('click', handleEventActionClick);
+        document.getElementById('interest-btn').addEventListener('click', handleEventActionClick);
 
-        // --- LÓGICA DO EVENTO PRIVADO ---
         document.getElementById('manage-requests-btn').addEventListener('click', async function() {
             const eventId = this.dataset.eventId;
             const pendingList = document.getElementById('pending-list');
@@ -982,7 +1065,7 @@
             }
         });
 
-        // --- LÓGICA DOS FORMULÁRIOS ---
+        // --- LÓGICA DOS FORMULÁRIOS (sem alterações) ---
         async function populateSportsDropdown(selectElement, selectedValue = null) {
             if (allSports.length === 0) {
                 try {
@@ -1060,25 +1143,27 @@
             submitButton.disabled = true;
             submitButton.textContent = method === 'POST' ? 'Enviando...' : 'Salvando...';
             if (!token) { alert('Erro de autenticação.'); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
-            
+
             const formData = new FormData(form);
             const isTournament = form.querySelector('input[name="torneio"]').checked;
-            if (isTournament) { if (!formData.get('premiacao')) formData.set('premiacao', '0'); } 
+            if (isTournament) { if (!formData.get('premiacao')) formData.set('premiacao', '0'); }
             else { formData.delete('premiacao'); }
             const dataHoraInput = formData.get('data_hora_str');
             if (dataHoraInput) { formData.set('data_hora_str', `${dataHoraInput}:00`); }
-            
+
             const cidadeSelect = form.querySelector('select[name="cidade"]');
             const estadoSelect = form.querySelector('select[name="estado"]');
             const cidadeNome = cidadeSelect.value;
             const estadoUf = estadoSelect.options[estadoSelect.selectedIndex]?.dataset.uf;
-            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); } 
-            
+            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); }
+
             try {
                 const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` }, body: formData });
                 const result = await response.json();
-                if (!response.ok) { throw new Error(result.erro || 'Ocorreu um erro.'); }
-                alert(`Evento ${method === 'POST' ? 'criado' : 'atualizado'} com sucesso!`);
+                if (!response.ok) {
+                    throw new Error(result.erro || 'Ocorreu um erro.');
+                }
+                alert(result.erro || `Evento ${method === 'POST' ? 'criado' : 'atualizado'} com sucesso!`);
                 closeModal(form.closest('.modal-overlay').id);
                 document.querySelector('.filter-btn.active').click();
                 form.reset();

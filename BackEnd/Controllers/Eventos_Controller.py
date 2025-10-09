@@ -37,13 +37,13 @@ def criar_evento():
     return evento_dict, status
 
 
-
 # Implementado
 @evento_bp.route('/meusEventos', methods=['GET'])
 def meus_eventos():
     return Eventos_Service.listar_eventos_usuario()
 
 
+# Implementado
 @evento_bp.route('/usuario/<string:usuario_id>', methods=['GET'])
 def eventos_por_id_usuario(usuario_id):
     return Eventos_Service.listar_eventos_por_id_usuario(usuario_id)
@@ -58,16 +58,14 @@ def EditarEvento():
     if not evento_id:
         return jsonify({"erro": "O campo 'id' é obrigatório."}), 400
 
-    # Coleta os campos do formulário
     campos = [
         "titulo", "descricao", "esporte_nome", "data_hora", "localizacao", "endereco",
-        "max_participantes", "torneio", "premiacao", "privado", "observacoes"
+        "torneio", "premiacao"
     ]
 
     dados_evento = {campo: request.form.get(campo) for campo in campos}
     imagem = request.files.get("arquivo_foto")
 
-    # Chamada ao service
     resposta, status = Eventos_Service.editar_evento_por_id(
         evento_id=evento_id,
         dados=dados_evento,
@@ -80,16 +78,13 @@ def EditarEvento():
 # Implementado
 @evento_bp.route('/deletarEvento', methods=['DELETE'])
 def deletar_evento_controller():
-    # Obtém os dados do corpo da requisição JSON
     dados = request.get_json()
     
-    # Verifica se os dados foram enviados e extrai o evento_id
     evento_id = dados.get('evento_id') if dados else None
 
     if not evento_id:
         return jsonify({"erro": "O campo 'evento_id' é obrigatório."}), 400
 
-    # Converte para string para garantir compatibilidade, se necessário
     resposta, status = Eventos_Service.deletar_evento(str(evento_id))
     return jsonify(resposta), status
 
@@ -110,8 +105,8 @@ def listar_torneios():
 
 
 # Implementado
-@evento_bp.route('/participarEvento', methods=['POST'])
-def participar_evento():
+@evento_bp.route('/tenhoInteresse', methods=['POST'])
+def interesse_evento():
     dados = request.get_json()
     
     if not dados or 'evento_id' not in dados:
@@ -119,12 +114,13 @@ def participar_evento():
 
     evento_id = dados['evento_id']
     
-    return Eventos_Service.participar_evento(evento_id)
+    return Eventos_Service.tenho_interesse_evento(evento_id)
+
 
 
 
 # Implementado
-@evento_bp.route('/cancelarParticipacao', methods=['POST'])
+@evento_bp.route('/cancelarInteresse', methods=['POST'])
 def cancelar_participacao_evento():
     dados = request.get_json()
     
@@ -133,36 +129,12 @@ def cancelar_participacao_evento():
 
     evento_id = dados['evento_id']
     
-    return Eventos_Service.cancelar_participacao(evento_id)
+    return Eventos_Service.cancelar_interesse_evento(evento_id)
 
-
-# Implementado
-@evento_bp.route('/participando', methods=['GET'])
-def get_eventos_participando():
-    return Eventos_Service.listar_eventos_participando()
 
 
 # Implementado
-@evento_bp.route('/pendentes', methods=['POST'])
-def listar_pendentes_controller():
-    dados = request.get_json()
-    
-    if not dados or 'evento_id' not in dados:
-        return jsonify({"erro": "O campo 'evento_id' é obrigatório."}), 400
+@evento_bp.route('/listarInteressados', methods=['GET'])
+def listarInteressados():
+    return Eventos_Service.listar_eventos_interesse()
 
-    evento_id = dados['evento_id']
-    return Eventos_Service.listar_pendentes(evento_id)
-
-
-# Implementado
-@evento_bp.route('/decidirParticipante', methods=['POST'])
-def decidir_participante_controller():
-    dados = request.get_json()
-    evento_id = dados.get("evento_id")
-    usuario_id = dados.get("usuario_id")
-    acao = dados.get("acao")  
-
-    if not evento_id or not usuario_id or not acao:
-        return jsonify({"erro": "Campos 'evento_id', 'usuario_id' e 'acao' são obrigatórios"}), 400
-
-    return Eventos_Service.decidir_participante(evento_id, usuario_id, acao)

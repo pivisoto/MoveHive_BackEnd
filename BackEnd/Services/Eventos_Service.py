@@ -152,13 +152,8 @@ def editar_evento_por_id(evento_id, dados, imagem=None):
             try:
                 if campo == 'data_hora':
                     updates[campo] = datetime.strptime(valor, "%Y-%m-%dT%H:%M:%S")
-                elif campo in ['torneio', 'privado']:
+                elif campo in ['torneio']:
                     updates[campo] = valor.lower() == 'true'
-                elif campo == 'max_participantes':
-                    valor_int = int(valor)
-                    if valor_int <= 0:
-                        return {"erro": "max_participantes deve ser maior que zero."}, 400
-                    updates[campo] = valor_int
                 elif campo == 'premiacao':
                     updates[campo] = float(valor)
                 else:
@@ -168,7 +163,7 @@ def editar_evento_por_id(evento_id, dados, imagem=None):
 
     if imagem:
         try:
-            caminho = f"Usuarios/{usuario_id}/Fotos/evento_{evento_id}.jpg"
+            caminho = f"UsuariosEmpresa/{usuario_id}/Fotos/evento_{evento_id}.jpg"
             blob = bucket.blob(caminho)
 
             import time
@@ -195,7 +190,7 @@ def editar_evento_por_id(evento_id, dados, imagem=None):
 def deletar_evento(evento_id):
     usuario_id = g.user_id
 
-    user_ref = db.collection('Usuarios').document(usuario_id)
+    user_ref = db.collection('UsuariosEmpresa').document(usuario_id)
     evento_ref = db.collection('Eventos').document(evento_id)
     evento_doc = evento_ref.get()
 
@@ -208,8 +203,7 @@ def deletar_evento(evento_id):
         return {"erro": "Você não tem permissão para excluir este evento."}, 403
 
     try:
-        # Excluir imagem do Storage, se existir
-        caminho = f"Usuarios/{usuario_id}/Fotos/evento_{evento_id}.jpg"
+        caminho = f"UsuariosEmpresa/{usuario_id}/Fotos/evento_{evento_id}.jpg"
         blob = bucket.blob(caminho)
         if blob.exists():
             blob.delete()
@@ -220,27 +214,26 @@ def deletar_evento(evento_id):
         print(f"Erro ao excluir a imagem: {e}")
 
     try:
-        # Remover o evento do campo "eventos_participando" de cada usuário participante
-        participantes = evento_data.get('participantes', [])
-        for participante_id in participantes:
-            participante_ref = db.collection('Usuarios').document(participante_id)
-            participante_ref.update({
-                'eventos_participando': firestore.ArrayRemove([evento_id])
-            })
+        usuarios_ref = db.collection('Usuarios')
+        usuarios = usuarios_ref.stream()
 
-        # Deletar o evento
-        evento_ref.delete()
-
-        # Remover o evento da lista de eventos criados pelo usuário
-        user_ref.update({
-            'eventos_criados': firestore.ArrayRemove([evento_id])
-        })
-
-        return {"mensagem": "Evento excluído com sucesso."}, 200
-
+        for doc in usuarios:
+            dados_usuario = doc.to_dict()
+            if 'interesses' in dados_usuario and evento_id in dados_usuario['interesses']:
+                doc.reference.update({
+                    'interesses': firestore.ArrayRemove([evento_id])
+                })
+                print(f"Removido evento {evento_id} da lista de interesse do usuário {doc.id}")
     except Exception as e:
-        return {"erro": f"Erro ao excluir o evento: {str(e)}"}, 500
+        print(f"Erro ao remover o evento das listas de interesse: {e}")
 
+    evento_ref.delete()
+
+    user_ref.update({
+        'eventos_criados': firestore.ArrayRemove([evento_id])
+    })
+
+    return {"mensagem": "Evento excluído com sucesso."}, 200
 
 
 # Implementado
@@ -278,125 +271,10 @@ def listar_torneios():
         lista_eventos.append(evento)
 
     return jsonify(lista_eventos), 200
+ 
 
-
-
-# Implementado
 @token_required
-def participar_evento(evento_id):
-    usuario_id = g.user_id
-
-    evento_ref = db.collection('Eventos').document(evento_id)
-    evento_doc = evento_ref.get()
-
-    if not evento_doc.exists:
-        return {"erro": "Evento não encontrado."}, 404
-
-    evento_data = evento_doc.to_dict()
-    dono_evento_id = evento_data.get("usuario_id")
-    privado = evento_data.get("privado", False)
-
-    if dono_evento_id == usuario_id:
-        return {"erro": "Você é o criador deste evento e já está participando."}, 400
-
-    participantes = evento_data.get("participantes", [])
-    pendentes = evento_data.get("pendentes", [])
-
-    if usuario_id in participantes:
-        return {"erro": "Você já está participando deste evento."}, 400
-    
-    if usuario_id in pendentes:
-        return {"erro": "Você já solicitou participação e está aguardando aprovação."}, 400
-
-    max_participantes = evento_data.get("max_participantes", 0)
-    if len(participantes) >= max_participantes:
-        return {"erro": "Limite de participantes atingido."}, 400
-
-    try:
-        if privado:
-            evento_ref.update({
-                'pendentes': ArrayUnion([usuario_id])
-            })
-
-            user_ref = db.collection('Usuarios').document(usuario_id)
-            user_ref.update({
-                'eventos_pendentes': ArrayUnion([evento_id])
-            })
-
-            return {"mensagem": "Solicitação enviada! Aguarde aprovação do dono do evento."}, 200
-
-        else:
-            evento_ref.update({
-                'participantes': ArrayUnion([usuario_id])
-            })
-
-            user_ref = db.collection('Usuarios').document(usuario_id)
-            user_ref.update({
-                'eventos_participando': ArrayUnion([evento_id])
-            })
-
-            usuario_doc = user_ref.get()
-            usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
-            titulo_evento = evento_data.get('titulo', 'sem título')
-
-            mensagem = f"{usuario_nome} está participando do seu evento '{titulo_evento}'"
-            tipo = "participacao_evento"
-            referencia_id = evento_id
-
-            criar_notificacao(
-                usuario_destino_id=dono_evento_id,
-                tipo=tipo,
-                referencia_id=referencia_id,
-                mensagem=mensagem
-            )
-
-            return {"mensagem": "Participação confirmada com sucesso!"}, 200
-
-    except Exception as e:
-        return {"erro": f"Erro ao participar do evento: {str(e)}"}, 500
-
-
-
-# Implementado
-@token_required
-def cancelar_participacao(evento_id):
-    usuario_id = g.user_id
-
-    evento_ref = db.collection('Eventos').document(evento_id)
-    evento_doc = evento_ref.get()
-
-    if not evento_doc.exists:
-        return {"erro": "Evento não encontrado."}, 404
-
-    evento_data = evento_doc.to_dict()
-    participantes = evento_data.get("participantes", [])
-
-    if usuario_id not in participantes:
-        return {"erro": "Você não está participando deste evento."}, 400
-
-    if evento_data.get("usuario_id") == usuario_id:
-        return {"erro": "O criador do evento não pode cancelar a própria participação."}, 400
-
-    try:
-        evento_ref.update({
-            'participantes': firestore.ArrayRemove([usuario_id])
-        })
-
-        user_ref = db.collection('Usuarios').document(usuario_id)
-        user_ref.update({
-            'eventos_participando': firestore.ArrayRemove([evento_id])
-        })
-
-        return {"mensagem": "Participação cancelada com sucesso."}, 200
-
-    except Exception as e:
-        return {"erro": f"Erro ao cancelar participação: {str(e)}"}, 500
-    
-
-
-# Implementado
-@token_required
-def listar_eventos_participando():
+def listar_eventos_interesse():
     usuario_id = g.user_id  
 
     try:
@@ -407,10 +285,10 @@ def listar_eventos_participando():
             return {"erro": "Usuário não encontrado."}, 404
 
         user_data = user_doc.to_dict()
-        eventos_ids = user_data.get('eventos_participando', [])
+        eventos_ids = user_data.get('interesses', [])
 
         if not eventos_ids:
-            return jsonify({"mensagem": "Você não está participando de nenhum evento ou torneio."}), 200
+            return jsonify({"mensagem": "Você não está interessado em nenhum evento ou torneio."}), 200
 
         eventos_ref = db.collection('Eventos')
         eventos = []
@@ -424,51 +302,15 @@ def listar_eventos_participando():
         return jsonify(eventos), 200
 
     except Exception as e:
-        return {"erro": f"Erro ao listar eventos participando: {str(e)}"}, 500
+        return {"erro": f"Erro ao listar eventos interessados: {str(e)}"}, 500
     
 
 # Implementado
 @token_required
-def decidir_participante(evento_id, usuario_id, acao):
-    usuario_dono = g.user_id
-    evento_ref = db.collection("Eventos").document(evento_id)
-    evento_data = evento_ref.get().to_dict()
+def tenho_interesse_evento(evento_id):
+    usuario_id = g.user_id
 
-    if evento_data["usuario_id"] != usuario_dono:
-        return {"erro": "Apenas o dono pode aprovar ou recusar."}, 403
-
-    pendentes = evento_data.get("pendentes", [])
-    if usuario_id not in pendentes:
-        return {"erro": "Usuário não está na lista de pendentes."}, 400
-
-    if acao == "aceitar":
-        evento_ref.update({
-            "pendentes": firestore.ArrayRemove([usuario_id]),
-            "participantes": ArrayUnion([usuario_id])
-        })
-        db.collection("Usuarios").document(usuario_id).update({
-            "eventos_pendentes": firestore.ArrayRemove([evento_id]),
-            "eventos_participando": ArrayUnion([evento_id])
-        })
-        return {"mensagem": "Usuário aceito no evento."}, 200
-
-    elif acao == "recusar":
-        evento_ref.update({
-            "pendentes": firestore.ArrayRemove([usuario_id])
-        })
-        db.collection("Usuarios").document(usuario_id).update({
-            "eventos_pendentes": firestore.ArrayRemove([evento_id])
-        })
-        return {"mensagem": "Usuário recusado."}, 200
-
-    else:
-        return {"erro": "Ação inválida"}, 400
-    
-# Implementado
-@token_required
-def listar_pendentes(evento_id):
-    usuario_dono = g.user_id
-    evento_ref = db.collection("Eventos").document(evento_id)
+    evento_ref = db.collection('Eventos').document(evento_id)
     evento_doc = evento_ref.get()
 
     if not evento_doc.exists:
@@ -476,21 +318,55 @@ def listar_pendentes(evento_id):
 
     evento_data = evento_doc.to_dict()
 
-    if evento_data.get("usuario_id") != usuario_dono:
-        return {"erro": "Apenas o dono do evento pode ver os pendentes."}, 403
+    participantes = evento_data.get("interesse", [])
 
-    pendentes_ids = evento_data.get("pendentes", [])
-    pendentes_info = []
+    if usuario_id in participantes:
+        return {"erro": "Você já demonstrou interesse a esse Evento."}, 400
 
-    for user_id in pendentes_ids:
-        user_doc = db.collection("Usuarios").document(user_id).get()
-        if user_doc.exists:
-            user_data = user_doc.to_dict()
-            pendentes_info.append({
-                "id": user_id,
-                "nome_completo": user_data.get("nome_completo"),
-                "username": user_data.get("username"),
-                "foto_perfil": user_data.get("foto_perfil")
-            })
 
-    return {"pendentes": pendentes_info}, 200
+    evento_ref.update({
+        'interesse': ArrayUnion([usuario_id])
+    })
+
+
+    user_ref = db.collection('Usuarios').document(usuario_id)
+    user_ref.update({
+        'interesses': ArrayUnion([evento_id])
+    })
+
+
+    return {"mensagem": "Interesse mostrado para o evento."}, 200
+
+            
+
+# Implementado
+@token_required
+def cancelar_interesse_evento(evento_id):
+    usuario_id = g.user_id
+
+    evento_ref = db.collection('Eventos').document(evento_id)
+    evento_doc = evento_ref.get()
+
+    if not evento_doc.exists:
+        return {"erro": "Evento não encontrado."}, 404
+
+    evento_data = evento_doc.to_dict()
+    interessados = evento_data.get("interesse", [])
+
+    if usuario_id not in interessados:
+        return {"erro": "Você não demonstrou interesse nesse evento."}, 400
+
+    try:
+        evento_ref.update({
+            'interesse': firestore.ArrayRemove([usuario_id])
+        })
+
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_ref.update({
+            'interesses': firestore.ArrayRemove([evento_id])
+        })
+
+        return {"mensagem": "Interesse cancelada com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao cancelar interesse: {str(e)}"}, 500

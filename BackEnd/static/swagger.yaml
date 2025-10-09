@@ -1508,329 +1508,347 @@ paths:
 # Eventos
   /evento/AdicionarEvento:
    post:
-    tags:
-      - Eventos
-    security:
+      tags:
+        - Eventos
+      summary: Adiciona um novo evento esportivo
+      description: Cria um novo evento esportivo. Requer autenticação de empresa.
+      security:
         - bearerAuth: []
-    summary: Adiciona um novo evento esportivo
-    requestBody:
-      required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
-              titulo:
-                type: string
-                description: "Título do evento. Ex: 'Partida de futebol no parque'"
-              descricao:
-                type: string
-                description: "Descrição do evento. Ex: 'Venha jogar uma partida amistosa no parque Ibirapuera.'"
-              esporte_nome:
-                type: string
-                description: "Nome do esporte. Ex: 'Futebol'"
-              data_hora_str:
-                type: string
-                description: "Data e hora do evento no formato 'YYYY-MM-DD HH:MM'. Ex: '2025-08-05 16:30'"
-              localizacao:
-                type: string
-                description: "Local do evento. Ex: 'Parque Ibirapuera, São Paulo'"
-              endereco:
-                type: string
-                description: "Endereço do Lugar. Ex: 'Avenida 123'"
-              max_participantes:
-                type: integer
-                description: "Número máximo de participantes. Ex: 10"
-              torneio:
-                type: boolean
-                description: "Indica se é um torneio. Ex: false"
-              premiacao:
-                type: string
-                description: "Premiação do evento. Ex: 'Medalhas para os três primeiros colocados'"
-              privado:
-                type: boolean
-                description: "Indica se o evento é privado. Ex: true"
-              observacoes:
-                type: string
-                description: "Observações adicionais. Ex: 'Levar colete'"
-              arquivo_foto:
-                type: string
-                format: binary
-                description: "Imagem do evento (formato .jpg ou .png)"
-            required:
-              - titulo
-              - descricao
-              - esporte_nome
-              - data_hora_str
-              - localizacao
-              - endereco
-              - max_participantes
-              - torneio
-              - privado
-        application/json:  # Apenas para exibição do exemplo na UI
-          example:
-            titulo: "Partida de futebol no parque"
-            descricao: "Venha jogar uma partida amistosa no parque Ibirapuera."
-            esporte_nome: "Futebol"
-            data_hora_str: "2025-08-05 16:30"
-            localizacao: "Parque Ibirapuera, São Paulo"
-            max_participantes: 10
-            torneio: false
-            premiacao: "Medalhas para os três primeiros colocados"
-            privado: true
-            observacoes: "Levar colete"
-    responses:
-      '201':
-        description: Evento criado com sucesso
+      requestBody:
+        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
+              required:
+                - titulo
+                - descricao
+                - esporte_nome
+                - data_hora_str
+                - localizacao
+                - endereco
               properties:
-                id:
-                  type: string
-                  example: "evt_123abc"
                 titulo:
                   type: string
-                  example: "Partida de futebol no parque"
+                  example: Campeonato de Vôlei
                 descricao:
                   type: string
-                  example: "Venha jogar uma partida amistosa no parque Ibirapuera."
+                  example: Campeonato aberto para todas as idades.
                 esporte_nome:
                   type: string
-                  example: "Futebol"
-                data_hora:
+                  example: Vôlei
+                data_hora_str:
                   type: string
                   format: date-time
-                  example: "2025-08-05T16:30:00Z"
+                  description: Data e hora do evento (formato YYYY-MM-DDTHH:MM:SS)
+                  example: '2025-10-23T20:00:00'
                 localizacao:
                   type: string
-                  example: "Parque Ibirapuera, São Paulo"
+                  example: Ginásio Municipal
                 endereco:
                   type: string
-                  example: "Avenida 123"
-                max_participantes:
-                  type: integer
-                  example: 10
+                  example: Rua Principal, 123, Centro
                 torneio:
                   type: boolean
-                  example: false
-                premiacao:
-                  type: string
-                  example: "Medalhas para os três primeiros colocados"
-                privado:
-                  type: boolean
+                  default: false
                   example: true
-                observacoes:
+                premiacao:
+                  type: number
+                  default: 0
+                  example: 500
+                link_oficial:
                   type: string
-                  example: "Levar colete"
-                imagem_url:
+                  nullable: true
+                  example: 'https://evento.oficial.com'
+                arquivo_foto:
                   type: string
-                  format: uri
-                  example: "https://storage.googleapis.com/....."
-      '400':
-        description: Erro na requisição (campos inválidos ou obrigatórios não fornecidos)
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Todos os campos obrigatórios devem ser preenchidos."
-
-  /evento/meusEventos:
-   get:
-    tags:
-      - Eventos
-    summary: Lista os eventos criados pelo usuário autenticado
-    description: Retorna todos os eventos que foram criados pelo usuário logado (identificado via token).
-    security:
-      - bearerAuth: []  
-    responses:
-      '200':
-        description: Lista de eventos do usuário
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
+                  format: binary
+                  description: Imagem (opcional)
+      responses:
+        '201':
+          description: Evento criado com sucesso
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
                   id:
                     type: string
-                    example: "evt_123abc"
+                    example: 1234556
+                  usuario_id:
+                    type: string
+                    example: empresa_999
                   titulo:
                     type: string
-                    example: "Partida de futebol no parque"
+                    example: Campeonato de Vôlei
                   descricao:
                     type: string
-                    example: "Venha jogar uma partida amistosa no parque Ibirapuera."
+                    example: Campeonato aberto para todas as idades.
                   esporte_nome:
                     type: string
-                    example: "Futebol"
+                    example: Vôlei
                   data_hora:
                     type: string
                     format: date-time
-                    example: "2025-08-05T16:30:00Z"
+                    example: '2025-10-23T20:00:00+00:00'
                   localizacao:
                     type: string
-                    example: "Parque Ibirapuera, São Paulo"
-                  max_participantes:
-                    type: integer
-                    example: 10
+                    example: Ginásio Municipal
+                  endereco:
+                    type: string
+                    example: Rua Principal, 123, Centro
                   torneio:
                     type: boolean
-                    example: false
-                  premiacao:
-                    type: string
-                    example: "Medalhas para os três primeiros colocados"
-                  privado:
-                    type: boolean
                     example: true
-                  observacoes:
+                  premiacao:
+                    type: number
+                    example: 500
+                  foto:
                     type: string
-                    example: "Levar colete"
-                  imagem_url:
+                    nullable: true
+                    example: https://storage.googleapis.com/.../evento_123.jpg
+                  link_oficial:
                     type: string
-                    format: uri
-                    example: "https://meusite.com/imagens/eventos/evt_123abc.jpg"
-      '401':
-        description: Não autorizado – token ausente ou inválido
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Token de autenticação inválido ou ausente."
+                    nullable: true
+                    example: https://evento.oficial.com
+                  interesse:
+                    type: array
+                    items:
+                      type: string
+                  status:
+                    type: string
+                    example: Inscricoes_abertas
+        '400':
+          description: Dados obrigatórios ausentes ou erros de validação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Todos os campos obrigatórios devem ser preenchidos.
+        '404':
+          description: Esporte não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Esporte 'Vôlei' não encontrado.
+        '403':
+          description: Permissão negada para o usuário autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Permissão negada. Somente empresas podem criar eventos.
+
+  /evento/meusEventos:
+    get:
+      tags:
+        - Eventos
+      summary: Lista eventos criados pelo usuário
+      description: Retorna uma lista dos eventos esportivos criados pelo usuário autenticado. Requer autenticação.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de eventos do usuário autenticado
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: evento_123
+                    usuario_id:
+                      type: string
+                      example: empresa_999
+                    titulo:
+                      type: string
+                      example: Campeonato de Vôlei
+                    descricao:
+                      type: string
+                      example: Campeonato aberto para todas as idades.
+                    esporte_nome:
+                      type: string
+                      example: Vôlei
+                    data_hora:
+                      type: string
+                      format: date-time
+                      example: '2025-10-23T20:00:00+00:00'
+                    localizacao:
+                      type: string
+                      example: Ginásio Municipal
+                    endereco:
+                      type: string
+                      example: Rua Principal, 123, Centro
+                    torneio:
+                      type: boolean
+                      example: true
+                    premiacao:
+                      type: number
+                      example: 500
+                    foto:
+                      type: string
+                      nullable: true
+                      example: https://storage.googleapis.com/.../evento_123.jpg
+                    link_oficial:
+                      type: string
+                      nullable: true
+                      example: https://evento.oficial.com
+                    interesse:
+                      type: array
+                      items:
+                        type: string
+                    status:
+                      type: string
+                      example: Inscricoes_abertas
+        '401':
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
 
   /evento/editarEvento:
-   put:
-    tags:
-      - Eventos
-    summary: Edita um evento existente
-    description: Permite que o usuário edite um evento que ele criou, enviando os novos dados via formulário e imagem opcional.
-    security:
-      - bearerAuth: []  
-    requestBody:
-      required: true
-      content:
-        multipart/form-data:
-          schema:
-            type: object
-            properties:
-              id:
-                type: string
-                description: "ID do evento a ser editado. Obrigatório."
-                example: "evt_123abc"
-              titulo:
-                type: string
-                description: "Novo título do evento"
-                example: "Jogo de vôlei na praia"
-              descricao:
-                type: string
-                description: "Nova descrição do evento"
-                example: "Traga sua bola e venha jogar com a galera!"
-              esporte_nome:
-                type: string
-                description: "Nome do esporte"
-                example: "Vôlei"
-              data_hora:
-                type: string
-                description: "Nova data e hora no formato 'YYYY-MM-DD HH:MM'"
-                example: "2025-08-10 09:00"
-              localizacao:
-                type: string
-                description: "Novo local do evento"
-                example: "Praia de Copacabana, RJ"
-              max_participantes:
-                type: integer
-                description: "Novo número máximo de participantes"
-                example: 12
-              torneio:
-                type: boolean
-                description: "Indica se é um torneio"
-                example: false
-              premiacao:
-                type: string
-                description: "Premiação (caso torneio)"
-                example: "Camisas oficiais para os vencedores"
-              privado:
-                type: boolean
-                description: "Indica se o evento é privado"
-                example: true
-              observacoes:
-                type: string
-                description: "Observações adicionais"
-                example: "Tragam água"
-              arquivo_foto:
-                type: string
-                format: binary
-                description: "Imagem atualizada do evento (opcional)"
-            required:
-              - id
-    responses:
-      '200':
-        description: Evento editado com sucesso
+    put:
+      tags:
+        - Eventos
+      summary: Edita um evento existente
+      description: Permite que o usuário autenticado edite os eventos que criou.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
         content:
-          application/json:
+          multipart/form-data:
             schema:
               type: object
+              required:
+                - id
               properties:
-                mensagem:
+                id:
                   type: string
-                  example: "Evento atualizado com sucesso."
-                evento_id:
+                  example: evento_123
+                titulo:
                   type: string
-                  example: "evt_123abc"     
-      '404':
-        description: Evento não encontrado
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
+                  example: Novo título do evento
+                descricao:
                   type: string
-                  example: "Evento não encontrado."  
-
-      '400':
-        description: "Requisição inválida (ex: ID ausente ou dados mal formatados)"
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
+                  example: Nova descrição
+                esporte_nome:
                   type: string
-                  example: "O campo 'id' é obrigatório." 
+                  example: Futebol
+                data_hora:
+                  type: string
+                  format: date-time
+                  description: Data e hora do evento (formato YYYY-MM-DDTHH:MM:SS)
+                  example: '2025-11-10T20:00:00'
+                localizacao:
+                  type: string
+                  example: Estádio Municipal
+                endereco:
+                  type: string
+                  example: Av. Brasil, 456, Centro
+                torneio:
+                  type: boolean
+                  example: false
+                premiacao:
+                  type: number
+                  example: 1000
+                arquivo_foto:
+                  type: string
+                  format: binary
+                  description: Imagem do evento atualizada (opcional)
+      responses:
+        '200':
+          description: Evento editado com sucesso ou nenhuma alteração feita
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Evento atualizado com sucesso.
+        '400':
+          description: Erros de validação ou campos obrigatórios ausentes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: O campo 'id' é obrigatório.
+        '403':
+          description: Permissão negada para editar o evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Permissão negada para editar este evento.
+        '404':
+          description: Evento não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Evento não encontrado.
+        '500':
+          description: Erro no upload da imagem
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro ao fazer upload da imagem motivo do erro
 
   /evento/deletarEvento:
     delete:
       tags:
         - Eventos
-      summary: Deleta um evento pelo ID
-      description: Deleta o evento especificado pelo `evento_id` enviado no corpo da requisição JSON.
+      summary: Deleta um evento existente
+      description: Remove um evento criado pelo usuário autenticado.
       security:
-        - bearerAuth: [] 
+        - bearerAuth: []
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
+              required:
+                - evento_id
               properties:
                 evento_id:
                   type: string
-                  description: "ID do evento a ser deletado"
-                  example: "evt_123abc"
-              required:
-                - evento_id
+                  example: evento_123
       responses:
         '200':
-          description: Evento deletado com sucesso
+          description: Evento excluído com sucesso
           content:
             application/json:
               schema:
@@ -1838,12 +1856,9 @@ paths:
                 properties:
                   mensagem:
                     type: string
-                    example: "Evento deletado com sucesso."
-                  evento_id:
-                    type: string
-                    example: "evt_123abc"
+                    example: Evento excluído com sucesso.
         '400':
-          description: "Requisição inválida (ex: evento_id ausente)"
+          description: Falta de parâmetro obrigatório
           content:
             application/json:
               schema:
@@ -1851,7 +1866,17 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "O campo 'evento_id' é obrigatório."
+                    example: O campo 'evento_id' é obrigatório.
+        '403':
+          description: Permissão negada para excluir o evento
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Você não tem permissão para excluir este evento.
         '404':
           description: Evento não encontrado
           content:
@@ -1861,20 +1886,19 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "Evento não encontrado."
+                    example: Evento não encontrado.
 
   /evento/listarEventos:
     get:
       tags:
         - Eventos
-      summary: Lista todos eventos.
-      description: >
-        Retorna uma lista de todos os eventos que o campo Torneio == False.
+      summary: Lista eventos públicos (não torneios)
+      description: Retorna a lista dos eventos que não são torneios cadastrados no sistema.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Lista de eventos retornada com sucesso
+          description: Lista dos eventos disponíveis
           content:
             application/json:
               schema:
@@ -1884,73 +1908,72 @@ paths:
                   properties:
                     id:
                       type: string
-                      example: "a7b93e90-f5d6-4f0e-b5a0-8c34c77a9a00"
+                      example: evento_123
                     usuario_id:
                       type: string
-                      example: "user_123"
+                      example: empresa_999
                     titulo:
                       type: string
-                      example: "Campeonato de Vôlei de Praia"
+                      example: Campeonato de Vôlei
                     descricao:
                       type: string
-                      example: "Torneio aberto para equipes amadoras."
+                      example: Campeonato aberto para todas as idades.
                     esporte_nome:
                       type: string
-                      example: "Vôlei de Praia"
-                    localizacao:
-                      type: string
-                      example: "Praia de Copacabana, Rio de Janeiro"
+                      example: Vôlei
                     data_hora:
                       type: string
                       format: date-time
-                      example: "2025-08-10T14:30:00Z"
-                    max_participantes:
-                      type: integer
-                      example: 16
-                    data_criacao:
+                      example: '2025-10-23T20:00:00+00:00'
+                    localizacao:
                       type: string
-                      format: date-time
-                      example: "2025-07-28T12:00:00Z"
+                      example: Ginásio Municipal
+                    endereco:
+                      type: string
+                      example: Rua Principal, 123, Centro
                     torneio:
                       type: boolean
-                      example: true
+                      example: false
                     premiacao:
-                      type: string
-                      example: "Medalhas e troféu"
+                      type: number
+                      example: 300
                     foto:
                       type: string
-                      example: "https://firebasestorage.googleapis.com/v0/b/app-eventos/o/evento123.jpg"
-                    participantes:
+                      nullable: true
+                      example: https://storage.googleapis.com/.../evento_123.jpg
+                    link_oficial:
+                      type: string
+                      nullable: true
+                      example: https://evento.oficial.com
+                    interesse:
                       type: array
                       items:
                         type: string
-                      example: ["user_123", "user_456", "user_789"]
-                    privado:
-                      type: boolean
-                      example: false
-                    observacoes:
-                      type: string
-                      example: "Chegar com 15 minutos de antecedência"
                     status:
                       type: string
-                      example: "Inscricoes_abertas"
+                      example: Inscricoes_abertas
         '401':
-          description: Token inválido ou ausente
-        '500':
-          description: Erro interno do servidor
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
 
   /evento/listarTorneios:
-    get:
+     get:
       tags:
         - Eventos
-      summary: Lista os torneios 
-      description: >
-        Retorna uma lista de eventos que o campo "Torneio" == True.
+      summary: Lista torneios disponíveis
+      description: Retorna a lista dos eventos que são torneios cadastrados no sistema.
       security:
         - bearerAuth: []
       responses:
         '200':
-          description: Lista de torneios retornada com sucesso
+          description: Lista dos torneios disponíveis
           content:
             application/json:
               schema:
@@ -1960,99 +1983,52 @@ paths:
                   properties:
                     id:
                       type: string
-                      example: "c9e6b114-baf6-4552-bb11-b60f4bbdd6fc"
+                      example: torneio_123
                     usuario_id:
                       type: string
-                      example: "user_456"
+                      example: empresa_999
                     titulo:
                       type: string
-                      example: "Torneio Municipal de Futebol"
+                      example: Torneio de Futebol Amador
                     descricao:
                       type: string
-                      example: "Torneio anual de futebol amador com premiação em dinheiro."
+                      example: Torneio regional de futebol.
                     esporte_nome:
                       type: string
-                      example: "Futebol"
-                    localizacao:
-                      type: string
-                      example: "Estádio Municipal de São Caetano"
+                      example: Futebol
                     data_hora:
                       type: string
                       format: date-time
-                      example: "2025-09-05T10:00:00Z"
-                    max_participantes:
-                      type: integer
-                      example: 20
-                    data_criacao:
+                      example: '2025-11-05T15:00:00+00:00'
+                    localizacao:
                       type: string
-                      format: date-time
-                      example: "2025-07-15T09:45:00Z"
+                      example: Estádio Central
+                    endereco:
+                      type: string
+                      example: Av. Principal, 456, Centro
                     torneio:
                       type: boolean
                       example: true
                     premiacao:
-                      type: string
-                      example: "R$ 5.000 + troféus"
+                      type: number
+                      example: 1000
                     foto:
                       type: string
-                      example: "https://firebasestorage.googleapis.com/v0/b/app-eventos/o/torneio_fut.jpg"
-                    participantes:
+                      nullable: true
+                      example: https://storage.googleapis.com/.../torneio_123.jpg
+                    link_oficial:
+                      type: string
+                      nullable: true
+                      example: https://torneio.oficial.com
+                    interesse:
                       type: array
                       items:
                         type: string
-                      example: ["user_111", "user_222", "user_333"]
-                    privado:
-                      type: boolean
-                      example: false
-                    observacoes:
-                      type: string
-                      example: "Levar chuteira e documento com foto"
                     status:
                       type: string
-                      example: "ativo"
+                      example: Inscricoes_abertas
         '401':
-          description: Token inválido ou ausente
-        '500':
-          description: Erro interno do servidor
-
-  /evento/participarEvento:
-    post:
-      tags:
-        - Eventos
-      summary: Participa de um evento/torneio
-      description: >
-        Permite que um usuário autenticado participe de um evento, desde que:
-        - Não seja o criador do evento;
-        - Não esteja já participando;
-        - Ainda haja vagas disponíveis.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - evento_id
-              properties:
-                evento_id:
-                  type: string
-                  description: ID do evento que o usuário deseja participar
-                  example: "d2a6f3c9-8273-4f0f-9340-b8b123abc123"
-      responses:
-        '200':
-          description: Participação confirmada com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                    example: "Participação confirmada com sucesso!"
-        '400':
-          description: Erro de validação (usuário já participa, é o criador ou evento está cheio)
+          description: Usuário não autenticado
           content:
             application/json:
               schema:
@@ -2060,97 +2036,11 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "Você já está participando deste evento."
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Evento não encontrado."
-        '500':
-          description: Erro interno ao tentar participar do evento
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Erro ao participar do evento: erro inesperado."
-
-  /evento/cancelarParticipacao:
-    post:
-      tags:
-        - Eventos
-      summary: Cancela a participação do usuário em um evento
-      description: >
-        Permite que um usuário autenticado cancele sua participação em um evento, desde que:
-        - Ele esteja participando;
-        - Ele **não** seja o criador do evento.
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - evento_id
-              properties:
-                evento_id:
-                  type: string
-                  description: ID do evento do qual o usuário deseja sair
-                  example: "c4e7d890-91ad-44c7-a1ef-fae8c7751e0f"
-      responses:
-        '200':
-          description: Participação cancelada com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                    example: "Participação cancelada com sucesso."
-        '400':
-          description: Erro de validação (usuário não participa ou é o criador do evento)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Você não está participando deste evento."
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Evento não encontrado."
-        '500':
-          description: Erro interno ao tentar cancelar a participação
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Erro ao cancelar participação: erro inesperado."
-
+                    example: Token inválido ou ausente.
+    
   /evento/usuario/{usuario_id}:
      get:
-      summary: Listar eventos de um usuário
+      summary: Listar eventos de um usuárioEmpresa
       description: >
         Retorna todos os eventos cadastrados por um usuário específico, com base no seu **usuario_id**.  
         Caso o usuário não tenha eventos, retorna uma mensagem informando.
@@ -2215,45 +2105,210 @@ paths:
                     type: string
                     example: "Erro inesperado ao buscar eventos."
 
-  /evento/participando:
-    get:
-      summary: Listar eventos que o usuário está participando
-      description: Retorna todos os eventos ou torneios em que o usuário autenticado está participando.
-      operationId: listarEventosParticipando
+  /evento/tenhoInteresse:
+    post:
       tags:
         - Eventos
+      summary: Demonstrar interesse em um evento
+      description: Registra que o usuário autenticado tem interesse em um evento específico.
       security:
         - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - evento_id
+              properties:
+                evento_id:
+                  type: string
+                  example: evento_123
       responses:
-        "200":
-          description: Lista de eventos ou mensagem caso não esteja participando de nenhum.
+        '200':
+          description: Interesse registrado com sucesso
           content:
             application/json:
               schema:
-                oneOf:
-                  - type: object
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Interesse mostrado para o evento.
+        '400':
+          description: Erro de validação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Você já demonstrou interesse a esse Evento.
+        '404':
+          description: Evento não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Evento não encontrado.
+        '401':
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
+
+  /evento/cancelarInteresse:
+    post:
+      tags:
+        - Eventos
+      summary: Cancelar interesse em um evento
+      description: Remove o interesse do usuário autenticado em um evento específico.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - evento_id
+              properties:
+                evento_id:
+                  type: string
+                  example: evento_123
+      responses:
+        '200':
+          description: Interesse cancelado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Interesse cancelada com sucesso.
+        '400':
+          description: Erros de validação
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Você não demonstrou interesse nesse evento.
+        '404':
+          description: Evento não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Evento não encontrado.
+        '500':
+          description: Erro interno ao cancelar interesse
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro ao cancelar interesse motivo do erro
+        '401':
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
+
+  /evento/listarInteressados:
+    get:
+      tags:
+        - Eventos
+      summary: Lista eventos com interesse do usuário
+      description: Retorna a lista dos eventos e torneios nos quais o usuário autenticado demonstrou interesse.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista dos eventos com interesse do usuário ou mensagem caso não haja interesses
+          content:
+            application/json:
+              oneOf:
+                - type: array
+                  items:
+                    type: object
                     properties:
-                      mensagem:
+                      id:
                         type: string
-                        example: "Você não está participando de nenhum evento ou torneio."
-                  - type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
+                        example: evento_123
+                      usuario_id:
+                        type: string
+                        example: empresa_999
+                      titulo:
+                        type: string
+                        example: Campeonato de Vôlei
+                      descricao:
+                        type: string
+                        example: Campeonato aberto para todas as idades.
+                      esporte_nome:
+                        type: string
+                        example: Vôlei
+                      data_hora:
+                        type: string
+                        format: date-time
+                        example: '2025-10-23T20:00:00+00:00'
+                      localizacao:
+                        type: string
+                        example: Ginásio Municipal
+                      endereco:
+                        type: string
+                        example: Rua Principal, 123, Centro
+                      torneio:
+                        type: boolean
+                        example: true
+                      premiacao:
+                        type: number
+                        example: 300
+                      foto:
+                        type: string
+                        nullable: true
+                        example: https://storage.googleapis.com/.../evento_123.jpg
+                      link_oficial:
+                        type: string
+                        nullable: true
+                        example: https://evento.oficial.com
+                      interesse:
+                        type: array
+                        items:
                           type: string
-                          example: "evento123"
-                        nome:
-                          type: string
-                          example: "Torneio de Futebol"
-                        data:
-                          type: string
-                          format: date-time
-                          example: "2025-09-30T18:00:00Z"
-                        local:
-                          type: string
-                          example: "Estádio Municipal"
-        "404":
+                      status:
+                        type: string
+                        example: Inscricoes_abertas
+                - type: object
+                  properties:
+                    mensagem:
+                      type: string
+                      example: Você não está interessado em nenhum evento ou torneio.
+        '404':
           description: Usuário não encontrado
           content:
             application/json:
@@ -2262,96 +2317,9 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: "Usuário não encontrado."
-        "500":
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: "Erro ao listar eventos participando: <detalhes>"
-
-  /evento/pendentes:
-    post:
-      summary: Lista usuários pendentes de um evento privado
-      description: Retorna informações dos usuários que solicitaram participar de um evento privado, apenas acessível pelo dono do evento.
-      tags:
-        - Eventos
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - evento_id
-              properties:
-                evento_id:
-                  type: string
-                  example: abc123
-                  description: ID do evento privado
-      responses:
-        '200':
-          description: Lista de usuários pendentes
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  pendentes:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          example: user1
-                        nome_completo:
-                          type: string
-                          example: Paulo Eduardo Palauro
-                        username:
-                          type: string
-                          example: paulopalauro
-                        foto_perfil:
-                          type: string
-                          example: https://linkdapefoto.com/abc.jpg
-        '400':
-          description: Requisição inválida (campo faltando)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: O campo 'evento_id' é obrigatório.
-        '403':
-          description: Acesso não autorizado (usuário não é dono do evento)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Apenas o dono do evento pode ver os pendentes.
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Evento não encontrado.
+                    example: Usuário não encontrado.
         '500':
-          description: Erro interno do servidor
+          description: Erro interno ao buscar interesses
           content:
             application/json:
               schema:
@@ -2359,91 +2327,19 @@ paths:
                 properties:
                   erro:
                     type: string
-                    example: Erro ao listar pendentes.
+                    example: Erro ao listar eventos interessados motivo do erro
+        '401':
+          description: Usuário não autenticado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Token inválido ou ausente.
 
-  /evento/decidirParticipante:
-    post:
-      summary: Aprovar ou recusar um participante de evento privado
-      description: Endpoint para que o dono de um evento privado aceite ou recuse usuários que solicitaram participação.
-      tags:
-        - Eventos
-      security:
-        - bearerAuth: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - evento_id
-                - usuario_id
-                - acao
-              properties:
-                evento_id:
-                  type: string
-                  example: abc123
-                  description: ID do evento privado
-                usuario_id:
-                  type: string
-                  example: user1
-                  description: ID do usuário que solicitou participação
-                acao:
-                  type: string
-                  enum: [aceitar, recusar]
-                  example: aceitar ou recusar
-                  description: Ação a ser realizada pelo dono do evento
-      responses:
-        '200':
-          description: Usuário aceito ou recusado com sucesso
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  mensagem:
-                    type: string
-                    example: Usuário aceito no evento.
-        '400':
-          description: Requisição inválida (usuário não pendente ou ação inválida)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Usuário não está na lista de pendentes.
-        '403':
-          description: Acesso não autorizado (usuário não é dono do evento)
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Apenas o dono pode aprovar ou recusar.
-        '404':
-          description: Evento não encontrado
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Evento não encontrado.
-        '500':
-          description: Erro interno do servidor
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  erro:
-                    type: string
-                    example: Erro ao processar decisão do participante.
+
 
 # Hive
   /hive/AdicionarHive:
