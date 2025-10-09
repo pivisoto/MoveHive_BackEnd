@@ -3539,6 +3539,80 @@ paths:
                   erro:
                     type: string
                     example: "Erro de conexão com o banco de dados."
+
+  #Curtidas
+  /postagem/ToggleCurtida:
+    post:
+      tags:
+        - Curtidas
+      summary: Adiciona ou remove uma curtida de uma postagem
+      description: Alterna o estado da curtida (adiciona se não curtiu, remove se já curtiu) para a postagem especificada. Requer autenticação por token.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                post_id:
+                  type: string
+                  example: "1dd38678-7a07-48de-bfe7-f8dc2f2cf002"
+              required:
+                - post_id
+      responses:
+        '201':
+          description: Postagem curtida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Post curtido com sucesso!"
+        '200':
+          description: Curtida removida com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Removendo curtida."
+        '400':
+          description: Requisição inválida (campo 'post_id' ausente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Campo 'post_id' é obrigatório."
+        '404':
+          description: Postagem não encontrada
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Postagem não encontrada."
+        '500':
+          description: Erro interno ao modificar curtida
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao modificar curtida: Erro inesperado."
+
   #Comentarios
   /postagem/AdicionarComentario:
     post:
