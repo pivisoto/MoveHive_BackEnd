@@ -93,3 +93,40 @@ def EnviarMensagemChat():
         return jsonify({"erro": "Os campos 'chat_id' e 'texto_mensagem' são obrigatórios."}), 400
     
     return Chat_Service.mandar_mensagem(chat_id, texto_mensagem)
+
+# Rota para apagar o chat
+@chat_bp.route('/ApagarChat', methods=['POST'])
+def ApagarChat():
+    try:
+        data = request.get_json()
+        if not data:
+            return jsonify({"erro": "Dados não fornecidos."}), 400
+        
+        chat_id = data.get('chat_id')
+        
+    except Exception:
+        return jsonify({"erro": "Requisição inválida: JSON não fornecido ou mal formatado"}), 400
+
+    if not chat_id:
+        return jsonify({"erro": "Os campos 'chat_id' é obrigatório."}), 400
+
+    return Chat_Service.apagar_chat()
+
+
+
+# Rota para Exibir os chats 
+@chat_bp.route('/ExibirChats', methods=['GET'])
+def ExibirChats():
+    return Chat_Service.exibir_chats()
+
+# Rota para Exibir as conversas
+@chat_bp.route('/ExibirConversa/<string:chat_id>', methods=['GET'])
+def ExibirConversas(chat_id):
+    try:
+        if not chat_id:
+             return jsonify({"erro": "O campo 'chat_id' é obrigatório."}), 400
+    except Exception:
+        return jsonify({"erro": "Requisição inválida: JSON não fornecido ou mal formatado"}), 400
+    
+    return Chat_Service.exibir_conversa(chat_id)
+
