@@ -2339,8 +2339,6 @@ paths:
                     type: string
                     example: Token inválido ou ausente.
 
-
-
 # Hive
   /hive/AdicionarHive:
     post:
@@ -3821,6 +3819,7 @@ paths:
                   erro:
                     type: string
                     example: "Erro ao deletar comentário: Erro inesperado."
+
 #Chat
   /chat/CriarChat:
     post:
@@ -4093,182 +4092,183 @@ paths:
                   erro:
                     type: string
                     example: "Erro ao enviar mensagem: Falha na comunicação com o banco de dados."
-  # Chat
-/chat/ApagarChat:
-  post:
-    tags:
-      - Chat
-    summary: Apagar um chat (apenas para o administrador)
-    description: Endpoint para apagar permanentemente um chat. Somente o usuário que criou o chat ('user_adm') tem permissão para apagá-lo. Requer o ID do chat no corpo da requisição JSON.
-    security:
-      - bearerAuth: []
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              chat_id:
-                type: string
-                description: ID do chat a ser deletado.
-                example: "cd4245f7-3097-4943-8e56-e45719d175ab"
-    responses:
-      '200':
-        description: Chat deletado com sucesso
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                mensagem:
-                  type: string
-                  example: "Chat deletado com sucesso!"
-      '400':
-        description: Erro de validação (chat_id não fornecido)
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "O campo 'chat_id' é obrigatório."
-      '403':
-        description: Proibido (Usuário não é o administrador do chat)
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                mensagem:
-                  type: string
-                  example: "Você não tem permissão para apagar este chat"
-      '500':
-        description: Erro interno ao deletar o chat
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Erro ao deletar chat: [Detalhes do erro]"
 
-/chat/ExibirChats:
-  get:
-    tags:
-      - Chat
-    summary: Exibir lista de chats do usuário
-    description: Retorna uma lista de todos os chats dos quais o usuário logado é participante, ordenados pela mensagem mais recente. Inclui a contagem de mensagens não lidas.
-    security:
-      - bearerAuth: []
-    responses:
-      '200':
-        description: Lista de chats retornada com sucesso
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                type: object
-                properties:
-                  id_chat:
-                    type: string
-                    example: "58ca84e0-fae3-4c1f-81ec-d122077efcd6"
-                  nome_chat:
-                    type: string
-                    example: "Grupo de Trabalho"
-                  ultima_mensagem:
-                    type: string
-                    example: "OK, te encontro lá."
-                  horario_ultima_mensagem:
-                    type: string
-                    format: date-time
-                    description: Timestamp da última mensagem
-                  mensagens_nao_lidas:
-                    type: integer
-                    example: 2
-      '500':
-        description: Erro interno ao listar chats
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Erro ao listar chats: [Detalhes do erro]"
-
-/chat/ExibirConversa/{chat_id}:
-  get:
-    tags:
-      - Chat
-    summary: Exibir mensagens de um chat
-    description: Retorna todas as mensagens de um chat específico, ordenadas da mais recente para a mais antiga. Ao carregar a conversa, a última visualização do usuário é atualizada, zerando a contagem de mensagens não lidas.
-    security:
-      - bearerAuth: []
-    parameters:
-      - name: chat_id
-        in: path
+  /chat/ApagarChat:
+    post:
+      tags:
+        - Chat
+      summary: Apagar um chat (apenas para o administrador)
+      description: Endpoint para apagar permanentemente um chat. Somente o usuário que criou o chat ('user_adm') tem permissão para apagá-lo. Requer o ID do chat no corpo da requisição JSON.
+      security:
+        - bearerAuth: []
+      requestBody:
         required: true
-        schema:
-          type: string
-        description: ID do chat cuja conversa será exibida.
-        example: "cd4245f7-3097-4943-8e56-e45719d175ab"
-    responses:
-      '200':
-        description: Mensagens da conversa retornadas com sucesso
         content:
           application/json:
             schema:
-              type: array
-              items:
+              type: object
+              properties:
+                chat_id:
+                  type: string
+                  description: ID do chat a ser deletado.
+                  example: "cd4245f7-3097-4943-8e56-e45719d175ab"
+      responses:
+        '200':
+          description: Chat deletado com sucesso
+          content:
+            application/json:
+              schema:
                 type: object
                 properties:
-                  mensagem_id:
+                  mensagem:
                     type: string
-                    example: "6fufDrvyVQLtq8BzrVLmn"
-                  id_remetente:
+                    example: "Chat deletado com sucesso!"
+        '400':
+          description: Erro de validação (chat_id não fornecido)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
                     type: string
-                    example: "22ae4ed3-14e4-42ac-966d-9184a9bdb0a8"
-                  texto:
+                    example: "O campo 'chat_id' é obrigatório."
+        '403':
+          description: Proibido (Usuário não é o administrador do chat)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
                     type: string
-                    example: "A reunião foi cancelada."
-                  timestamp:
+                    example: "Você não tem permissão para apagar este chat"
+        '500':
+          description: Erro interno ao deletar o chat
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
                     type: string
-                    format: date-time
-                    description: Timestamp de envio da mensagem
-      '403':
-        description: Proibido (Usuário não é participante do chat)
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Você não faz parte deste chat."
-      '404':
-        description: Chat não encontrado
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Chat não encontrado."
-      '500':
-        description: Erro interno ao buscar mensagens
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                erro:
-                  type: string
-                  example: "Erro ao buscar mensagens: [Detalhes do erro]"
+                    example: "Erro ao deletar chat: [Detalhes do erro]"
+
+  /chat/ExibirChats:
+    get:
+      tags:
+        - Chat
+      summary: Exibir lista de chats do usuário
+      description: Retorna uma lista de todos os chats dos quais o usuário logado é participante, ordenados pela mensagem mais recente. Inclui a contagem de mensagens não lidas.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Lista de chats retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id_chat:
+                      type: string
+                      example: "58ca84e0-fae3-4c1f-81ec-d122077efcd6"
+                    nome_chat:
+                      type: string
+                      example: "Grupo de Trabalho"
+                    ultima_mensagem:
+                      type: string
+                      example: "OK, te encontro lá."
+                    horario_ultima_mensagem:
+                      type: string
+                      format: date-time
+                      description: Timestamp da última mensagem
+                    mensagens_nao_lidas:
+                      type: integer
+                      example: 2
+        '500':
+          description: Erro interno ao listar chats
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao listar chats: [Detalhes do erro]"
+
+  /chat/ExibirConversa/{chat_id}:
+    get:
+      tags:
+        - Chat
+      summary: Exibir mensagens de um chat
+      description: Retorna todas as mensagens de um chat específico, ordenadas da mais recente para a mais antiga. Ao carregar a conversa, a última visualização do usuário é atualizada, zerando a contagem de mensagens não lidas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: chat_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: ID do chat cuja conversa será exibida.
+          example: "cd4245f7-3097-4943-8e56-e45719d175ab"
+      responses:
+        '200':
+          description: Mensagens da conversa retornadas com sucesso
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    mensagem_id:
+                      type: string
+                      example: "6fufDrvyVQLtq8BzrVLmn"
+                    id_remetente:
+                      type: string
+                      example: "22ae4ed3-14e4-42ac-966d-9184a9bdb0a8"
+                    texto:
+                      type: string
+                      example: "A reunião foi cancelada."
+                    timestamp:
+                      type: string
+                      format: date-time
+                      description: Timestamp de envio da mensagem
+        '403':
+          description: Proibido (Usuário não é participante do chat)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Você não faz parte deste chat."
+        '404':
+          description: Chat não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Chat não encontrado."
+        '500':
+          description: Erro interno ao buscar mensagens
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao buscar mensagens: [Detalhes do erro]"
+
 # Treinos
   /treino/AdicionarTreino:
     post:

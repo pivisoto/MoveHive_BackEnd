@@ -192,6 +192,11 @@ def deletar_hive(hive_id):
     if hive_data.get('usuario_id') != usuario_id:
         return {"erro": "Você não tem permissão para excluir este hive."}, 403
 
+    titulo_hive = hive_data.get('titulo', 'sem título')
+    participantes = hive_data.get('participantes', [])
+    pendentes = hive_data.get('pendentes', [])
+
+
     try:
         caminho = f"Usuarios/{usuario_id}/Fotos/hive_{hive_id}.jpg"
         blob = bucket.blob(caminho)
@@ -203,21 +208,44 @@ def deletar_hive(hive_id):
     except Exception as e:
         print(f"Erro ao excluir a imagem: {e}")
 
+
     try:
-        participantes = hive_data.get('participantes', [])
+        mensagem = f"O hive '{titulo_hive}' foi excluído pelo criador."
+        tipo = "hive_excluido"
+
+        for participante_id in participantes:
+            if participante_id != usuario_id:  
+                criar_notificacao(
+                    usuario_destino_id=participante_id,
+                    tipo=tipo,
+                    referencia_id=hive_id,
+                    mensagem=mensagem
+                )
+
+        for pendente_id in pendentes:
+            if pendente_id != usuario_id:
+                criar_notificacao(
+                    usuario_destino_id=pendente_id,
+                    tipo=tipo,
+                    referencia_id=hive_id,
+                    mensagem=mensagem
+                )
+
         for participante_id in participantes:
             participante_ref = db.collection('Usuarios').document(participante_id)
             participante_ref.update({
                 'hive_participando': firestore.ArrayRemove([hive_id])
             })
 
-        hive_ref.delete()
 
         user_ref.update({
             'hive_criados': firestore.ArrayRemove([hive_id])
         })
 
-        return {"mensagem": "hive excluído com sucesso."}, 200
+
+        hive_ref.delete()
+
+        return {"mensagem": f"Hive '{titulo_hive}' excluído com sucesso e participantes notificados."}, 200
 
     except Exception as e:
         return {"erro": f"Erro ao excluir o hive: {str(e)}"}, 500
@@ -281,15 +309,28 @@ def participar_hive(hive_id):
 
 
     try:
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        usuario_doc = user_ref.get()
+        usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
+        titulo_hive = hive_data.get('titulo', 'sem título')
+
+
         if privado:
             hive_ref.update({
                 'pendentes': ArrayUnion([usuario_id])
             })
 
-            user_ref = db.collection('Usuarios').document(usuario_id)
             user_ref.update({
                 'hive_pendentes': ArrayUnion([hive_id])
             })
+
+            mensagem = f"{usuario_nome} solicitou participar do seu hive privado '{titulo_hive}'."
+            criar_notificacao(
+                usuario_destino_id=dono_hive_id,
+                tipo="solicitacao_hive_privado",
+                referencia_id=hive_id,
+                mensagem=mensagem
+            )
 
             return {"mensagem": "Solicitação enviada! Aguarde aprovação do dono do hive."}, 200
 
@@ -298,23 +339,15 @@ def participar_hive(hive_id):
                 'participantes': ArrayUnion([usuario_id])
             })
 
-            user_ref = db.collection('Usuarios').document(usuario_id)
             user_ref.update({
                 'hive_participando': ArrayUnion([hive_id])
             })
 
-            usuario_doc = user_ref.get()
-            usuario_nome = usuario_doc.to_dict().get("username", "Alguém")
-            titulo_hive = hive_data.get('titulo', 'sem título')
-
-            mensagem = f"{usuario_nome} está participando do seu hive '{titulo_hive}'"
-            tipo = "participacao_hive"
-            referencia_id = hive_id
-
+            mensagem = f"{usuario_nome} começou a participar do seu hive '{titulo_hive}'."
             criar_notificacao(
                 usuario_destino_id=dono_hive_id,
-                tipo=tipo,
-                referencia_id=referencia_id,
+                tipo="participacao_hive",
+                referencia_id=hive_id,
                 mensagem=mensagem
             )
 
@@ -402,7 +435,12 @@ def listarParticipandoHive():
 def decidirParticipantesHive(hive_id, usuario_id, acao):
     usuario_dono = g.user_id
     hive_ref = db.collection("Hive").document(hive_id)
-    hive_data = hive_ref.get().to_dict()
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "Hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
 
     if hive_data["usuario_id"] != usuario_dono:
         return {
@@ -415,29 +453,54 @@ def decidirParticipantesHive(hive_id, usuario_id, acao):
             "mensagem": "Usuário não está na lista de pendentes.",
         }, 200
 
+    try:
+        titulo_hive = hive_data.get("titulo", "sem título")
 
-    if acao == "aceitar":
-        hive_ref.update({
-            "pendentes": firestore.ArrayRemove([usuario_id]),
-            "participantes": ArrayUnion([usuario_id])
-        })
-        db.collection("Usuarios").document(usuario_id).update({
-            "hive_pendentes": firestore.ArrayRemove([hive_id]),
-            "hive_participando": ArrayUnion([hive_id])
-        })
-        return {"mensagem": "Usuário aceito no hive."}, 200
+        if acao == "aceitar":
+            hive_ref.update({
+                "pendentes": firestore.ArrayRemove([usuario_id]),
+                "participantes": ArrayUnion([usuario_id])
+            })
 
-    elif acao == "recusar":
-        hive_ref.update({
-            "pendentes": firestore.ArrayRemove([usuario_id])
-        })
-        db.collection("Usuarios").document(usuario_id).update({
-            "hive_pendentes": firestore.ArrayRemove([hive_id])
-        })
-        return {"mensagem": "Usuário recusado."}, 200
+            db.collection("Usuarios").document(usuario_id).update({
+                "hive_pendentes": firestore.ArrayRemove([hive_id]),
+                "hive_participando": ArrayUnion([hive_id])
+            })
 
-    else:
-        return {"erro": "Ação inválida"}, 400
+            mensagem = f"Você foi aceito para participar do hive '{titulo_hive}'!"
+            criar_notificacao(
+                usuario_destino_id=usuario_id,
+                tipo="hive_aceito",
+                referencia_id=hive_id,
+                mensagem=mensagem
+            )
+
+            return {"mensagem": "Usuário aceito no hive e notificado."}, 200
+
+        elif acao == "recusar":
+            hive_ref.update({
+                "pendentes": firestore.ArrayRemove([usuario_id])
+            })
+
+            db.collection("Usuarios").document(usuario_id).update({
+                "hive_pendentes": firestore.ArrayRemove([hive_id])
+            })
+
+            mensagem = f"Sua solicitação para participar do hive '{titulo_hive}' foi recusada."
+            criar_notificacao(
+                usuario_destino_id=usuario_id,
+                tipo="hive_recusado",
+                referencia_id=hive_id,
+                mensagem=mensagem
+            )
+
+            return {"mensagem": "Usuário recusado e notificado."}, 200
+
+        else:
+            return {"erro": "Ação inválida"}, 400
+
+    except Exception as e:
+        return {"erro": f"Erro ao processar a decisão: {str(e)}"}, 500
     
 
 # Implementado

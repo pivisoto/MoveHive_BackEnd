@@ -201,6 +201,9 @@ def deletar_evento(evento_id):
 
     if evento_data.get('usuario_id') != usuario_id:
         return {"erro": "Você não tem permissão para excluir este evento."}, 403
+    
+    titulo_evento = evento_data.get('titulo', 'sem título')
+
 
     try:
         caminho = f"UsuariosEmpresa/{usuario_id}/Fotos/evento_{evento_id}.jpg"
@@ -217,23 +220,44 @@ def deletar_evento(evento_id):
         usuarios_ref = db.collection('Usuarios')
         usuarios = usuarios_ref.stream()
 
+        mensagem = f"O evento '{titulo_evento}' foi cancelado/excluído pelo organizador."
+        tipo = "evento_excluido"
+
         for doc in usuarios:
             dados_usuario = doc.to_dict()
+            usuario_destino_id = doc.id
+
+
             if 'interesses' in dados_usuario and evento_id in dados_usuario['interesses']:
+
                 doc.reference.update({
                     'interesses': firestore.ArrayRemove([evento_id])
                 })
+
+
                 print(f"Removido evento {evento_id} da lista de interesse do usuário {doc.id}")
+
+                criar_notificacao(
+                    usuario_destino_id=usuario_destino_id,
+                    tipo=tipo,
+                    referencia_id=evento_id,
+                    mensagem=mensagem
+                )
+
     except Exception as e:
         print(f"Erro ao remover o evento das listas de interesse: {e}")
 
-    evento_ref.delete()
+    try:
+        evento_ref.delete()
 
-    user_ref.update({
-        'eventos_criados': firestore.ArrayRemove([evento_id])
-    })
+        user_ref.update({
+            'eventos_criados': firestore.ArrayRemove([evento_id])
+        })
 
-    return {"mensagem": "Evento excluído com sucesso."}, 200
+        return {"mensagem": "Evento excluído com sucesso."}, 200
+    
+    except Exception as e:
+        return {"erro": f"Erro ao excluir o evento: {str(e)}"}, 500
 
 
 # Implementado
