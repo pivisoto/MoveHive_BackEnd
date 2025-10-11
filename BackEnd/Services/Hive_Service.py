@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from flask import g, request 
 from Models.Notificacao_Model import Notificacao
 from Services.Notificacao_Service import criar_notificacao
+from Services import Chat_Service 
 from Models.Hive_Model import Hive
 from firebase_admin import firestore, credentials
 import firebase_admin
@@ -16,7 +17,7 @@ from flask import g, jsonify
 from Models.Treino_Model import Treinos
 from middlewares.auth_token import token_required
 import firebase_admin
-
+import Chat_Service
 
 bucket = storage.bucket()
 db = firestore.client()
@@ -92,6 +93,8 @@ def adicionar_hive(titulo, descricao, esporte_nome, data_hora_str, endereco, loc
         'hive_criados': ArrayUnion([hive.id])
     })
 
+    Chat_Service.criar_chat(titulo,lista_participantes=[usuario_id],id_evento=hive.id)
+    
     return hive.to_dict(), 201
 
 
@@ -242,7 +245,7 @@ def deletar_hive(hive_id):
             'hive_criados': firestore.ArrayRemove([hive_id])
         })
 
-
+        Chat_Service.deletar_chat(hive_id)
         hive_ref.delete()
 
         return {"mensagem": f"Hive '{titulo_hive}' excluído com sucesso e participantes notificados."}, 200
@@ -350,7 +353,7 @@ def participar_hive(hive_id):
                 referencia_id=hive_id,
                 mensagem=mensagem
             )
-
+            Chat_Service.adicionar_ao_chat(hive_id,usuario_id)
             return {"mensagem": "Participação confirmada com sucesso!"}, 200
 
     except Exception as e:
@@ -390,7 +393,7 @@ def cancelar_participacao(hive_id):
         user_ref.update({
             'hive_participando': firestore.ArrayRemove([hive_id])
         })
-
+        Chat_Service.remover_do_chat(hive_id,usuario_id)
         return {"mensagem": "Participação cancelada com sucesso."}, 200
 
     except Exception as e:
@@ -473,7 +476,8 @@ def decidirParticipantesHive(hive_id, usuario_id, acao):
                 tipo="hive_aceito",
                 referencia_id=hive_id,
                 mensagem=mensagem
-            )
+            )   
+            Chat_Service.adicionar_ao_chat(hive_id,usuario_id)
 
             return {"mensagem": "Usuário aceito no hive e notificado."}, 200
 

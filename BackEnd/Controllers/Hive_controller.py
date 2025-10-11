@@ -39,7 +39,6 @@ def criar_hive():
         observacoes=observacoes,
         arquivo_foto=arquivo_foto
     )
-
     return hive_dict, status
 
 

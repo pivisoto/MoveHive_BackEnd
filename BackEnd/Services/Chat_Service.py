@@ -12,22 +12,23 @@ bucket = storage.bucket()
 
 #testado
 @token_required
-def criar_chat(nome_chat,lista_participantes):
+def criar_chat(nome_chat,lista_participantes,id_evento):
     usuario_id = g.user_id
     if not lista_participantes:
         lista_participantes = []
-    lista_participantes = [usuario_id] + lista_participantes
     timestamp_atual = firestore.SERVER_TIMESTAMP 
     ultima_visualizacao_por_usuario = {}
     for usuario in lista_participantes:
         ultima_visualizacao_por_usuario[f'{usuario}'] = timestamp_atual
+    
     chat = Chat(
         user_adm=usuario_id,
         nome_chat=nome_chat,
         participantes=lista_participantes,
         ultima_mensagem="Chat novo!",
         horario_ultima_mensagem=timestamp_atual,
-        ultima_visualizacao_por_usuario=ultima_visualizacao_por_usuario 
+        ultima_visualizacao_por_usuario=ultima_visualizacao_por_usuario,
+        id_evento=id_evento
     )
 
     chat_dict = chat.to_dict()
@@ -38,46 +39,84 @@ def criar_chat(nome_chat,lista_participantes):
 
 #testado
 @token_required
-def adicionar_ao_chat(chat_id,novos_participantes):
+def adicionar_ao_chat(id_recebido, novos_participantes):
     usuario_id = g.user_id
-    chat_ref = db.collection("Chat").document(chat_id)
+    chats_ref = db.collection("Chat")
+    chat_ref = chats_ref.document(id_recebido)
     chat_doc = chat_ref.get()
+    encontrado_por_evento = False  
+
+    if not chat_doc.exists:
+        query = chats_ref.where("id_evento", "==", id_recebido).limit(1).get()
+        if query:
+            chat_ref = query[0].reference
+            chat_doc = query[0]
+            encontrado_por_evento = True
+        else:
+            return jsonify({"erro": "Chat não encontrado"}), 404
+
     chat_data = chat_doc.to_dict()
     user_adm = chat_data.get("user_adm")
     lista_participantes = chat_data.get("participantes", [])
-    novos_participantes = [item for item in novos_participantes if item not in lista_participantes]
-    lista_participantes = novos_participantes + lista_participantes
-    if user_adm == usuario_id:
-        if novos_participantes == []:
-            return {"mensagem": "Estes participantes ja fazem parte do grupo."}, 200
-        print(novos_participantes)
-        chat_ref.update({"participantes": lista_participantes})
-        timestamp_atual = firestore.SERVER_TIMESTAMP
-        updates = {}
-        for novo_participante_id in novos_participantes:
-            updates[f"ultima_visualizacao_por_usuario.{novo_participante_id}"] = timestamp_atual
-        chat_ref.update(updates)
-        return {"mensagem": "Participante(s) adicionado(s) com sucesso."}, 200
-    else:
-        return {"erro": "Você não tem permissão para adicionar este(s) usuário(s)."}, 403
-    
-#testado 
+
+    novos_participantes = [p for p in novos_participantes if p not in lista_participantes]
+    lista_participantes += novos_participantes
+
+    if not encontrado_por_evento and usuario_id != user_adm:
+        return jsonify({"erro": "Apenas o administrador do chat pode adicionar participantes."}), 403
+
+    chat_ref.update({"participantes": lista_participantes})
+
+    return jsonify({
+        "mensagem": "Participantes adicionados com sucesso",
+        "chat_id": chat_ref.id,
+        "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+    }), 200
+
 @token_required
-def remover_do_chat(chat_id,usuarios_remover):
+def remover_do_chat(chat_id, usuarios_remover):
     usuario_id = g.user_id
-    chat_ref = db.collection("Chat").document(chat_id)
-    chat_doc = chat_ref.get()
-    chat_data = chat_doc.to_dict()
-    user_adm = chat_data.get("user_adm")
-    lista_participantes = chat_data.get("participantes", [])
-    if [usuario_id] == usuarios_remover or user_adm == usuario_id:
-        lista_participantes = [item for item in lista_participantes if item not in usuarios_remover]
+    chats_ref = db.collection("Chat")
+    encontrado_por_evento = False
+
+    try:
+        chat_ref = chats_ref.document(chat_id)
+        chat_doc = chat_ref.get()
+
+        if not chat_doc.exists:
+            query = chats_ref.where("id_evento", "==", chat_id).limit(1).get()
+            if query:
+                chat_ref = query[0].reference
+                chat_doc = query[0]
+                encontrado_por_evento = True
+            else:
+                return jsonify({"erro": "Chat não encontrado"}), 404
+
+        chat_data = chat_doc.to_dict()
+        user_adm = chat_data.get("user_adm")
+        lista_participantes = chat_data.get("participantes", [])
+
+        if [usuario_id] == usuarios_remover or user_adm == usuario_id:
+            return jsonify({"erro": "Você não tem permissão para remover este(s) usuário(s)."}), 403
+
+        lista_participantes = [p for p in lista_participantes if p not in usuarios_remover]
         chat_ref.update({"participantes": lista_participantes})
-        if lista_participantes == []:
+
+        if not lista_participantes:
             chat_ref.delete()
-        return {"mensagem": "Participante(s) removido com sucesso."}, 200
-    else:
-        return {"erro": "Você não tem permissão para remover este(s) usuário(s)."}, 403
+            return jsonify({
+                "mensagem": "Todos os participantes foram removidos. Chat deletado.",
+                "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+            }), 200
+
+        return jsonify({
+            "mensagem": "Participante(s) removido(s) com sucesso.",
+            "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+        }), 200
+
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao remover participante(s): {str(e)}"}), 500
+
     
 
 #testado 
@@ -130,18 +169,36 @@ def mandar_mensagem(chat_id, texto_mensagem):
         return {"erro": f"Erro ao enviar mensagem: {str(e)}"}, 500
 
 @token_required
-def deletar_chat(chat_id):
+def deletar_chat(id):
     usuario_id = g.user_id
+    chats_ref = db.collection("Chat")
     try:
-        chat_ref = db.collection("Chat").document(chat_id)
+        chat_ref = chats_ref.document(id)
         chat_doc = chat_ref.get()
+        encontrado_por_evento = False
+
+        if not chat_doc.exists:
+            query = chats_ref.where("id_evento", "==", id).limit(1).get()
+            if query:
+                chat_ref = query[0].reference
+                chat_doc = query[0]
+                encontrado_por_evento = True
+            else:
+                return jsonify({"erro": "Chat não encontrado"}), 404
+
         chat_data = chat_doc.to_dict()
         user_adm = chat_data.get("user_adm")
-        if user_adm == usuario_id:
-            chat_ref.delete()
-            return {"mensagem": "Chat deletado com sucesso!"}, 200
-        else:
-            return {"mensagem": "Você não tem permissão para apagar este chat"}, 403
+
+        if usuario_id != user_adm:
+            return jsonify({"mensagem": "Você não tem permissão para apagar este chat"}), 403
+
+        chat_ref.delete()
+
+        return jsonify({
+            "mensagem": "Chat deletado com sucesso!",
+            "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+        }), 200
+
     except Exception as e:
         return jsonify({"erro": f"Erro ao deletar chat: {str(e)}"}), 500
 
