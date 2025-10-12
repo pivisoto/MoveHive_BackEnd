@@ -160,11 +160,19 @@ def mandar_mensagem(chat_id, texto_mensagem):
 
     timestamp_atual = firestore.SERVER_TIMESTAMP 
 
+    usuario_ref = db.collection("Usuarios").document(usuario_id)
+    usuarios_doc = usuario_ref.get()
+    usuario_data = usuarios_doc.to_dict()
+    foto_usuario = usuario_data.get('foto_perfil')
+    nome_usuario = usuario_data.get('username')
+
     nova_mensagem = {
         "id_mensagem": str(uuid.uuid4()),
         "id_remetente": usuario_id,
         "texto": texto_mensagem,
-        "timestamp": timestamp_atual
+        "timestamp": timestamp_atual,
+        "foto_usuario": foto_usuario,
+        "nome_usuario": nome_usuario
     }
 
     try:
@@ -270,7 +278,10 @@ def exibir_conversa(chat_id):
                 "mensagem_id": doc.id,
                 "id_remetente": dados.get("id_remetente"),
                 "texto": dados.get("texto"),
-                "timestamp": dados.get("timestamp")
+                "timestamp": dados.get("timestamp"),
+                "foto_usuario":  dados.get("foto_usuario"),
+                "nome_usuario":  dados.get("nome_usuario")
+
             })
         timestamp_atual = firestore.SERVER_TIMESTAMP
         chat_ref.update({f"ultima_visualizacao_por_usuario.{usuario_id}": timestamp_atual})
