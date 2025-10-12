@@ -1,6 +1,6 @@
 class Chat:
     def __init__(self,chat_id, participantes=[], user_adm='', nome_chat='', ultima_mensagem='', horario_ultima_mensagem='',ultima_visualizacao_por_usuario=[],id_evento="",foto_chat=''):
-        self.chat_id = chat_id
+        self.id = chat_id
         self.participantes = participantes 
         self.user_adm = user_adm
         self.nome_chat = nome_chat
