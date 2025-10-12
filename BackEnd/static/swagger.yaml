@@ -2731,6 +2731,8 @@ paths:
         - Hive
       summary: Listar todos os hives
       description: Retorna todos os hives cadastrados com seus respectivos campos.
+      security:
+        - bearerAuth: []
       responses:
         '200':
           description: Lista de hives retornada com sucesso.
@@ -2827,6 +2829,8 @@ paths:
     post:
       summary: Solicita participação em um Hive.
       description: Permite que o usuário solicite ou confirme participação em um Hive, dependendo da característica de privacidade e limite de participantes.
+      security:
+        - bearerAuth: []
       tags:
         - Hive
       requestBody:
@@ -2887,6 +2891,8 @@ paths:
     post:
       summary: Cancela participação em um Hive.
       description: Permite ao usuário cancelar sua participação em um Hive, desde que não seja o criador.
+      security:
+        - bearerAuth: []
       tags:
         - Hive
       requestBody:
@@ -2947,6 +2953,8 @@ paths:
     get:
       summary: Lista hives participando
       description: Retorna todos os hives em que o usuário autenticado está participando, incluindo todos os detalhes do hive.
+      security:
+        - bearerAuth: []
       tags:
         - Hive
       responses:
@@ -3045,6 +3053,8 @@ paths:
     post:
       summary: Aprovar ou recusar participante pendente no Hive
       description: Permite ao dono do Hive aceitar ou recusar participação de um usuário pendente.
+      security:
+        - bearerAuth: []
       tags:
         - Hive
       requestBody:
@@ -3104,6 +3114,8 @@ paths:
     post:
       summary: Lista participantes pendentes do Hive
       description: Permite ao dono do Hive obter detalhes dos usuários que solicitaram participação e estão pendentes de aprovação.
+      security:
+        - bearerAuth: []
       tags:
         - Hive
       requestBody:
