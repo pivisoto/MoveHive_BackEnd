@@ -39,8 +39,10 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
         blob.make_public()
         chat.foto = blob.public_url
     else:
-        dados_hive = db.collection("Hive").document(id_evento)
-        chat.foto = dados_hive.get('foto')
+        hive_dados = db.collection("Hive").document(id_evento)
+        hive_doc = hive_dados.get()
+        hive_data = hive_doc.to_dict()
+        chat.foto = hive_data.get('foto')
     
     chat_dict = chat.to_dict()
     
