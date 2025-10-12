@@ -10,14 +10,20 @@ db = firestore.client()
 bucket = storage.bucket()
 
 
-# Implementado
-#@token_required
+@token_required
 def criar_notificacao(usuario_destino_id, tipo, referencia_id, mensagem):
-    #usuario_origem_id = g.user_id
-    usuario_origem_id = "a17db146-e5fa-4b21-aa7d-b3e405d7e75d"
+    usuario_origem_id = g.user_id
+
     user_ref = db.collection('Usuarios').document(usuario_destino_id)
-    if not user_ref.get().exists:
-        return {"erro": "Usuário destino não encontrado."}, 404
+    user_doc = user_ref.get()
+
+    if not user_doc.exists:
+        user_ref = db.collection('UsuariosEmpresa').document(usuario_destino_id)
+        user_doc = user_ref.get()
+
+        if not user_doc.exists:
+            return {"erro": "Usuário destino não encontrado."}, 404
+    
     notificacao = Notificacao(
         usuario_destino_id=usuario_destino_id,
         usuario_origem_id=usuario_origem_id,
@@ -25,6 +31,7 @@ def criar_notificacao(usuario_destino_id, tipo, referencia_id, mensagem):
         referencia_id=referencia_id,
         mensagem=mensagem
     )
+
     notificacoes_ref = db.collection('Notificacoes')
     notificacoes_ref.document(notificacao.id).set(notificacao.to_dict())
     return notificacao.to_dict(), 201
@@ -47,6 +54,7 @@ def pegar_notificacoes():
     notificacoes = [doc.to_dict() for doc in query]
 
     return notificacoes, 200
+
 
 # Implementada
 @token_required
@@ -81,7 +89,6 @@ def deletar_notificacao(notificacao_id):
 
         notificacao_data = notificacao_doc.to_dict()
         
-        # Verifica se o usuário é o destinatário
         if notificacao_data.get("usuario_destino_id") != usuario_id:
             return {"erro": "Você não tem permissão para deletar esta notificação."}, 403
 

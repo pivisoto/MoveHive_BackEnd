@@ -11,17 +11,14 @@ db = firestore.client()
 bucket = storage.bucket()
 
 
-# Função para Criar Postagem
 # Implementado
 @token_required
 def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0):
     usuario_id = g.user_id
-    # Tenta buscar usuário normal
     user_ref = db.collection('Usuarios').document(usuario_id)
     user_doc = user_ref.get()
     pasta_bucket = f"Usuarios/{usuario_id}/Fotos/"
 
-    # Se não existir, tenta empresa
     if not user_doc.exists:
         user_ref = db.collection('UsuariosEmpresa').document(usuario_id)
         user_doc = user_ref.get()
@@ -38,7 +35,6 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
         contador_curtidas=contador_curtidas
     )
 
-    # Upload da imagem, se existir
     if imagem:
         caminho = f"{pasta_bucket}post_{postagem.id}.jpg"
         blob = bucket.blob(caminho)
@@ -46,15 +42,14 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
         blob.make_public()
         postagem.imagem = blob.public_url
 
-    # Salva postagem
     db.collection('Postagens').document(postagem.id).set(postagem.to_dict())
 
-    # Atualiza lista de post_criados na coleção correta
     user_ref.update({
         'post_criados': firestore.ArrayUnion([postagem.id])
     })
 
     return postagem.to_dict(), 201
+
 
 @token_required
 def toggle_curtida(post_id):
@@ -191,7 +186,6 @@ def deletar_comentario_por_id(post_id,comentario_id):
         return {"erro": f"Erro ao deletar comentário: {str(e)}"}, 500
 
 
-# Função para Listar Postagens
 # Implementado
 @token_required
 def listar_postagens_minhas():
@@ -237,15 +231,24 @@ def listar_postagens_de_outro_usuario(usuario_id):
 
 
 
-# Função para Deletar Postagem por ID
 # Implementado
 @token_required
 def deletar_postagem_por_Postid(postagem_id):
     usuario_id = g.user_id
 
     user_ref = db.collection('Usuarios').document(usuario_id)
-    postagem_ref = db.collection('Postagens').document(postagem_id)
+    user_doc = user_ref.get()
+    pasta_bucket = f"Usuarios/{usuario_id}/Fotos/"
 
+    if not user_doc.exists:
+        user_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+        user_doc = user_ref.get()
+        pasta_bucket = f"UsuariosEmpresa/{usuario_id}/Fotos/"
+
+        if not user_doc.exists:
+            return {"erro": "Usuário ou empresa não encontrado."}, 404
+
+    postagem_ref = db.collection('Postagens').document(postagem_id)
     postagem_doc = postagem_ref.get()
 
     if not postagem_doc.exists:
@@ -257,7 +260,7 @@ def deletar_postagem_por_Postid(postagem_id):
         return {"erro": "Você não tem permissão para excluir esta postagem."}, 403
 
     try:
-        caminho = f"Usuarios/{usuario_id}/Fotos/post_{postagem_id}.jpg"
+        caminho = f"{pasta_bucket}post_{postagem_id}.jpg"
         blob = bucket.blob(caminho)
         if blob.exists():
             blob.delete()
@@ -282,8 +285,6 @@ def deletar_postagem_por_Postid(postagem_id):
 @token_required
 def editar_postagem_por_id(post_id, descricao=None, imagem=None):
     usuario_id = g.user_id
-
-    user_ref = db.collection('Usuarios').document(usuario_id)
     post_ref = db.collection('Postagens').document(post_id)
 
     post_doc = post_ref.get()
@@ -329,12 +330,11 @@ def editar_postagem_por_id(post_id, descricao=None, imagem=None):
 # Implementado
 @token_required
 def feed_sem_filtro():
-    usuario_id = g.user_id  # usuário logado
+    usuario_id = g.user_id  
 
     usuario_ref = db.collection("Usuarios").document(usuario_id)
     usuario_doc = usuario_ref.get()
 
-    # Se não existe, tenta empresa
     if not usuario_doc.exists:
         usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
         usuario_doc = usuario_ref.get()
@@ -346,7 +346,6 @@ def feed_sem_filtro():
     if not isinstance(seguindo, list):
         seguindo = list(seguindo) if seguindo else []
 
-    # Buscar todas postagens em ordem decrescente
     postagens_ref = db.collection("Postagens").order_by("data_criacao", direction=firestore.Query.DESCENDING)
     postagens_docs = postagens_ref.stream()
 
@@ -358,13 +357,10 @@ def feed_sem_filtro():
 
         usuario_id_post = postagem_data.get("usuario_id")
 
-        # Ignorar posts de quem o usuário/empresa segue ou do próprio
         if usuario_id_post and usuario_id_post not in seguindo and usuario_id_post != usuario_id:
-            # Primeiro tenta buscar na coleção Usuarios
             usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
             usuario_doc_post = usuario_ref_post.get()
 
-            # Se não existir, tenta UsuariosEmpresa
             if not usuario_doc_post.exists:
                 usuario_ref_post = db.collection("UsuariosEmpresa").document(usuario_id_post)
                 usuario_doc_post = usuario_ref_post.get()
@@ -384,13 +380,11 @@ def feed_sem_filtro():
 # Implementado
 @token_required
 def feed_seguindos():
-    usuario_id = g.user_id  # usuário logado
+    usuario_id = g.user_id  
 
-    # Tenta buscar usuário normal
     usuario_ref = db.collection("Usuarios").document(usuario_id)
     usuario_doc = usuario_ref.get()
 
-    # Se não existe, tenta empresa
     if not usuario_doc.exists:
         usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
         usuario_doc = usuario_ref.get()
@@ -403,7 +397,6 @@ def feed_seguindos():
     if not seguindo:
         return []
 
-    # Buscar postagens de todos que o usuário/empresa segue
     postagens_ref = (
         db.collection("Postagens")
         .where("usuario_id", "in", seguindo)
