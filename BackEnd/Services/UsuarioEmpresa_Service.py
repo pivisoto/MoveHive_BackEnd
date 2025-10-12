@@ -139,3 +139,5 @@ def listar_empresas_sem_filtro():
     except Exception as e:
         print(f"Erro em listar_empresas: {e}")
         return {'erro': str(e)}, 500
+    
+
