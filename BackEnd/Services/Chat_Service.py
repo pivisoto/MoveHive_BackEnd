@@ -5,7 +5,7 @@ from Models.Chat_Model import Chat
 from google.cloud.firestore import ArrayUnion
 from .Notificacao_Service import criar_notificacao, deletar_notificacao
 import uuid
-import sleep
+from time import sleep
 
 db = firestore.client()
 bucket = storage.bucket()

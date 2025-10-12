@@ -17,7 +17,6 @@ from flask import g, jsonify
 from Models.Treino_Model import Treinos
 from middlewares.auth_token import token_required
 import firebase_admin
-import sleep
 
 bucket = storage.bucket()
 db = firestore.client()
