@@ -150,3 +150,16 @@ def listarPendentesHive():
 
     hive_id = dados['hive_id']
     return Hive_Service.listarPendentesHive(hive_id)
+
+
+# Implementado
+@hive_bp.route('/cancelarSolicitacao', methods=['POST'])
+def cancelarSolicitacao():
+    dados = request.get_json()
+    
+    if not dados or 'hive_id' not in dados:
+        return jsonify({"erro": "O campo 'hive_id' é obrigatório."}), 400
+
+    hive_id = dados['hive_id']
+    
+    return Hive_Service.cancelar_solicitacao(hive_id)

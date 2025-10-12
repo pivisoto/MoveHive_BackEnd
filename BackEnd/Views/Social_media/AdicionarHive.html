@@ -787,10 +787,8 @@
             const isPending = currentUserId && pendentes.includes(currentUserId);
             const isCreator = currentUserId && hive.usuario_id === currentUserId;
 
-            // --- MUDANÇA AQUI: Esconde o botão "Participar" para o criador OU para a empresa ---
             if (isCreator || currentUserType === 'empresa') {
                 actionButton.style.display = 'none';
-                // Mostra o botão de gerenciar apenas para o criador (não para a empresa)
                 if (isCreator && hive.privado) {
                     manageButton.style.display = 'block';
                 }
@@ -803,9 +801,11 @@
                     actionButton.classList.add('btn-danger');
                     actionButton.dataset.action = 'cancel';
                 } else if (isPending) {
-                    actionButton.textContent = 'Aguardando Aprovação';
-                    actionButton.classList.add('btn-secondary');
-                    actionButton.disabled = true;
+                    // <!-- ADIÇÃO: Permite cancelar uma solicitação pendente -->
+                    actionButton.textContent = 'Cancelar Solicitação';
+                    actionButton.classList.add('btn-danger');
+                    actionButton.disabled = false;
+                    actionButton.dataset.action = 'cancel-request';
                 } else {
                     actionButton.textContent = hive.privado ? 'Solicitar Participação' : 'Participar';
                     actionButton.classList.add('btn-primary');
@@ -870,9 +870,22 @@
                 return;
             }
 
-            const endpoint = action === 'participate'
-                ? 'http://127.0.0.1:5000/hive/participarHive'
-                : 'http://127.0.0.1:5000/hive/cancelarParticipacaoHive';
+            // <!-- ADIÇÃO: Lógica para determinar o endpoint correto, incluindo a nova ação -->
+            let endpoint = '';
+            switch (action) {
+                case 'participate':
+                    endpoint = 'http://127.0.0.1:5000/hive/participarHive';
+                    break;
+                case 'cancel':
+                    endpoint = 'http://127.0.0.1:5000/hive/cancelarParticipacaoHive';
+                    break;
+                case 'cancel-request':
+                    endpoint = 'http://127.0.0.1:5000/hive/cancelarSolicitacao';
+                    break;
+                default:
+                    alert('Ação desconhecida.');
+                    return;
+            }
             
             const payload = { hive_id: hiveId };
 
@@ -912,7 +925,6 @@
             openModal('pending-requests-modal');
 
             try {
-                // ATUALIZADO: Endpoint e corpo da requisição corrigidos
                 const response = await fetch('http://127.0.0.1:5000/hive/listarPendentesHive', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -960,7 +972,6 @@
                 button.textContent = '...';
                 
                 try {
-                     // ATUALIZADO: Endpoint e corpo da requisição corrigidos
                      const response = await fetch('http://127.0.0.1:5000/hive/decidirParticipanteHive', {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
@@ -969,10 +980,9 @@
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.erro || 'Erro ao processar.');
                     
-                    alert(result.mensagem); // Informa o usuário sobre o sucesso
-                    listItem.remove(); // Remove o item da lista
+                    alert(result.mensagem);
+                    listItem.remove(); 
                     
-                    // Se a lista ficar vazia, exibe a mensagem
                     if(document.getElementById('pending-list').children.length === 0){
                         document.getElementById('pending-list').innerHTML = '<li>Nenhuma solicitação pendente.</li>';
                     }

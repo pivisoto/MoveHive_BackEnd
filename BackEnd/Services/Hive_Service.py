@@ -536,3 +536,39 @@ def listarPendentesHive(hive_id):
             })
 
     return {"pendentes": pendentes_info}, 200
+
+
+# Implementado
+@token_required
+def cancelar_solicitacao(hive_id):
+    usuario_id = g.user_id
+
+    hive_ref = db.collection('Hive').document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "Hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+    pendentes = hive_data.get("pendentes", [])
+
+    if usuario_id not in pendentes:
+        return {
+            "mensagem": "Você não possui uma solicitação pendente para este hive."
+        }, 200
+
+    try:
+        hive_ref.update({
+            'pendentes': firestore.ArrayRemove([usuario_id])
+        })
+
+        user_ref = db.collection('Usuarios').document(usuario_id)
+        user_ref.update({
+            'hive_pendentes': firestore.ArrayRemove([hive_id])
+        })
+
+
+        return {"mensagem": "Solicitação de participação cancelada com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao cancelar solicitação: {str(e)}"}, 500

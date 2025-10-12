@@ -3181,6 +3181,69 @@ paths:
                     type: string
                     description: Mensagem do erro.
 
+  /hive/cancelarSolicitacao:
+    post:
+      summary: Cancelar solicitação de participação em um Hive
+      description: |
+        Cancela uma solicitação de participação enviada por um usuário para um Hive específico.
+        <br>
+        O usuário precisa estar autenticado e possuir uma solicitação pendente associada ao Hive informado.
+      tags:
+        - Hive
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hive_id
+              properties:
+                hive_id:
+                  type: string
+                  example: "hive_12345"
+                  description: ID do Hive no qual o usuário deseja cancelar a solicitação.
+      responses:
+        "200":
+          description: Solicitação cancelada com sucesso ou sem pendência.
+          content:
+            application/json:
+              examples:
+                sucesso:
+                  summary: Solicitação cancelada com sucesso
+                  value:
+                    mensagem: "Solicitação de participação cancelada com sucesso."
+                sem_pendencia:
+                  summary: O usuário não tinha solicitação pendente
+                  value:
+                    mensagem: "Você não possui uma solicitação pendente para este hive."
+        "400":
+          description: Requisição inválida - campo obrigatório ausente.
+          content:
+            application/json:
+              example:
+                erro: "O campo 'hive_id' é obrigatório."
+        "401":
+          description: Usuário não autenticado (token ausente ou inválido).
+          content:
+            application/json:
+              example:
+                erro: "Token inválido ou ausente."
+        "404":
+          description: Hive não encontrado.
+          content:
+            application/json:
+              example:
+                erro: "Hive não encontrado."
+        "500":
+          description: Erro interno ao processar o cancelamento.
+          content:
+            application/json:
+              example:
+                erro: "Erro ao cancelar solicitação: <detalhes do erro>"
+
 # Posts 
   /postagem/ListarPostagens:
     get:
