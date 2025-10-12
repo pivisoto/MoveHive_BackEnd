@@ -20,10 +20,8 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
     ultima_visualizacao_por_usuario = {}
     for usuario in lista_participantes:
         ultima_visualizacao_por_usuario[f'{usuario}'] = timestamp_atual
-    chat_id = str(uuid.uuid4())
     
     chat = Chat(
-        id = chat_id,
         user_adm=usuario_id,
         nome_chat=nome_chat,
         participantes=lista_participantes,
@@ -35,7 +33,7 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
     )
     
     if foto_chat:
-        caminho = f"Usuarios/{usuario_id}/Fotos/chat_{chat_id}.jpg"
+        caminho = f"Usuarios/{usuario_id}/Fotos/chat_{chat.id}.jpg"
         blob = bucket.blob(caminho)
         blob.upload_from_file(caminho, content_type=chat.content_type)
         blob.make_public()
