@@ -38,7 +38,10 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
         blob.upload_from_file(caminho, content_type=chat.content_type)
         blob.make_public()
         chat.foto = blob.public_url
-
+    else:
+        dados_hive = db.collection("Hive").document(id_evento)
+        chat.foto = dados_hive.get('foto')
+    
     chat_dict = chat.to_dict()
     
     db.collection('Chat').document(chat.id).set(chat_dict)
@@ -224,13 +227,6 @@ def exibir_chats():
             dados = doc.to_dict()
             ultima_visualizacao = dados.get("ultima_visualizacao_por_usuario", {}).get(usuario_id)
             mensagens_nao_lidas = 0       
-            id_evento = dados.get("id_evento")
-            if id_evento == '':
-                foto = dados.get("foto_chat")
-            else:
-                dados_hive = db.collection("Hive").document(id_evento)
-                foto = dados_hive.get('foto')
-
             if ultima_visualizacao:
                     mensagens_ref = db.collection("Chat").document(doc.id).collection("mensagens")
                     consulta_nao_lidas = mensagens_ref.where("timestamp", ">", ultima_visualizacao)
@@ -241,7 +237,7 @@ def exibir_chats():
                     "ultima_mensagem": dados.get("ultima_mensagem"),
                     "horario_ultima_mensagem": dados.get("horario_ultima_mensagem"),
                     "mensagens_nao_lidas": mensagens_nao_lidas,
-                    "foto_chat":foto
+                    "foto_chat":dados.get("foto_chat")
                     })
         return jsonify(chats), 200
     except Exception as e:
