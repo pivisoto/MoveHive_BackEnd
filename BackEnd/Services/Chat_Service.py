@@ -14,7 +14,6 @@ bucket = storage.bucket()
 #testado
 @token_required
 def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
-    sleep(5)
     usuario_id = g.user_id
     if not lista_participantes:
         lista_participantes = []
@@ -41,6 +40,7 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
         blob.make_public()
         chat.foto = blob.public_url
     else:
+        sleep(5)
         hive_dados = db.collection("Hive").document(id_evento)
         hive_doc = hive_dados.get()
         hive_data = hive_doc.to_dict()
