@@ -5,6 +5,7 @@ from Models.Chat_Model import Chat
 from google.cloud.firestore import ArrayUnion
 from .Notificacao_Service import criar_notificacao, deletar_notificacao
 import uuid
+import sleep
 
 db = firestore.client()
 bucket = storage.bucket()
@@ -13,6 +14,7 @@ bucket = storage.bucket()
 #testado
 @token_required
 def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
+    sleep(5)
     usuario_id = g.user_id
     if not lista_participantes:
         lista_participantes = []
