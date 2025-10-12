@@ -12,7 +12,7 @@ bucket = storage.bucket()
 
 #testado
 @token_required
-def criar_chat(nome_chat,lista_participantes,id_evento):
+def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
     usuario_id = g.user_id
     if not lista_participantes:
         lista_participantes = []
@@ -20,16 +20,26 @@ def criar_chat(nome_chat,lista_participantes,id_evento):
     ultima_visualizacao_por_usuario = {}
     for usuario in lista_participantes:
         ultima_visualizacao_por_usuario[f'{usuario}'] = timestamp_atual
+    chat_id = str(uuid.uuid4())
     
     chat = Chat(
+        id = chat_id,
         user_adm=usuario_id,
         nome_chat=nome_chat,
         participantes=lista_participantes,
         ultima_mensagem="Chat novo!",
         horario_ultima_mensagem=timestamp_atual,
         ultima_visualizacao_por_usuario=ultima_visualizacao_por_usuario,
-        id_evento=id_evento
+        id_evento=id_evento,
+        foto_chat=None
     )
+    
+    if foto_chat:
+        caminho = f"Usuarios/{usuario_id}/Fotos/chat_{chat_id}.jpg"
+        blob = bucket.blob(caminho)
+        blob.upload_from_file(caminho, content_type=chat.content_type)
+        blob.make_public()
+        chat.foto = blob.public_url
 
     chat_dict = chat.to_dict()
     
@@ -215,7 +225,14 @@ def exibir_chats():
         for doc in chats_docs:
             dados = doc.to_dict()
             ultima_visualizacao = dados.get("ultima_visualizacao_por_usuario", {}).get(usuario_id)
-            mensagens_nao_lidas = 0
+            mensagens_nao_lidas = 0       
+            id_evento = dados.get("id_evento")
+            if id_evento == '':
+                foto = dados.get("foto_chat")
+            else:
+                dados_hive = db.collection("Hive").document(id_evento)
+                foto = dados_hive.get('foto')
+
             if ultima_visualizacao:
                     mensagens_ref = db.collection("Chat").document(doc.id).collection("mensagens")
                     consulta_nao_lidas = mensagens_ref.where("timestamp", ">", ultima_visualizacao)
@@ -225,7 +242,8 @@ def exibir_chats():
                     "nome_chat": dados.get("nome_chat"),
                     "ultima_mensagem": dados.get("ultima_mensagem"),
                     "horario_ultima_mensagem": dados.get("horario_ultima_mensagem"),
-                    "mensagens_nao_lidas": mensagens_nao_lidas
+                    "mensagens_nao_lidas": mensagens_nao_lidas,
+                    "foto_chat":foto
                     })
         return jsonify(chats), 200
     except Exception as e:
