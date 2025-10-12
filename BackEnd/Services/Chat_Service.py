@@ -30,24 +30,18 @@ def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
         horario_ultima_mensagem=timestamp_atual,
         ultima_visualizacao_por_usuario=ultima_visualizacao_por_usuario,
         id_evento=id_evento,
-        foto_chat=None
+        foto_chat=foto_chat
     )
     
-    if foto_chat:
+    if id_evento == '':
         caminho = f"Usuarios/{usuario_id}/Fotos/chat_{chat.id}.jpg"
         blob = bucket.blob(caminho)
         blob.upload_from_file(caminho, content_type=chat.content_type)
         blob.make_public()
-        chat.foto = blob.public_url
-    else:
-        sleep(5)
-        hive_dados = db.collection("Hive").document(id_evento)
-        hive_doc = hive_dados.get()
-        hive_data = hive_doc.to_dict()
-        chat.foto = hive_data.get('foto')
+        chat.foto_chat = blob.public_url
     
     chat_dict = chat.to_dict()
-    
+
     db.collection('Chat').document(chat.id).set(chat_dict)
 
     return jsonify("Chat criado com sucesso"), 201
