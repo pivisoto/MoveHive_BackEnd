@@ -3256,6 +3256,183 @@ paths:
               example:
                 erro: "Erro ao cancelar solicitação: <detalhes do erro>"
 
+  /hive/listarParticipantes:
+    post:
+      summary: Lista os participantes de um Hive
+      description: >
+        Retorna as informações dos participantes de um Hive específico.  
+        Apenas o dono do Hive pode visualizar a lista de participantes.
+      tags:
+        - Hive
+      security:
+        - bearerAuth: []  
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hive_id
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive que se deseja listar os participantes
+              example:
+                hive_id: "abc123xyz"
+      responses:
+        "200":
+          description: Lista de participantes retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  participantes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: ID do usuário
+                          example: "user123"
+                        nome_completo:
+                          type: string
+                          description: Nome completo do participante
+                          example: "Paulo Eduardo Palauro"
+                        username:
+                          type: string
+                          description: Nome de usuário do participante
+                          example: "paulo.dev"
+                        foto_perfil:
+                          type: string
+                          description: URL da foto de perfil do participante
+                          example: "https://firebasestorage.googleapis.com/perfil.jpg"
+        "400":
+          description: Requisição inválida (campo `hive_id` ausente)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "O campo 'hive_id' é obrigatório."
+        "403":
+          description: O usuário autenticado não é o dono do Hive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Apenas o dono do hive pode listar os participantes."
+        "404":
+          description: Hive não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Hive não encontrado."
+  
+  /hive/removerParticipante:
+    post:
+      summary: Remove um participante de um Hive
+      description: >
+        Remove um usuário participante de um Hive específico.  
+        Somente o **dono do Hive** tem permissão para realizar esta ação.  
+        O dono não pode se remover do próprio Hive.
+      tags:
+        - Hive
+      security:
+        - bearerAuth: []  # Token JWT obrigatório
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - hive_id
+                - usuario_id
+              properties:
+                hive_id:
+                  type: string
+                  description: ID do Hive do qual o participante será removido
+                  example: "hive123abc"
+                usuario_id:
+                  type: string
+                  description: ID do usuário que será removido
+                  example: "user456xyz"
+      responses:
+        "200":
+          description: Participante removido com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: "Usuário removido do hive 'Time de Futebol' com sucesso."
+        "400":
+          description: Requisição inválida ou tentativa de remoção do próprio dono
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    examples:
+                      campos_obrigatorios:
+                        summary: Campos obrigatórios ausentes
+                        value: "Os campos 'hive_id' e 'usuario_id' são obrigatórios."
+                      remover_dono:
+                        summary: Tentativa de remoção do dono
+                        value: "O dono do hive não pode remover a si mesmo."
+        "403":
+          description: Usuário autenticado não é o dono do Hive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Apenas o dono do hive pode remover participantes."
+        "404":
+          description: Hive ou participante não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    examples:
+                      hive_nao_encontrado:
+                        summary: Hive inexistente
+                        value: "Hive não encontrado."
+                      usuario_nao_participante:
+                        summary: Usuário não participa do Hive
+                        value: "O usuário especificado não está participando deste hive."
+        "500":
+          description: Erro interno ao tentar remover o participante
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Erro ao remover participante: erro inesperado do Firestore."
+
 # Posts 
   /postagem/ListarPostagens:
     get:
@@ -3895,7 +4072,7 @@ paths:
                     type: string
                     example: "Erro ao deletar comentário: Erro inesperado."
 
-#Chat
+# Chat
   /chat/CriarChat:
     post:
       tags:

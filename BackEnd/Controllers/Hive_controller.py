@@ -163,3 +163,30 @@ def cancelarSolicitacao():
     hive_id = dados['hive_id']
     
     return Hive_Service.cancelar_solicitacao(hive_id)
+
+
+# Implementado
+@hive_bp.route('/listarParticipantes', methods=['POST'])
+def listar_participantes():
+    dados = request.get_json()
+
+    if not dados or 'hive_id' not in dados:
+        return jsonify({"erro": "O campo 'hive_id' é obrigatório."}), 400
+
+    hive_id = dados['hive_id']
+
+    return Hive_Service.listar_participantes_hive(hive_id)
+
+
+# Implementado
+@hive_bp.route('/removerParticipante', methods=['POST'])
+def remover_participante():
+    dados = request.get_json()
+
+    if not dados or 'hive_id' not in dados or 'usuario_id' not in dados:
+        return jsonify({"erro": "Os campos 'hive_id' e 'usuario_id' são obrigatórios."}), 400
+
+    hive_id = dados['hive_id']
+    usuario_id = dados['usuario_id']
+
+    return Hive_Service.remover_participante_hive(hive_id, usuario_id)

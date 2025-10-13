@@ -29,6 +29,38 @@
             color: var(--text-color);
         }
 
+        /* --- ESTILOS DO MODAL DE PARTICIPANTES (NOVO) --- */
+        #participants-list { list-style-type: none; padding: 0; margin: 0; }
+        .participant-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .participant-item:last-child { border-bottom: none; }
+        .participant-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #eee; }
+        .participant-item-info { font-weight: 600; flex-grow: 1; } /* MODIFICADO: Adicionado flex-grow para empurrar o botão */
+
+        /* NOVO: Estilo para o botão de remover participante */
+        .participant-remove-btn {
+            padding: 6px 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border-radius: 15px;
+            cursor: pointer;
+            border: none;
+            color: white;
+            background-color: var(--danger-color); /* Usa a cor de perigo já definida */
+            transition: background-color 0.2s;
+        }
+        .participant-remove-btn:hover {
+            background-color: #dc2626; /* Vermelho mais escuro no hover */
+        }
+        .participant-remove-btn:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
         .page-container {
             display: flex;
             flex-direction: column;
@@ -98,14 +130,14 @@
             align-items: center;
             gap: 1.5rem;
         }
-        
+
         .main-content.text-center {
              justify-content: center;
              text-align: center;
         }
 
         .main-content p { margin: 0.5rem 0; }
-        
+
         /* --- ESTILOS DO CARD DE HIVE --- */
         .event-card {
             background-color: var(--card-color);
@@ -149,7 +181,7 @@
         }
 
         .event-details { padding: 1rem 1.25rem; position: relative; }
-        
+
         .card-actions {
             position: absolute;
             top: 1rem;
@@ -198,7 +230,7 @@
             margin: 0;
             color: var(--text-color);
         }
-        
+
         .event-title-container .private-icon {
             color: var(--secondary-text-color);
             font-size: 1.1rem;
@@ -214,7 +246,7 @@
             overflow: hidden;
             min-height: 38px;
         }
-        
+
         .event-info {
             display: flex;
             align-items: flex-start;
@@ -270,7 +302,7 @@
         }
         .nav-item { color: #333; font-size: 24px; text-decoration: none; transition: transform 0.2s; }
         .nav-item:hover { transform: scale(1.1); }
-        
+
         /* --- ESTILOS DOS MODAIS --- */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; }
         .modal-overlay.visible { opacity: 1; visibility: visible; }
@@ -280,7 +312,7 @@
         .modal-header h2 { margin: 0; font-size: 1.5rem; }
         .close-modal-btn { font-size: 2rem; line-height: 1; font-weight: 300; cursor: pointer; background: none; border: none; color: var(--secondary-text-color); }
         .modal-body { overflow-y: auto; padding: 1.5rem 0.5rem 0.5rem 0.5rem; }
-        
+
         #event-details-modal .modal-body { padding: 0; }
         #event-details-modal .modal-header { border-bottom: none; position: absolute; top: 10px; right: 10px; z-index: 2; }
         #event-details-modal .close-modal-btn { background-color: rgba(0,0,0,0.5); color: white; border-radius: 50%; width: 32px; height: 32px; font-size: 1.5rem; line-height: 32px; }
@@ -346,6 +378,13 @@
             object-fit: cover;
             background-color: #eee; /* Cor de fundo para imagens que não carregam */
         }
+
+        /* --- ESTILOS DO MODAL DE PARTICIPANTES (NOVO) --- */
+        #participants-list { list-style-type: none; padding: 0; margin: 0; }
+        .participant-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.8rem 0.5rem; border-bottom: 1px solid var(--border-color); }
+        .participant-item:last-child { border-bottom: none; }
+        .participant-user-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background-color: #eee; }
+        .participant-item-info { font-weight: 600; }
 
     </style>
 </head>
@@ -462,7 +501,7 @@
             </main>
         </div>
     </div>
-    
+
     <!-- MODAL PARA EDIÇÃO DE HIVE -->
     <div class="modal-overlay" id="edit-event-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-edit">
         <div class="modal-content">
@@ -550,6 +589,7 @@
                 <div class="details-action-buttons">
                     <button class="action-btn btn-secondary" data-close-modal="event-details-modal">Fechar</button>
                     <button id="participate-btn" class="action-btn btn-primary">Participar</button>
+                    <button id="view-participants-btn" class="action-btn btn-tertiary" style="display: none;">Ver Participantes</button>
                     <button id="manage-requests-btn" class="action-btn btn-tertiary" style="display: none;">Gerenciar Solicitações</button>
                 </div>
             </main>
@@ -571,6 +611,22 @@
         </div>
     </div>
 
+    <!-- MODAL PARA LISTAR PARTICIPANTES (NOVO) -->
+    <div class="modal-overlay" id="participants-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title-participants">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h2 id="modal-title-participants">Participantes</h2>
+                <button class="close-modal-btn" data-close-modal="participants-modal" aria-label="Fechar modal">×</button>
+            </header>
+            <main class="modal-body">
+                <ul id="participants-list">
+                    <!-- Lista de participantes será inserida aqui -->
+                </ul>
+            </main>
+        </div>
+    </div>
+
+
     <script>
     const token = localStorage.getItem('jwtToken');
 
@@ -579,13 +635,13 @@
         try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             console.log("JWT Decodificado:", payload);
-            return payload; 
+            return payload;
         } catch (e) {
             console.error("Erro ao decodificar o token:", e);
             return null;
         }
     }
-    
+
     const tokenPayload = decodeTokenPayload();
     const currentUserId = tokenPayload ? tokenPayload.user_id : null;
     const currentUserType = tokenPayload ? tokenPayload.tipo_usuario : null;
@@ -603,10 +659,10 @@
 
         const mainContent = document.getElementById('main-content');
         const filterButtons = document.querySelectorAll('.filter-btn');
-        let currentHives = []; 
-        let activeFilter = 'hives'; 
+        let currentHives = [];
+        let activeFilter = 'hives';
         let allSports = [];
-        
+
         // --- FUNÇÕES DE EXIBIÇÃO ---
         function showEmptyMessage(filterType = 'hives') {
             let message = "Nenhuma Hive encontrada.";
@@ -621,7 +677,7 @@
             mainContent.innerHTML = `<div class="text-center"><p>${message}</p><p>${suggestion}</p></div>`;
             mainContent.classList.add('text-center');
         }
-        
+
         function showLoading() {
             mainContent.innerHTML = '<p>Carregando Hives...</p>';
             mainContent.classList.add('text-center');
@@ -644,15 +700,15 @@
             const minutes = String(date.getMinutes()).padStart(2, '0');
             return `${day}/${month}/${year} - ${hours}:${minutes}`;
         }
-        
+
         function createHiveCard(hive, index, isMyHive = false) {
             const card = document.createElement('div');
-            card.className = 'event-card'; 
+            card.className = 'event-card';
             card.dataset.index = index;
 
             const participants = Array.isArray(hive.participantes) ? hive.participantes : [];
             const fullLocation = `${hive.endereco ? hive.endereco + ', ' : ''}${hive.localizacao || 'Local não definido'}`;
-            
+
             let infoHtml = `
                 <div class="event-info"><i class="fas fa-map-marker-alt"></i><span>${fullLocation}</span></div>
                 <div class="event-info"><i class="fas fa-users"></i><span>${participants.length} / ${hive.max_participantes} participantes</span></div>
@@ -680,7 +736,7 @@
                     ${infoHtml}
                 </div>
             `;
-            
+
             card.addEventListener('click', () => { displayHiveDetails(hive); });
             return card;
         }
@@ -688,12 +744,12 @@
         async function fetchAndDisplay(endpoint, filter) {
              showLoading();
             try {
-                const response = await fetch(endpoint, { 
+                const response = await fetch(endpoint, {
                     method: 'GET' ,
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 if (!response.ok) { throw new Error(`Erro na API: ${response.statusText}`); }
-                
+
                 const hives = await response.json();
                 currentHives = Array.isArray(hives) ? hives : [];
                 mainContent.innerHTML = '';
@@ -721,16 +777,16 @@
                 button.classList.add('active');
                 activeFilter = button.getAttribute('data-filter');
                 let endpoint = '';
-                
+
                 switch(activeFilter) {
                     case 'hives': endpoint = 'http://127.0.0.1:5000/hive/listarTodosHive'; break;
-                    case 'my-hives': endpoint = 'http://127.0.0.1:5000/hive/meusHive'; break; 
+                    case 'my-hives': endpoint = 'http://127.0.0.1:5000/hive/meusHive'; break;
                     case 'participating': endpoint = 'http://127.0.0.1:5000/hive/ParticipandoHive'; break;
                 }
                 if (endpoint) fetchAndDisplay(endpoint, activeFilter);
             });
         });
-        document.querySelector('.filter-btn[data-filter="hives"]').click(); 
+        document.querySelector('.filter-btn[data-filter="hives"]').click();
 
         const modalOverlays = document.querySelectorAll('.modal-overlay');
 
@@ -744,11 +800,11 @@
         modalOverlays.forEach(overlay => {
             overlay.addEventListener('click', (event) => { if (event.target === overlay) closeModal(overlay.id); });
         });
-        
+
         function displayHiveDetails(hive) {
             document.getElementById('details-image').src = hive.foto || 'https://via.placeholder.com/450x220.png?text=Sem+Imagem';
             document.getElementById('details-description').textContent = hive.descricao;
-            
+
             const titleContainer = document.getElementById('details-title-container');
             titleContainer.innerHTML = `<h2 id="details-title">${hive.titulo}</h2>`;
 
@@ -764,7 +820,7 @@
             const participants = Array.isArray(hive.participantes) ? hive.participantes : [];
             const pendentes = Array.isArray(hive.pendentes) ? hive.pendentes : [];
             const fullLocation = `${hive.endereco ? hive.endereco + ', ' : ''}${hive.localizacao || 'Local não definido'}`;
-            
+
             const detailsList = [
                 { icon: 'fa-calendar-alt', text: formatHiveDate(hive.data_hora) },
                 { icon: 'fa-map-marker-alt', text: fullLocation },
@@ -779,17 +835,23 @@
 
             const actionButton = document.getElementById('participate-btn');
             const manageButton = document.getElementById('manage-requests-btn');
+            const viewParticipantsButton = document.getElementById('view-participants-btn');
+
             actionButton.dataset.hiveId = hive.id;
             manageButton.dataset.hiveId = hive.id;
+            viewParticipantsButton.dataset.hiveId = hive.id;
+
             manageButton.style.display = 'none';
+            viewParticipantsButton.style.display = 'none';
 
             const isParticipating = currentUserId && participants.includes(currentUserId);
             const isPending = currentUserId && pendentes.includes(currentUserId);
             const isCreator = currentUserId && hive.usuario_id === currentUserId;
 
-            if (isCreator || currentUserType === 'empresa') {
+            if (isCreator) {
                 actionButton.style.display = 'none';
-                if (isCreator && hive.privado) {
+                viewParticipantsButton.style.display = 'block'; // Mostrar botão para o criador
+                if (hive.privado) {
                     manageButton.style.display = 'block';
                 }
             } else {
@@ -801,7 +863,6 @@
                     actionButton.classList.add('btn-danger');
                     actionButton.dataset.action = 'cancel';
                 } else if (isPending) {
-                    // <!-- ADIÇÃO: Permite cancelar uma solicitação pendente -->
                     actionButton.textContent = 'Cancelar Solicitação';
                     actionButton.classList.add('btn-danger');
                     actionButton.disabled = false;
@@ -846,10 +907,10 @@
             if (!hiveId || !token) { alert('Erro de autenticação ou ID inválido.'); return; }
             try {
                 const response = await fetch('http://127.0.0.1:5000/hive/deletarHive', {
-                    method: 'DELETE', 
-                    headers: { 
-                        'Authorization': `Bearer ${token}`, 
-                        'Content-Type': 'application/json' 
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({ hive_id: hiveId })
                 });
@@ -857,11 +918,11 @@
                 if (!response.ok) throw new Error(result.erro || 'Não foi possível excluir.');
                 alert('Hive excluída com sucesso!');
                 document.querySelector('.filter-btn.active').click();
-            } catch (error) { 
-                alert(`Falha ao excluir a Hive: ${error.message}`); 
+            } catch (error) {
+                alert(`Falha ao excluir a Hive: ${error.message}`);
             }
         }
-        
+
         async function handleHiveActionClick(event) {
             const button = event.target;
             const { hiveId, action } = button.dataset;
@@ -870,7 +931,6 @@
                 return;
             }
 
-            // <!-- ADIÇÃO: Lógica para determinar o endpoint correto, incluindo a nova ação -->
             let endpoint = '';
             switch (action) {
                 case 'participate':
@@ -886,7 +946,7 @@
                     alert('Ação desconhecida.');
                     return;
             }
-            
+
             const payload = { hive_id: hiveId };
 
             const originalText = button.textContent;
@@ -926,7 +986,7 @@
 
             try {
                 const response = await fetch('http://127.0.0.1:5000/hive/listarPendentesHive', {
-                    method: 'POST', 
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                     body: JSON.stringify({ hive_id: hiveId })
                 });
@@ -967,22 +1027,22 @@
                 const listItem = button.closest('.pending-item');
                 const userId = listItem.dataset.userId;
                 const hiveId = document.getElementById('manage-requests-btn').dataset.hiveId;
-                
+
                 button.disabled = true;
                 button.textContent = '...';
-                
+
                 try {
                      const response = await fetch('http://127.0.0.1:5000/hive/decidirParticipanteHive', {
-                        method: 'POST', 
+                        method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
                         body: JSON.stringify({ hive_id: hiveId, usuario_id: userId, acao: action })
                     });
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.erro || 'Erro ao processar.');
-                    
+
                     alert(result.mensagem);
-                    listItem.remove(); 
-                    
+                    listItem.remove();
+
                     if(document.getElementById('pending-list').children.length === 0){
                         document.getElementById('pending-list').innerHTML = '<li>Nenhuma solicitação pendente.</li>';
                     }
@@ -993,6 +1053,109 @@
                 }
             }
         });
+
+        // --- LÓGICA PARA LISTAR PARTICIPANTES (MODIFICADA) ---
+        document.getElementById('view-participants-btn').addEventListener('click', async function() {
+            const hiveId = this.dataset.hiveId;
+            const participantsList = document.getElementById('participants-list');
+            participantsList.innerHTML = '<li>Carregando participantes...</li>';
+            openModal('participants-modal');
+
+            const currentHive = currentHives.find(h => h.id === hiveId);
+            const isOwnerViewing = currentHive && currentHive.usuario_id === currentUserId;
+
+            try {
+                const response = await fetch('http://127.0.0.1:5000/hive/listarParticipantes', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ hive_id: hiveId })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.erro || 'Erro ao buscar participantes.');
+
+                participantsList.innerHTML = '';
+                if (result.participantes && result.participantes.length > 0) {
+                    result.participantes.forEach(user => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'participant-item';
+                        const profilePic = user.foto_perfil || 'https://via.placeholder.com/40';
+
+                        let removeButtonHtml = '';
+                        if (isOwnerViewing && user.id !== currentUserId) {
+                             removeButtonHtml = `<button class="participant-remove-btn" data-user-id="${user.id}">Excluir</button>`;
+                        }
+
+                        listItem.innerHTML = `
+                            <img src="${profilePic}" alt="Foto de ${user.username}" class="participant-user-img">
+                            <div class="participant-item-info">
+                                <span>${user.username || user.nome_completo}</span>
+                            </div>
+                            ${removeButtonHtml}
+                        `;
+                        participantsList.appendChild(listItem);
+                    });
+                } else {
+                    participantsList.innerHTML = '<li>Nenhum participante nesta Hive.</li>';
+                }
+            } catch (error) {
+                participantsList.innerHTML = `<li>Erro: ${error.message}</li>`;
+            }
+        });
+
+        // --- NOVA LÓGICA PARA REMOVER PARTICIPANTE ---
+        document.getElementById('participants-list').addEventListener('click', async function(e) {
+            if (!e.target.matches('.participant-remove-btn')) return;
+
+            const removeButton = e.target;
+            const userToRemoveId = removeButton.dataset.userId;
+            const hiveId = document.getElementById('view-participants-btn').dataset.hiveId;
+            const userItem = removeButton.closest('.participant-item');
+
+            if (!hiveId || !userToRemoveId) {
+                alert('Erro: ID da Hive ou do usuário não encontrado.');
+                return;
+            }
+
+            if (confirm('Tem certeza que deseja remover este participante?')) {
+                removeButton.disabled = true;
+                removeButton.textContent = '...';
+
+                try {
+                    const response = await fetch('http://127.0.0.1:5000/hive/removerParticipante', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            hive_id: hiveId,
+                            usuario_id: userToRemoveId
+                        })
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok) {
+                        throw new Error(result.erro || 'Não foi possível remover o participante.');
+                    }
+
+                    alert(result.mensagem);
+                    userItem.remove(); // Remove o item da lista visualmente
+
+                    // Atualiza a contagem de participantes na tela principal
+                    document.querySelector('.filter-btn.active').click();
+
+                     if (this.children.length === 0) {
+                        this.innerHTML = '<li>Nenhum participante nesta Hive.</li>';
+                    }
+
+                } catch (error) {
+                    alert(`Erro: ${error.message}`);
+                    removeButton.disabled = false;
+                    removeButton.textContent = 'Excluir';
+                }
+            }
+        });
+
 
         // --- LÓGICA DOS FORMULÁRIOS ---
         async function populateSportsDropdown(selectElement, selectedValue = null) {
@@ -1061,9 +1224,9 @@
             submitButton.disabled = true;
             submitButton.textContent = method === 'POST' ? 'Enviando...' : 'Salvando...';
             if (!token) { alert('Erro de autenticação.'); submitButton.disabled = false; submitButton.textContent = originalButtonText; return; }
-            
+
             const formData = new FormData(form);
-            
+
             const privadoCheckbox = form.querySelector('input[name="privado"][type="checkbox"]');
             if (privadoCheckbox) {
                 if (privadoCheckbox.checked) {
@@ -1072,19 +1235,19 @@
                     formData.set('privado', '');
                 }
             }
-            
+
             const dataHoraCriacao = formData.get('data_hora_str');
             if (dataHoraCriacao) { formData.set('data_hora_str', `${dataHoraCriacao}:00`); }
 
             const dataHoraEdicao = formData.get('data_hora');
             if (dataHoraEdicao) { formData.set('data_hora', `${dataHoraEdicao}:00`); }
-            
+
             const cidadeSelect = form.querySelector('select[name="cidade"]');
             const estadoSelect = form.querySelector('select[name="estado"]');
             const cidadeNome = cidadeSelect.value;
             const estadoUf = estadoSelect.options[estadoSelect.selectedIndex]?.dataset.uf;
-            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); } 
-            
+            if (cidadeNome && estadoUf) { formData.append('localizacao', `${cidadeNome}, ${estadoUf}`); }
+
             try {
                 const response = await fetch(url, { method, headers: { 'Authorization': `Bearer ${token}` }, body: formData });
                 const result = await response.json();

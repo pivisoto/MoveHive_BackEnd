@@ -572,3 +572,84 @@ def cancelar_solicitacao(hive_id):
 
     except Exception as e:
         return {"erro": f"Erro ao cancelar solicitação: {str(e)}"}, 500
+    
+    
+# Implementado
+@token_required
+def listar_participantes_hive(hive_id):
+    usuario_dono = g.user_id
+    hive_ref = db.collection("Hive").document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "Hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+
+    if hive_data.get("usuario_id") != usuario_dono:
+        return {"erro": "Apenas o dono do hive pode listar os participantes."}, 403
+
+    participantes_ids = hive_data.get("participantes", [])
+    participantes_info = []
+
+    for user_id in participantes_ids:
+        user_doc = db.collection("Usuarios").document(user_id).get()
+        if user_doc.exists:
+            user_data = user_doc.to_dict()
+            participantes_info.append({
+                "id": user_id,
+                "nome_completo": user_data.get("nome_completo"),
+                "username": user_data.get("username"),
+                "foto_perfil": user_data.get("foto_perfil")
+            })
+
+    return {"participantes": participantes_info}, 200
+
+
+
+@token_required
+def remover_participante_hive(hive_id, usuario_remover_id):
+    usuario_dono = g.user_id
+    hive_ref = db.collection("Hive").document(hive_id)
+    hive_doc = hive_ref.get()
+
+    if not hive_doc.exists:
+        return {"erro": "Hive não encontrado."}, 404
+
+    hive_data = hive_doc.to_dict()
+    participantes = hive_data.get("participantes", [])
+
+    if hive_data.get("usuario_id") != usuario_dono:
+        return {"erro": "Apenas o dono do hive pode remover participantes."}, 403
+
+    if usuario_remover_id == usuario_dono:
+        return {"erro": "O dono do hive não pode remover a si mesmo."}, 400
+
+    if usuario_remover_id not in participantes:
+        return {"erro": "O usuário especificado não está participando deste hive."}, 404
+
+    try:
+        hive_ref.update({
+            'participantes': firestore.ArrayRemove([usuario_remover_id])
+        })
+
+        user_ref = db.collection('Usuarios').document(usuario_remover_id)
+        user_ref.update({
+            'hive_participando': firestore.ArrayRemove([hive_id])
+        })
+
+        Chat_Service.remover_do_chat(hive_id, usuario_remover_id)
+
+        titulo_hive = hive_data.get("titulo", "sem título")
+        mensagem = f"Você foi removido do hive '{titulo_hive}' pelo criador."
+        criar_notificacao(
+            usuario_destino_id=usuario_remover_id,
+            tipo="remocao_hive",
+            referencia_id=hive_id,
+            mensagem=mensagem
+        )
+
+        return {"mensagem": f"Usuário removido do hive '{titulo_hive}' com sucesso."}, 200
+
+    except Exception as e:
+        return {"erro": f"Erro ao remover participante: {str(e)}"}, 500
