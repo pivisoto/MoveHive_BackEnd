@@ -10,16 +10,22 @@ def criarChat():
         data = request.get_json()
         nome_chat = data.get('nome_chat')
         lista_participantes = data.get('participantes')
+        foto_chat = request.files.get("arquivo_foto")
     except Exception:
         return jsonify({"erro": "Requisição inválida: JSON não fornecido ou mal formatado"}), 400
+    
+    if foto_chat:
+        pass
+    else:
+        foto_chat = ''
 
     if not data:
         return jsonify({"erro": "Dados do chat não fornecidos"}), 400
 
     if not nome_chat:
         return jsonify({"erro": "Nome do chat é obrigatório"}), 400
-    
-    return Chat_Service.criar_chat(nome_chat,lista_participantes)
+    id_evento=''
+    return Chat_Service.criar_chat(nome_chat,lista_participantes,id_evento,foto_chat)
 
 # Rota para Remover Participante
 @chat_bp.route('/AdicionarParticipantes', methods=['POST'])

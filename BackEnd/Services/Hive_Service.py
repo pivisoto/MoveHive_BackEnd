@@ -92,7 +92,7 @@ def adicionar_hive(titulo, descricao, esporte_nome, data_hora_str, endereco, loc
         'hive_criados': ArrayUnion([hive.id])
     })
 
-    Chat_Service.criar_chat(titulo,lista_participantes=[usuario_id],id_evento=hive.id)
+    Chat_Service.criar_chat(titulo,lista_participantes=[usuario_id],id_evento=hive.id,foto_chat=hive.foto)
     
     return hive.to_dict(), 201
 

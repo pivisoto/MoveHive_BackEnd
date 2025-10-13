@@ -5,6 +5,7 @@ from Models.Chat_Model import Chat
 from google.cloud.firestore import ArrayUnion
 from .Notificacao_Service import criar_notificacao, deletar_notificacao
 import uuid
+from time import sleep
 
 db = firestore.client()
 bucket = storage.bucket()
@@ -12,7 +13,7 @@ bucket = storage.bucket()
 
 #testado
 @token_required
-def criar_chat(nome_chat,lista_participantes,id_evento):
+def criar_chat(nome_chat,lista_participantes,id_evento,foto_chat=None):
     usuario_id = g.user_id
     if not lista_participantes:
         lista_participantes = []
@@ -28,11 +29,19 @@ def criar_chat(nome_chat,lista_participantes,id_evento):
         ultima_mensagem="Chat novo!",
         horario_ultima_mensagem=timestamp_atual,
         ultima_visualizacao_por_usuario=ultima_visualizacao_por_usuario,
-        id_evento=id_evento
+        id_evento=id_evento,
+        foto_chat=foto_chat
     )
-
-    chat_dict = chat.to_dict()
     
+    if id_evento == '':
+        caminho = f"Usuarios/{usuario_id}/Fotos/chat_{chat.id}.jpg"
+        blob = bucket.blob(caminho)
+        blob.upload_from_file(caminho, content_type=chat.content_type)
+        blob.make_public()
+        chat.foto_chat = blob.public_url
+    
+    chat_dict = chat.to_dict()
+
     db.collection('Chat').document(chat.id).set(chat_dict)
 
     return jsonify("Chat criado com sucesso"), 201
@@ -151,11 +160,19 @@ def mandar_mensagem(chat_id, texto_mensagem):
 
     timestamp_atual = firestore.SERVER_TIMESTAMP 
 
+    usuario_ref = db.collection("Usuarios").document(usuario_id)
+    usuarios_doc = usuario_ref.get()
+    usuario_data = usuarios_doc.to_dict()
+    foto_usuario = usuario_data.get('foto_perfil')
+    nome_usuario = usuario_data.get('username')
+
     nova_mensagem = {
         "id_mensagem": str(uuid.uuid4()),
         "id_remetente": usuario_id,
         "texto": texto_mensagem,
-        "timestamp": timestamp_atual
+        "timestamp": timestamp_atual,
+        "foto_usuario": foto_usuario,
+        "nome_usuario": nome_usuario
     }
 
     try:
@@ -215,7 +232,7 @@ def exibir_chats():
         for doc in chats_docs:
             dados = doc.to_dict()
             ultima_visualizacao = dados.get("ultima_visualizacao_por_usuario", {}).get(usuario_id)
-            mensagens_nao_lidas = 0
+            mensagens_nao_lidas = 0       
             if ultima_visualizacao:
                     mensagens_ref = db.collection("Chat").document(doc.id).collection("mensagens")
                     consulta_nao_lidas = mensagens_ref.where("timestamp", ">", ultima_visualizacao)
@@ -225,7 +242,8 @@ def exibir_chats():
                     "nome_chat": dados.get("nome_chat"),
                     "ultima_mensagem": dados.get("ultima_mensagem"),
                     "horario_ultima_mensagem": dados.get("horario_ultima_mensagem"),
-                    "mensagens_nao_lidas": mensagens_nao_lidas
+                    "mensagens_nao_lidas": mensagens_nao_lidas,
+                    "foto_chat":dados.get("foto_chat")
                     })
         return jsonify(chats), 200
     except Exception as e:
@@ -260,7 +278,10 @@ def exibir_conversa(chat_id):
                 "mensagem_id": doc.id,
                 "id_remetente": dados.get("id_remetente"),
                 "texto": dados.get("texto"),
-                "timestamp": dados.get("timestamp")
+                "timestamp": dados.get("timestamp"),
+                "foto_usuario":  dados.get("foto_usuario"),
+                "nome_usuario":  dados.get("nome_usuario")
+
             })
         timestamp_atual = firestore.SERVER_TIMESTAMP
         chat_ref.update({f"ultima_visualizacao_por_usuario.{usuario_id}": timestamp_atual})

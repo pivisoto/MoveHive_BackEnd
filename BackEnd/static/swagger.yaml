@@ -4098,6 +4098,10 @@ paths:
                     type: string
                     example: "def456-..."
                   description: Lista de IDs dos usuários a serem convidados. O usuário logado é adicionado automaticamente.
+                foto_chat:
+                  type: string
+                  format: binary
+                  description: Imagem do chat escolhida pelo criador 
               required:
                 - nome_chat
       responses:
@@ -4440,6 +4444,9 @@ paths:
                     mensagens_nao_lidas:
                       type: integer
                       example: 2
+                    foto_chat:
+                      type: string
+                      example: "https://storage.googleapis.com/safeviewbd.appspot.com/Usuarios/efda434e-c21a-4027-a85e-faa3611d74b5/Fotos/post_1dd38678-7a07-48de-bfe7-f8dc2f2cf002.jpg"
         '500':
           description: Erro interno ao listar chats
           content:
