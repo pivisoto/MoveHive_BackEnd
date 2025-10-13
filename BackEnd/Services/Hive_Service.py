@@ -392,7 +392,7 @@ def cancelar_participacao(hive_id):
         user_ref.update({
             'hive_participando': firestore.ArrayRemove([hive_id])
         })
-        Chat_Service.remover_do_chat(hive_id,usuario_id)
+        Chat_Service.remover_do_chat(hive_id,[usuario_id])
         return {"mensagem": "Participação cancelada com sucesso."}, 200
 
     except Exception as e:

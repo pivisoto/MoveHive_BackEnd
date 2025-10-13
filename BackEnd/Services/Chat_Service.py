@@ -54,7 +54,7 @@ def adicionar_ao_chat(id_recebido, novos_participantes):
     chat_ref = chats_ref.document(id_recebido)
     chat_doc = chat_ref.get()
     encontrado_por_evento = False  
-
+    
     if not chat_doc.exists:
         query = chats_ref.where("id_evento", "==", id_recebido).limit(1).get()
         if query:
