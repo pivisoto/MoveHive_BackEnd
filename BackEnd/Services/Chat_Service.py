@@ -303,14 +303,14 @@ def exibir_chats():
                     mensagens_ref = db.collection("Chat").document(doc.id).collection("mensagens")
                     consulta_nao_lidas = mensagens_ref.where("timestamp", ">", ultima_visualizacao)
                     mensagens_nao_lidas = len(list(consulta_nao_lidas.stream()))
-                    chats.append({
-                    "id_chat": doc.id,
-                    "nome_chat": dados.get("nome_chat"),
-                    "ultima_mensagem": dados.get("ultima_mensagem"),
-                    "horario_ultima_mensagem": dados.get("horario_ultima_mensagem"),
-                    "mensagens_nao_lidas": mensagens_nao_lidas,
-                    "foto_chat":dados.get("foto_chat")
-                    })
+            chats.append({
+            "id_chat": doc.id,
+            "nome_chat": dados.get("nome_chat"),
+            "ultima_mensagem": dados.get("ultima_mensagem"),
+            "horario_ultima_mensagem": dados.get("horario_ultima_mensagem"),
+            "mensagens_nao_lidas": mensagens_nao_lidas,
+            "foto_chat":dados.get("foto_chat")
+            })
         return jsonify(chats), 200
     except Exception as e:
         return jsonify({"erro": f"Erro ao listar chats: {str(e)}"}), 500
