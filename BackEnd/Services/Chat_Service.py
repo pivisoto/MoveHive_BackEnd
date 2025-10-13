@@ -54,7 +54,7 @@ def adicionar_ao_chat(id_recebido, novos_participantes):
     chat_ref = chats_ref.document(id_recebido)
     chat_doc = chat_ref.get()
     encontrado_por_evento = False  
-    
+
     if not chat_doc.exists:
         query = chats_ref.where("id_evento", "==", id_recebido).limit(1).get()
         if query:
@@ -73,6 +73,35 @@ def adicionar_ao_chat(id_recebido, novos_participantes):
 
     if not encontrado_por_evento and usuario_id != user_adm:
         return jsonify({"erro": "Apenas o administrador do chat pode adicionar participantes."}), 403
+
+    chat_ref.update({"participantes": lista_participantes})
+
+    return jsonify({
+        "mensagem": "Participantes adicionados com sucesso",
+        "chat_id": chat_ref.id,
+        "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+    }), 200
+
+def adicionar_ao_chat_hive(id_recebido, novos_participantes):
+    chats_ref = db.collection("Chat")
+    chat_ref = chats_ref.document(id_recebido)
+    chat_doc = chat_ref.get()
+    encontrado_por_evento = False  
+    
+    if not chat_doc.exists:
+        query = chats_ref.where("id_evento", "==", id_recebido).limit(1).get()
+        if query:
+            chat_ref = query[0].reference
+            chat_doc = query[0]
+            encontrado_por_evento = True
+        else:
+            return jsonify({"erro": "Chat não encontrado"}), 404
+
+    chat_data = chat_doc.to_dict()
+    lista_participantes = chat_data.get("participantes", [])
+
+    novos_participantes = [p for p in novos_participantes if p not in lista_participantes]
+    lista_participantes += novos_participantes
 
     chat_ref.update({"participantes": lista_participantes})
 
@@ -126,6 +155,43 @@ def remover_do_chat(chat_id, usuarios_remover):
     except Exception as e:
         return jsonify({"erro": f"Erro ao remover participante(s): {str(e)}"}), 500
 
+def remover_do_chat_hive(chat_id, usuarios_remover):
+    chats_ref = db.collection("Chat")
+    encontrado_por_evento = False
+
+    try:
+        chat_ref = chats_ref.document(chat_id)
+        chat_doc = chat_ref.get()
+
+        if not chat_doc.exists:
+            query = chats_ref.where("id_evento", "==", chat_id).limit(1).get()
+            if query:
+                chat_ref = query[0].reference
+                chat_doc = query[0]
+                encontrado_por_evento = True
+            else:
+                return jsonify({"erro": "Chat não encontrado"}), 404
+
+        chat_data = chat_doc.to_dict()
+        lista_participantes = chat_data.get("participantes", [])
+
+        lista_participantes = [p for p in lista_participantes if p not in usuarios_remover]
+        chat_ref.update({"participantes": lista_participantes})
+
+        if not lista_participantes:
+            chat_ref.delete()
+            return jsonify({
+                "mensagem": "Todos os participantes foram removidos. Chat deletado.",
+                "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+            }), 200
+
+        return jsonify({
+            "mensagem": "Participante(s) removido(s) com sucesso.",
+            "modo_busca": "id_evento" if encontrado_por_evento else "id_chat"
+        }), 200
+
+    except Exception as e:
+        return jsonify({"erro": f"Erro ao remover participante(s): {str(e)}"}), 500
     
 
 #testado 

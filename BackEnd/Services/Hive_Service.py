@@ -352,7 +352,7 @@ def participar_hive(hive_id):
                 referencia_id=hive_id,
                 mensagem=mensagem
             )
-            Chat_Service.adicionar_ao_chat(hive_id,usuario_id)
+            Chat_Service.adicionar_ao_chat_hive(hive_id,[usuario_id])
             return {"mensagem": "Participação confirmada com sucesso!"}, 200
 
     except Exception as e:
@@ -392,7 +392,7 @@ def cancelar_participacao(hive_id):
         user_ref.update({
             'hive_participando': firestore.ArrayRemove([hive_id])
         })
-        Chat_Service.remover_do_chat(hive_id,[usuario_id])
+        Chat_Service.remover_do_chat_hive(hive_id,[usuario_id])
         return {"mensagem": "Participação cancelada com sucesso."}, 200
 
     except Exception as e:
@@ -476,7 +476,7 @@ def decidirParticipantesHive(hive_id, usuario_id, acao):
                 referencia_id=hive_id,
                 mensagem=mensagem
             )   
-            Chat_Service.adicionar_ao_chat(hive_id,usuario_id)
+            Chat_Service.adicionar_ao_chat_hive(hive_id,[usuario_id])
 
             return {"mensagem": "Usuário aceito no hive e notificado."}, 200
 
@@ -638,7 +638,7 @@ def remover_participante_hive(hive_id, usuario_remover_id):
             'hive_participando': firestore.ArrayRemove([hive_id])
         })
 
-        Chat_Service.remover_do_chat(hive_id, usuario_remover_id)
+        Chat_Service.remover_do_chat(hive_id, [usuario_remover_id])
 
         titulo_hive = hive_data.get("titulo", "sem título")
         mensagem = f"Você foi removido do hive '{titulo_hive}' pelo criador."
