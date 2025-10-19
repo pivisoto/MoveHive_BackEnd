@@ -3975,6 +3975,12 @@ paths:
                     comentario:
                       type: string
                       example: "Comentário muito bom!"
+                    foto_perfil: 
+                      type: string
+                      example: "https://storage.googleapis.com/safeviewbd.appspot.com/Usuarios/22ae4ed3-14e4-42ac-966d-9184a9bdb0a8/Fotos/foto_perfil.jpg"
+                    "username":
+                      type: string
+                      example: "pfolk_"
         '404':
           description: Postagem não encontrada
           content:

@@ -141,13 +141,35 @@ def adicionar_comentario(post_id, texto_comentario):
     
 def listar_comentarios_por_post(post_id):
     try:
-        post_ref = db.collection("Postagens").document(post_id).get()
-        if not post_ref.exists:
+        post_doc = db.collection("Postagens").document(post_id).get()
+        if not post_doc.exists:
             return {"erro": "Postagem não encontrada."}, 404
 
-        post_data = post_ref.to_dict()
+        post_data = post_doc.to_dict()
         comentarios = post_data.get("comentarios", [])
-        return comentarios, 200
+
+        comentarios_completos = []
+
+        for comentario in comentarios:
+            usuario_id = comentario.get("usuario_id")
+
+            if usuario_id:
+                usuario_ref = db.collection("Usuarios").document(usuario_id).get()
+                if usuario_ref.exists:
+                    usuario_data = usuario_ref.to_dict()
+                    comentario["username"] = usuario_data.get("username")
+                    comentario["foto_perfil"] = usuario_data.get("foto_perfil")
+                else:
+                    comentario["username"] = "Usuário desconhecido"
+                    comentario["foto_perfil"] = None
+            else:
+                comentario["username"] = "Usuário não informado"
+                comentario["foto_perfil"] = None
+
+            comentarios_completos.append(comentario)
+
+        return comentarios_completos, 200
+
     except Exception as e:
         return {"erro": f"Erro ao listar comentários: {str(e)}"}, 500
 
