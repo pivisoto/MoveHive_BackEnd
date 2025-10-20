@@ -141,6 +141,7 @@ def adicionar_comentario(post_id, texto_comentario):
     except Exception as e:
         return {"erro": f"Erro ao adicionar comentário: {str(e)}"}, 500
     
+@token_required    
 def listar_comentarios_por_post(post_id):
     try:
         post_doc = db.collection("Postagens").document(post_id).get()
@@ -418,6 +419,9 @@ def feed_seguindos():
     usuario_data = usuario_doc.to_dict()
     seguindo = usuario_data.get("seguindo", [])
 
+    if usuario_id not in seguindo:
+        seguindo.append(usuario_id)
+
     if not seguindo:
         return []
 
@@ -436,11 +440,9 @@ def feed_seguindos():
 
         usuario_id_post = postagem_data.get("usuario_id")
         if usuario_id_post:
-            # Primeiro busca na coleção Usuarios
             usuario_ref_post = db.collection("Usuarios").document(usuario_id_post)
             usuario_doc_post = usuario_ref_post.get()
 
-            # Se não existir, tenta UsuariosEmpresa
             if not usuario_doc_post.exists:
                 usuario_ref_post = db.collection("UsuariosEmpresa").document(usuario_id_post)
                 usuario_doc_post = usuario_ref_post.get()

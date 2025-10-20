@@ -256,6 +256,7 @@ def deletar_hive(hive_id):
 # Implementado
 @token_required
 def listar_hives():
+    usuario_id = g.user_id
 
     hive_ref = db.collection('Hive')
     hive_docs = hive_ref.stream()  
