@@ -94,14 +94,13 @@
 <body>
     <div class="app-container">
         <header class="app-header">
-            <a href="http://127.0.0.1:5500/BackEnd/Views/Social_media/MeuPerfil.html" class="header-action"><i class="fas fa-arrow-left"></i></a>
+            <a href="#" class="header-action"><i class="fas fa-arrow-left"></i></a>
             <h2>Editar Perfil</h2>
             <button class="header-save-btn" id="header-save-btn">Salvar</button>
         </header>
 
         <main class="page-content">
             <form id="edit-profile-form" class="edit-profile-form">
-                <!-- Seção de Foto, Nome, etc. (sem alterações) -->
                 <div class="profile-picture-editor">
                     <label for="foto_perfil_input" class="picture-wrapper">
                         <img src="" alt="Foto de Perfil" class="profile-picture-preview" id="profile-pic-preview">
@@ -117,7 +116,6 @@
                 <div class="form-row"><div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Carregando estados...</option></select></div><div class="form-group"><label for="cidade">Cidade</label><select id="cidade" name="cidade" disabled><option value="">Selecione um estado primeiro</option></select></div></div>
                 <div class="form-group"><label for="data_nascimento">Data de Nascimento</label><input type="date" id="data_nascimento" name="data_nascimento"></div>
                 
-                <!-- Seção de Esportes -->
                 <div class="sports-manager">
                     <label style="margin-bottom: 15px;">Esportes Praticados</label>
                     <div id="sports-list"></div>
@@ -128,7 +126,6 @@
                     </div>
                 </div>
 
-                <!-- Seção de Senha e Botões -->
                 <div class="password-section">
                     <p class="password-note">Deixe os campos abaixo em branco se não desejar alterar sua senha.</p>
                     <div class="form-group"><label for="senha">Nova Senha</label><input type="password" id="senha" name="senha" placeholder="••••••••"></div>
@@ -140,7 +137,6 @@
         </main>
     </div>
 
-    <!-- POP-UP DE CONFIRMAÇÃO DE EXCLUSÃO (sem alterações) -->
     <div class="modal-overlay" id="delete-confirm-modal"><div class="modal-content"><h3>Confirmar Exclusão</h3><p>Você tem certeza que deseja excluir sua conta? Esta ação é permanente e todos os seus dados serão removidos.</p><div class="modal-actions"><button class="modal-btn modal-btn-cancel" id="cancel-delete-btn">Cancelar</button><button class="modal-btn modal-btn-confirm" id="confirm-delete-btn">Sim, excluir</button></div></div></div>
 
     <script>
@@ -148,7 +144,6 @@
             // --- CONFIGURAÇÕES E SELETORES ---
             const token = localStorage.getItem('jwtToken');
             const API_BASE_URL = 'http://127.0.0.1:5000';
-            const API_SPORTS_URL = `${API_BASE_URL}/esportes/ListarEsportes`;
             const IBGE_API_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
             // Seletores
@@ -171,6 +166,8 @@
             const deleteConfirmModal = document.getElementById('delete-confirm-modal');
             const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
             const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            const sportsManagerSection = document.querySelector('.sports-manager');
+            const dataNascimentoGroup = dataNascimentoInput.closest('.form-group');
             
             // Seletores para Esportes
             const sportsListContainer = document.getElementById('sports-list');
@@ -179,12 +176,56 @@
             const addSportBtn = document.getElementById('add-sport-btn');
             
             let userSports = {};
+            let userType = 'usuario'; // Padrão 'usuario'.
+            let apiEndpoints = {}; // Objeto para armazenar os endpoints corretos.
+
+            // ======================================================= //
+            // --- LÓGICA DE USUÁRIO E INICIALIZAÇÃO               --- //
+            // ======================================================= //
+
+            function decodeJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) {
+                    console.error("Erro ao decodificar o token:", e);
+                    return null;
+                }
+            }
+
+            function setApiEndpoints(type) {
+                if (type === 'empresa') {
+                    apiEndpoints = {
+                        getProfile: `${API_BASE_URL}/usuarioEmpresa/MeuPerfil`,
+                        updateProfile: `${API_BASE_URL}/usuarioEmpresa/EditarUsuario`, 
+                        deleteAccount: `${API_BASE_URL}/usuarioEmpresa/ExcluirUsuario`
+                    };
+                } else { // Padrão para 'usuario'
+                    apiEndpoints = {
+                        getProfile: `${API_BASE_URL}/usuario/MeuPerfil`,
+                        updateProfile: `${API_BASE_URL}/usuario/EditarUsuario`,
+                        deleteAccount: `${API_BASE_URL}/usuario/ExcluirUsuario`
+                    };
+                }
+            }
+
+            function adjustUiForCompany() {
+                document.querySelector('label[for="nome_completo"]').textContent = 'Nome da Empresa';
+                document.querySelector('label[for="biografia"]').textContent = 'Sobre a Empresa';
+                
+                if (sportsManagerSection) sportsManagerSection.style.display = 'none';
+                if (dataNascimentoGroup) dataNascimentoGroup.style.display = 'none';
+            }
 
             // --- FUNÇÕES DE API ---
             
             async function loadSports() {
                 try {
-                    const response = await fetch(API_SPORTS_URL);
+                    const response = await fetch(`${API_BASE_URL}/esportes/ListarEsportes`);
                     if (!response.ok) throw new Error('Falha ao buscar esportes.');
                     const sports = await response.json();
                     newSportNameSelect.innerHTML = '<option value="">Selecione um esporte</option>';
@@ -250,15 +291,16 @@
             async function loadUserProfile() { 
                 if (!token) {
                     alert('Erro de autenticação: Token não encontrado.');
-                    window.location.href = '/login.html'; // Redirecionar para o login
+                    window.location.href = '/login.html';
                     return;
                 }
                 try {
-                    const response = await fetch(`${API_BASE_URL}/usuario/MeuPerfil`, {
+                    const response = await fetch(apiEndpoints.getProfile, {
                         method: 'GET',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const userData = await response.json();
+                    console.log(userData)
                     if (!response.ok) throw new Error(userData.erro || `Erro: ${response.statusText}`);
                     await populateForm(userData);
                 } catch (error) {
@@ -269,14 +311,20 @@
 
             async function populateForm(data) {
                 profilePicPreview.src = data.foto_perfil || 'default-avatar.png';
-                nomeCompletoInput.value = data.nome_completo || '';
+                nomeCompletoInput.value = data.nome_completo || ''; 
                 usernameInput.value = data.username || '';
                 biografiaInput.value = data.biografia || '';
                 emailInput.value = data.email || '';
-                if (data.data_nascimento) {
-                    const birthDate = new Date(data.data_nascimento);
-                    dataNascimentoInput.value = `${birthDate.getUTCFullYear()}-${String(birthDate.getUTCMonth() + 1).padStart(2, '0')}-${String(birthDate.getUTCDate()).padStart(2, '0')}`;
+                
+                if (userType === 'usuario') {
+                    if (data.data_nascimento) {
+                        const birthDate = new Date(data.data_nascimento);
+                        dataNascimentoInput.value = `${birthDate.getUTCFullYear()}-${String(birthDate.getUTCMonth() + 1).padStart(2, '0')}-${String(birthDate.getUTCDate()).padStart(2, '0')}`;
+                    }
+                    userSports = data.esportes_praticados && typeof data.esportes_praticados === 'object' ? data.esportes_praticados : {};
+                    renderSportsList();
                 }
+
                 if (data.estado) {
                     estadoSelect.value = data.estado;
                     await loadCities(data.estado);
@@ -284,8 +332,6 @@
                         cidadeSelect.value = data.cidade;
                     }
                 }
-                userSports = data.esportes_praticados && typeof data.esportes_praticados === 'object' ? data.esportes_praticados : {};
-                renderSportsList();
             }
             
             // --- FUNÇÕES PARA GERENCIAR ESPORTES NA INTERFACE ---
@@ -337,14 +383,17 @@
                 formData.append('email', emailInput.value);
                 formData.append('estado', estadoSelect.value);
                 formData.append('cidade', cidadeSelect.value);
-                formData.append('data_nascimento', dataNascimentoInput.value);
-                formData.append('esportes_praticados', JSON.stringify(userSports));
+                
+                if (userType === 'usuario') {
+                    formData.append('data_nascimento', dataNascimentoInput.value);
+                    formData.append('esportes_praticados', JSON.stringify(userSports));
+                }
 
                 if (senhaInput.value) { formData.append('senha', senhaInput.value); }
                 if (fileInput.files[0]) { formData.append('foto_perfil', fileInput.files[0]); }
                 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/usuario/EditarUsuario`, {
+                    const response = await fetch(apiEndpoints.updateProfile, {
                         method: 'PUT',
                         headers: { 'Authorization': `Bearer ${token}` },
                         body: formData
@@ -360,44 +409,28 @@
                 }
             }
 
-            // ======================================================= //
-            // --- FUNÇÃO DE EXCLUSÃO DE CONTA (IMPLEMENTADA) ---      //
-            // ======================================================= //
+            // --- FUNÇÃO DE EXCLUSÃO DE CONTA ---
             async function handleDeleteAccount() {
-                console.log("--- [API Call] Iniciando exclusão de conta ---");
-                if (!token) {
-                    alert('Erro de autenticação: Token não encontrado.');
-                    return;
-                }
+                if (!token) { alert('Erro de autenticação: Token não encontrado.'); return; }
 
                 confirmDeleteBtn.disabled = true;
                 confirmDeleteBtn.textContent = 'Excluindo...';
 
                 try {
-                    const response = await fetch(`${API_BASE_URL}/usuario/ExcluirUsuario`, {
+                    const response = await fetch(apiEndpoints.deleteAccount, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
 
                     const result = await response.json();
-
-                    if (!response.ok) {
-                        console.error(`[API Response] Erro ao excluir. Status: ${response.status}`, result);
-                        throw new Error(result.erro || 'Não foi possível excluir a conta.');
-                    }
+                    if (!response.ok) throw new Error(result.erro || 'Não foi possível excluir a conta.');
                     
-                    console.log("[API Response] Conta excluída com sucesso:", result);
                     alert(result.mensagem || "Sua conta foi excluída com sucesso.");
-                    
-                    // Limpar dados locais e redirecionar
                     localStorage.removeItem('jwtToken');
-                    window.location.href = '/login.html'; // Redirecione para a página de login
+                    window.location.href = '/login.html';
 
                 } catch (error) {
-                    console.error('[API Error] Falha detalhada ao excluir conta:', error);
                     alert(`Erro ao excluir conta: ${error.message}`);
-                } finally {
-                    // Reativa o botão apenas se a exclusão falhar e o usuário não for redirecionado
                     confirmDeleteBtn.disabled = false;
                     confirmDeleteBtn.textContent = 'Sim, excluir';
                     deleteConfirmModal.classList.remove('show');
@@ -438,12 +471,35 @@
                 confirmDeleteBtn.addEventListener('click', handleDeleteAccount);
             }
 
-            // --- INICIALIZAÇÃO ---
             async function initializePage() {
                 console.log("Iniciando página de edição de perfil...");
+                if (!token) {
+                    alert('Sessão inválida. Por favor, faça login novamente.');
+                    window.location.href = '/login.html';
+                    return;
+                }
+                
+                const userData = decodeJwt(token);
+                if (userData && userData.tipo_usuario) {
+                    userType = userData.tipo_usuario;
+                    console.log(`Tipo de usuário detectado: ${userType}`);
+                }
+
+                setApiEndpoints(userType);
+
+                if (userType === 'empresa') {
+                    adjustUiForCompany();
+                }
+                
                 setupEventListeners();
-                await Promise.all([loadStates(), loadSports()]);
-                await loadUserProfile();
+
+                const promises = [loadStates(), loadUserProfile()];
+                if (userType === 'usuario') {
+                    promises.push(loadSports());
+                }
+
+                await Promise.all(promises);
+
                 console.log("Página carregada e pronta.");
             }
 

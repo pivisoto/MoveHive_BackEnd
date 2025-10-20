@@ -58,22 +58,28 @@ def toggle_curtida(post_id):
     try:
         post_ref = db.collection("Postagens").document(post_id)
         post_doc = post_ref.get()
-        curtidas = post_doc.to_dict().get("curtidas", [])
-        dono_post = post_doc.to_dict().get("usuario_id")
+
         if not post_doc.exists:
             return {"erro": "Postagem não encontrada."}, 404
-        
-        requisicao_curtida = {"usuario_id": usuario_id,}
+
+        post_data = post_doc.to_dict()
+        curtidas = post_data.get("curtidas", [])
+        dono_post = post_data.get("usuario_id")
+
+        requisicao_curtida = {"usuario_id": usuario_id}
 
         usuario_ref = db.collection("Usuarios").document(usuario_id)
         usuario_doc = usuario_ref.get()
-        
-        if usuario_doc.exists:
-            username = usuario_doc.to_dict().get("username")
-            print(f"O nome de usuário é: {username}")
-        else:
-            print("Usuário não encontrado.")
-        
+
+        if not usuario_doc.exists:
+            usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
+            usuario_doc = usuario_ref.get()
+
+            if not usuario_doc.exists:
+                return {"erro": "Usuário não encontrado."}, 404
+
+        username = usuario_doc.to_dict().get("username", "Usuário")
+
         usuario_ja_curtiu = any(curtida.get("usuario_id") == usuario_id for curtida in curtidas)
 
         if usuario_ja_curtiu:
@@ -81,36 +87,53 @@ def toggle_curtida(post_id):
                 "curtidas": firestore.ArrayRemove([requisicao_curtida]),
                 "contador_curtidas": firestore.Increment(-1)
             })
-            notificacao_query = db.collection("Notificacoes").where("tipo", "==", "Curtida").where("referencia_id", "==", post_id).where("usuario_origem_id", "==", usuario_id).limit(1)
+
+            notificacao_query = (
+                db.collection("Notificacoes")
+                .where("tipo", "==", "Curtida")
+                .where("referencia_id", "==", post_id)
+                .where("usuario_origem_id", "==", usuario_id)
+                .limit(1)
+            )
             docs = notificacao_query.get()
-            notificacao_doc = docs[0]
-            deletar_notificacao(notificacao_doc.id)
+
+            if docs:
+                notificacao_doc = docs[0]
+                deletar_notificacao(notificacao_doc.id)
+
             return {"mensagem": "Removendo curtida."}, 200
+
         else:
             post_ref.update({
                 "curtidas": firestore.ArrayUnion([requisicao_curtida]),
                 "contador_curtidas": firestore.Increment(1)
             })
+
             mensagem = f"{username} curtiu seu post"
-            criar_notificacao(dono_post,"Curtida",post_id,mensagem)
+            criar_notificacao(dono_post, "Curtida", post_id, mensagem)
+
             return {"mensagem": "Post curtido com sucesso!"}, 201
 
     except Exception as e:
         return {"erro": f"Erro ao modificar curtida: {str(e)}"}, 500
     
+    
 @token_required
 def adicionar_comentario(post_id, texto_comentario):
     usuario_id = g.user_id
+
     if not texto_comentario:
         return {"erro": "O campo 'comentario' é obrigatório."}, 400
 
     try:
         post_ref = db.collection("Postagens").document(post_id)
         post_doc = post_ref.get()
-        dono_post = post_doc.to_dict().get("usuario_id")
+
         if not post_doc.exists:
             return {"erro": "Postagem não encontrada."}, 404
-        
+
+        dono_post = post_doc.to_dict().get("usuario_id")
+
         comentario_id = str(uuid.uuid4())
         novo_comentario = {
             "comentario_id": comentario_id,
@@ -118,21 +141,30 @@ def adicionar_comentario(post_id, texto_comentario):
             "comentario": texto_comentario
         }
 
+        # 🔹 Atualiza o post com o novo comentário
         post_ref.update({
             "comentarios": firestore.ArrayUnion([novo_comentario]),
             "contador_comentarios": firestore.Increment(1)
         })
 
+        # 🔹 Busca o usuário em 'Usuarios' ou 'UsuariosEmpresa'
         usuario_ref = db.collection("Usuarios").document(usuario_id)
         usuario_doc = usuario_ref.get()
 
-        if usuario_doc.exists:
-            username = usuario_doc.to_dict().get("username")
-            print(f"O nome de usuário é: {username}")
-        else:
-            print("Usuário não encontrado.")
+        if not usuario_doc.exists:
+            usuario_ref = db.collection("UsuariosEmpresa").document(usuario_id)
+            usuario_doc = usuario_ref.get()
+
+            if not usuario_doc.exists:
+                return {"erro": "Usuário não encontrado."}, 404
+
+        usuario_data = usuario_doc.to_dict()
+        username = usuario_data.get("username", "Usuário")
+
+        # 🔹 Cria notificação para o dono do post
         mensagem = f"{username} comentou em seu post: {texto_comentario}"
-        criar_notificacao(dono_post,"Comentario",post_id,mensagem)
+        criar_notificacao(dono_post, "Comentario", post_id, mensagem)
+
         return {
             "mensagem": "Comentário adicionado com sucesso!",
             "comentario": novo_comentario
@@ -141,10 +173,12 @@ def adicionar_comentario(post_id, texto_comentario):
     except Exception as e:
         return {"erro": f"Erro ao adicionar comentário: {str(e)}"}, 500
     
+
 @token_required    
 def listar_comentarios_por_post(post_id):
     try:
         post_doc = db.collection("Postagens").document(post_id).get()
+
         if not post_doc.exists:
             return {"erro": "Postagem não encontrada."}, 404
 
@@ -157,10 +191,14 @@ def listar_comentarios_por_post(post_id):
             usuario_id = comentario.get("usuario_id")
 
             if usuario_id:
-                usuario_ref = db.collection("Usuarios").document(usuario_id).get()
-                if usuario_ref.exists:
-                    usuario_data = usuario_ref.to_dict()
-                    comentario["username"] = usuario_data.get("username")
+                usuario_doc = db.collection("Usuarios").document(usuario_id).get()
+
+                if not usuario_doc.exists:
+                    usuario_doc = db.collection("UsuariosEmpresa").document(usuario_id).get()
+
+                if usuario_doc.exists:
+                    usuario_data = usuario_doc.to_dict()
+                    comentario["username"] = usuario_data.get("username", "Usuário")
                     comentario["foto_perfil"] = usuario_data.get("foto_perfil")
                 else:
                     comentario["username"] = "Usuário desconhecido"
@@ -175,6 +213,8 @@ def listar_comentarios_por_post(post_id):
 
     except Exception as e:
         return {"erro": f"Erro ao listar comentários: {str(e)}"}, 500
+
+
 
 @token_required
 def deletar_comentario_por_id(post_id,comentario_id):

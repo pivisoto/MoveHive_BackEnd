@@ -1491,6 +1491,103 @@ paths:
                   erro:
                     type: string
                     example: "Erro inesperado ao listar empresas." 
+
+  /usuarioEmpresa/MeuPerfil:
+     get:
+      tags:
+        - UsuárioEmpresa
+      summary: Retorna o perfil completo da empresa logada
+      description: >
+        Recupera todas as informações de perfil da empresa autenticada com base no token JWT.
+        Retorna dados cadastrais, métricas de interação (seguidores, seguindo, posts e eventos),
+        além de informações complementares como biografia, setor e status.
+      security:
+        - BearerAuth: []
+      responses:
+        200:
+          description: Perfil da empresa retornado com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    example: "efda434e-c21a-4027-a85e-faa3611d74b5"
+                  nome:
+                    type: string
+                    example: "PauloEmpresa"
+                  username:
+                    type: string
+                    example: "PauloEmpresa"
+                  email:
+                    type: string
+                    example: "pauloEmpresa@gmail.com"
+                  cnpj:
+                    type: string
+                    example: "33.096.646/0001-73"
+                  biografia:
+                    type: string
+                    example: "abc"
+                  setor:
+                    type: string
+                    example: "Esportes"
+                  tipo_usuario:
+                    type: string
+                    example: "empresa"
+                  status_usuario:
+                    type: string
+                    example: "ativo"
+                  foto_perfil:
+                    type: string
+                    format: uri
+                    example: "https://storage.googleapis.com/safeviewbd.appspot.com/UsuariosEmpresa/efda434e-c21a-4027-a85e-faa3611d74b5/Fotos/foto_perfil.jpg"
+                  data_criacao:
+                    type: string
+                    format: date-time
+                    example: "2025-10-07T00:44:46.252952+00:00"
+                  total_posts:
+                    type: integer
+                    example: 2
+                  total_eventos:
+                    type: integer
+                    example: 2
+                  seguidores_count:
+                    type: integer
+                    example: 0
+                  seguindo_count:
+                    type: integer
+                    example: 0
+        401:
+          description: Token ausente ou inválido
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Token inválido ou expirado."
+        404:
+          description: Usuário empresa não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Usuário empresa não encontrado!"
+        500:
+          description: Erro interno ao processar o perfil da empresa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: "Ocorreu um erro interno ao processar o perfil da empresa."
   
 # Esporte
  

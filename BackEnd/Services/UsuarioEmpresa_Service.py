@@ -141,3 +141,40 @@ def listar_empresas_sem_filtro():
         return {'erro': str(e)}, 500
     
 
+@token_required
+def meuPerfilEmpresa():
+    try:
+        usuario_id = g.user_id
+
+        usuario_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+        usuario_doc = usuario_ref.get()
+
+        if not usuario_doc.exists:
+            return jsonify({'erro': 'Usuário empresa não encontrado!'}), 404
+
+        usuario_data = usuario_doc.to_dict()
+
+        total_posts = len(usuario_data.get('post_criados', []))
+        total_eventos = len(usuario_data.get('eventos_criados', []))
+
+        total_seguidores = len(usuario_data.get('seguidores', []))
+        total_seguindo = len(usuario_data.get('seguindo', []))
+
+        # Adicionar métricas ao dicionário de resposta
+        usuario_data['total_posts'] = total_posts
+        usuario_data['total_eventos'] = total_eventos
+        usuario_data['seguidores_count'] = total_seguidores
+        usuario_data['seguindo_count'] = total_seguindo
+
+        # Remover dados sensíveis e listas completas
+        usuario_data.pop('senha', None)
+        usuario_data.pop('seguidores', None)
+        usuario_data.pop('seguindo', None)
+        usuario_data.pop('post_criados', None)
+        usuario_data.pop('eventos_criados', None)
+
+        return usuario_data, 200
+
+    except Exception as e:
+        print(f"Erro ao buscar perfil da empresa {g.user_id}: {e}")
+        return jsonify({'erro': 'Ocorreu um erro interno ao processar o perfil da empresa.'}), 500

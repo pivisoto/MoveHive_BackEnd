@@ -58,3 +58,8 @@ def listar_usuarios_sem_filtro():
     return jsonify(resposta), status
 
 
+
+@usuarioEmpresa_bp.route('/MeuPerfil', methods=['GET'])
+def meu_perfil_empresa():
+    resposta, status = usuarioEmpresa_service.meuPerfilEmpresa()
+    return jsonify(resposta), status

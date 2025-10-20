@@ -312,8 +312,7 @@ def feed_treinos_seguindo():
         return {"erro": "Usuário não encontrado."}, 404
 
     user_data = user_doc.to_dict()
-    seguindo_ids = user_data.get('seguindo', [])  # IDs de usuários que o usuário segue
-    print("Seguindo IDs:", seguindo_ids)
+    seguindo_ids = user_data.get('seguindo', []) 
 
 
     if not seguindo_ids:
@@ -331,7 +330,6 @@ def feed_treinos_seguindo():
             treino_data = treino_doc.to_dict()
             treino_data['id'] = treino_doc.id
 
-            # Buscar dados do usuário dono do treino
             seguidor_ref = db.collection('Usuarios').document(seguidor_id)
             seguidor_doc = seguidor_ref.get()
             if seguidor_doc.exists:
@@ -354,7 +352,6 @@ def feed_treinos_seguindo():
 
             feed.append(treino_data)
 
-    # Ordenar todos os treinos do feed por data_criacao decrescente
     feed.sort(key=lambda x: x.get('data_hora'), reverse=True)
 
     return jsonify(feed), 200

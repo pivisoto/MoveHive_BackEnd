@@ -337,6 +337,7 @@ def meuPerfil():
     except Exception as e:
             print(f"Erro ao buscar perfil do usuário {g.user_id}: {e}")
             return jsonify({'erro': f'Ocorreu um erro interno ao processar seu perfil.'}), 500
+    
 
 # Implementado
 @token_required 
@@ -631,7 +632,6 @@ def listar_seguidores():
 @token_required
 def competicao_usuarios_todos():
     try:
-        # Filtra apenas usuários com pontos > 0
         usuarios_ref = (
             db.collection('Usuarios')
             .where('pontos', '>', 0)
@@ -660,41 +660,49 @@ def competicao_usuarios_todos():
 @token_required
 def competicao_usuarios_seguindo():
     try:
-        
         usuario_atual_id = g.user_id
 
         usuario_doc_ref = db.collection('Usuarios').document(usuario_atual_id)
         usuario_doc = usuario_doc_ref.get()
 
         if not usuario_doc.exists:
-            return jsonify({'erro': 'Usuário autenticado não encontrado no banco de dados'}), 404
-            
+            usuario_doc_ref = db.collection('UsuariosEmpresa').document(usuario_atual_id)
+            usuario_doc = usuario_doc_ref.get()
+            if not usuario_doc.exists:
+                return jsonify({'erro': 'Usuário autenticado não encontrado no banco de dados'}), 404
+
         dados_usuario_atual = usuario_doc.to_dict()
-
-
         ids_seguindo = dados_usuario_atual.get('seguindo', [])
 
-
+        # 🔹 Inclui o próprio usuário no ranking
         ids_para_buscar = set(ids_seguindo)
         ids_para_buscar.add(usuario_atual_id)
 
         usuarios = []
+
         for user_id in ids_para_buscar:
+            # Primeiro tenta buscar em 'Usuarios'
             doc_ref = db.collection('Usuarios').document(user_id).get()
+
+            if not doc_ref.exists:
+                # Se não encontrou, tenta em 'UsuariosEmpresa'
+                doc_ref = db.collection('UsuariosEmpresa').document(user_id).get()
+
             if doc_ref.exists:
                 dados = doc_ref.to_dict()
-                
                 usuario_filtrado = {
                     'nome_completo': dados.get('nome_completo'),
                     'username': dados.get('username'),
-                    'pontos': dados.get('pontos', 0), 
+                    'pontos': dados.get('pontos', 0),
                     'foto_perfil': dados.get('foto_perfil')
                 }
                 usuarios.append(usuario_filtrado)
 
+        # 🔹 Ordena por pontos (maior para menor)
         usuarios_ordenados = sorted(usuarios, key=lambda u: u['pontos'], reverse=True)
 
         return jsonify(usuarios_ordenados), 200
+
     except Exception as e:
         return jsonify({'erro': str(e)}), 500
 
