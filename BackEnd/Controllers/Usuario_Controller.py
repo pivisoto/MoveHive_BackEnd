@@ -65,7 +65,7 @@ def meu_perfil():
 # Implementado
 @usuario_bp.route('/<string:usuario_id>', methods=['GET'])
 def ver_perfil(usuario_id):
-    return usuario_service.verPerfil(usuario_id)
+    return usuario_service.ver_perfil(usuario_id)
 
 # Implementado
 @usuario_bp.route('/EditarUsuario', methods=['PUT'])
