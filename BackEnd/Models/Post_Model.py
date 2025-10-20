@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 
 class Postagem:
     def __init__(self, usuario_id, descricao, 
-                 imagem='', status_postagem='ativo', comentarios=None, contador_curtidas=0,curtidas=[]):
+                 imagem='', status_postagem='ativo', comentarios=None, contador_curtidas=0,curtidas=[],contador_comentarios=0):
         
         self.id = str(uuid.uuid4())
         self.usuario_id = usuario_id
@@ -14,6 +14,7 @@ class Postagem:
         self.curtidas = curtidas
         self.status_postagem = status_postagem
         self.comentarios = comentarios if comentarios is not None else []
+        self.contador_comentarios = contador_comentarios
 
 
     def to_dict(self):
@@ -26,5 +27,6 @@ class Postagem:
             'contador_curtidas': self.contador_curtidas,
             'curtidas': self.curtidas,
             'status_postagem': self.status_postagem,
-            'comentarios' : self.comentarios
+            'comentarios' : self.comentarios,
+            'contador_comentarios': self.contador_comentarios
         }

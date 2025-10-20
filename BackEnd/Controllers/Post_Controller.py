@@ -54,7 +54,7 @@ def adicionarComentario():
 
     post_id = dados.get("post_id")
     texto_comentario = dados.get("comentario")
-
+    
     if not post_id or not texto_comentario:
         return jsonify({"erro": "Campos 'post_id' e 'comentario' são obrigatórios."}), 400
     return Post_Service.adicionar_comentario(post_id, texto_comentario)

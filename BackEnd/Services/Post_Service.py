@@ -13,7 +13,7 @@ bucket = storage.bucket()
 
 # Implementado
 @token_required
-def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0):
+def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None, contador_curtidas=0, contador_comentarios=0):
     usuario_id = g.user_id
     user_ref = db.collection('Usuarios').document(usuario_id)
     user_doc = user_ref.get()
@@ -32,7 +32,8 @@ def criar_post(descricao, imagem=None, status_postagem='ativo', comentarios=None
         imagem='',
         status_postagem=status_postagem,
         comentarios=comentarios,
-        contador_curtidas=contador_curtidas
+        contador_curtidas=contador_curtidas,
+        contador_comentarios=contador_comentarios
     )
 
     if imagem:
@@ -118,7 +119,8 @@ def adicionar_comentario(post_id, texto_comentario):
         }
 
         post_ref.update({
-            "comentarios": firestore.ArrayUnion([novo_comentario])
+            "comentarios": firestore.ArrayUnion([novo_comentario]),
+            "contador_comentarios": firestore.Increment(1)
         })
 
         usuario_ref = db.collection("Usuarios").document(usuario_id)
@@ -200,7 +202,7 @@ def deletar_comentario_por_id(post_id,comentario_id):
 
         novos_comentarios = [comentario for comentario in comentarios if comentario.get("comentario_id") != comentario_id]
 
-        post_ref.update({"comentarios": novos_comentarios})
+        post_ref.update({"comentarios": novos_comentarios,"contador_comentarios": firestore.Increment(-1)})
 
         return {"mensagem": "Comentário removido com sucesso."}, 200
 

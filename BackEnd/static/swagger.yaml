@@ -3505,6 +3505,12 @@ paths:
                         usuario_id:
                           type: string
                           example: "user456"
+                        contador_curtidas:
+                          type: int
+                          example: 10
+                        contador_comentarios:
+                          type: int
+                          example: 10
                     usuario:
                       type: object
                       properties:
@@ -3573,6 +3579,12 @@ paths:
                         foto_perfil:
                           type: string
                           example: "https://meusite.com/fotos/perfil.png"
+                        contador_curtidas:
+                          type: int
+                          example: 10
+                        contador_comentarios:
+                          type: int
+                          example: 10
         "401":
           description: Token inválido ou ausente
           content:
