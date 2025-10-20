@@ -182,7 +182,7 @@ def meuPerfilEmpresa():
         return jsonify({'erro': 'Ocorreu um erro interno ao processar o perfil da empresa.'}), 500
 
 
-
+# Implementado
 @token_required
 def editar_empresa(dados, foto_perfil=None):
     usuario_id = g.user_id
@@ -249,3 +249,51 @@ def editar_empresa(dados, foto_perfil=None):
         return {"mensagem": "Usuário empresa atualizado com sucesso."}, 200
     except Exception as e:
         return {"erro": f"Erro ao atualizar o usuário empresa no banco de dados: {str(e)}"}, 500
+
+
+# Implementado
+@token_required
+def excluir_empresa():
+    usuario_id = g.user_id
+
+    try:
+        batch = db.batch()
+        empresa_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+        empresa_doc = empresa_ref.get()
+
+        if not empresa_doc.exists:
+            return {"erro": "Usuário empresa não encontrado para exclusão."}, 404
+
+        empresa_data = empresa_doc.to_dict()
+
+        if empresa_data.get('seguindo'):
+            for seguido_id in empresa_data['seguindo']:
+                seguido_ref = db.collection('UsuariosEmpresa').document(seguido_id)
+                batch.update(seguido_ref, {'seguidores': firestore.ArrayRemove([usuario_id])})
+
+        if empresa_data.get('seguidores'):
+            for seguidor_id in empresa_data['seguidores']:
+                seguidor_ref = db.collection('UsuariosEmpresa').document(seguidor_id)
+                batch.update(seguidor_ref, {'seguindo': firestore.ArrayRemove([usuario_id])})
+
+        posts_query = db.collection('Posts').where('usuario_id', '==', usuario_id).stream()
+        for post in posts_query:
+            batch.delete(post.reference)
+
+        eventos_query = db.collection('Eventos').where('usuario_id', '==', usuario_id).stream()
+        for evento in eventos_query:
+            batch.delete(evento.reference)
+
+        batch.delete(empresa_ref)
+        batch.commit()
+
+        prefix = f"UsuariosEmpresa/{usuario_id}/"
+        blobs = bucket.list_blobs(prefix=prefix)
+        for blob in blobs:
+            blob.delete()
+
+        return {"mensagem": "Usuário empresa e todos os dados associados foram excluídos com sucesso."}, 200
+
+    except Exception as e:
+        print(f"Erro ao excluir empresa {usuario_id}: {str(e)}")
+        return {"erro": f"Ocorreu um erro interno ao tentar excluir o usuário empresa: {str(e)}"}, 500

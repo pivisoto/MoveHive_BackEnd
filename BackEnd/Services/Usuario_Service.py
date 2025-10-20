@@ -262,7 +262,7 @@ def excluir_meu_usuario():
                 batch.update(follower_ref, {'seguindo': firestore.ArrayRemove([usuario_id])})
         
         # Remover o usuário de todos os eventos que ele estava participando
-        events_participating_query = db.collection('Eventos').where('participantes', 'array_contains', usuario_id).stream()
+        events_participating_query = db.collection('Hive').where('participantes', 'array_contains', usuario_id).stream()
         for evento in events_participating_query:
             batch.update(evento.reference, {'participantes': firestore.ArrayRemove([usuario_id])})
 
@@ -273,7 +273,7 @@ def excluir_meu_usuario():
             batch.delete(post.reference)
 
         # Excluir eventos
-        events_query = db.collection('Eventos').where('usuario_id', '==', usuario_id).stream()
+        events_query = db.collection('Hive').where('usuario_id', '==', usuario_id).stream()
         for evento in events_query:
             batch.delete(evento.reference)
 

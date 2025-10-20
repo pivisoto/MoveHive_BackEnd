@@ -117,7 +117,12 @@
 
                 <div class="form-group"><label for="biografia">Biografia</label><textarea id="biografia" name="biografia" placeholder="Carregando..."></textarea></div>
                 <div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" placeholder="Carregando..."></div>
-                <div class="form-row"><div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Carregando estados...</option></select></div><div class="form-group"><label for="cidade">Cidade</label><select id="cidade" name="cidade" disabled><option value="">Selecione um estado primeiro</option></select></div></div>
+                
+                <!-- Adicionado ID "location-row" para controle via JS -->
+                <div class="form-row" id="location-row">
+                    <div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Carregando estados...</option></select></div>
+                    <div class="form-group"><label for="cidade">Cidade</label><select id="cidade" name="cidade" disabled><option value="">Selecione um estado primeiro</option></select></div>
+                </div>
                 
                 <!-- Campo específico para Usuário -->
                 <div class="form-group" id="data-nascimento-group"><label for="data_nascimento">Data de Nascimento</label><input type="date" id="data_nascimento" name="data_nascimento"></div>
@@ -163,6 +168,7 @@
             const emailInput = document.getElementById('email');
             const estadoSelect = document.getElementById('estado');
             const cidadeSelect = document.getElementById('cidade');
+            const locationRow = document.getElementById('location-row'); // Seletor para a linha de localização
             const senhaInput = document.getElementById('senha');
             const confirmarSenhaInput = document.getElementById('confirmar_senha');
             const passwordErrorMsg = document.getElementById('password-match-error');
@@ -217,7 +223,7 @@
                     apiEndpoints = {
                         getProfile: `${API_BASE_URL}/usuarioEmpresa/MeuPerfil`,
                         updateProfile: `${API_BASE_URL}/usuarioEmpresa/EditarEmpresa`,
-                        deleteAccount: `${API_BASE_URL}/usuarioEmpresa/ExcluirUsuario`
+                        deleteAccount: `${API_BASE_URL}/usuarioEmpresa/ExcluirEmpresa`
                     };
                 } else {
                     apiEndpoints = {
@@ -237,11 +243,13 @@
                     setorGroup.style.display = 'block';
                     dataNascimentoGroup.style.display = 'none';
                     sportsManagerSection.style.display = 'none';
+                    locationRow.style.display = 'none'; // Oculta Estado e Cidade para empresa
                 } else { // usuário
                     cnpjGroup.style.display = 'none';
                     setorGroup.style.display = 'none';
                     dataNascimentoGroup.style.display = 'block';
                     sportsManagerSection.style.display = 'block';
+                    locationRow.style.display = 'flex'; // Garante que Estado e Cidade fiquem visíveis para usuário
                 }
             }
 
@@ -341,7 +349,7 @@
                 
                 if (userType === 'empresa') {
                     cnpjInput.value = data.cnpj || ''; 
-                    setorInput.value = data.setor || ''; // Preenche o campo de setor único
+                    setorInput.value = data.setor || '';
                 } else { // Usuário
                     if (data.data_nascimento) {
                         const birthDate = new Date(data.data_nascimento);
@@ -349,13 +357,14 @@
                     }
                     userSports = data.esportes_praticados && typeof data.esportes_praticados === 'object' ? data.esportes_praticados : {};
                     renderSportsList();
-                }
 
-                if (data.estado) {
-                    estadoSelect.value = data.estado;
-                    await loadCities(data.estado);
-                    if (data.cidade) {
-                        cidadeSelect.value = data.cidade;
+                    // Preenche localização apenas para usuário
+                    if (data.estado) {
+                        estadoSelect.value = data.estado;
+                        await loadCities(data.estado);
+                        if (data.cidade) {
+                            cidadeSelect.value = data.cidade;
+                        }
                     }
                 }
             }
@@ -412,19 +421,20 @@
                     updateConfig.method = 'POST';
                     formData.append('nome', nomeCompletoInput.value);
                     formData.append('cnpj', cnpjInput.value);
-                    formData.append('setor', setorInput.value); // Envia o valor do campo de setor
+                    formData.append('setor', setorInput.value);
                 } else { // Usuário
                     updateConfig.method = 'PUT';
                     formData.append('nome_completo', nomeCompletoInput.value);
                     formData.append('data_nascimento', dataNascimentoInput.value);
                     formData.append('esportes_praticados', JSON.stringify(userSports));
+                    // Adiciona localização apenas para usuário
+                    formData.append('estado', estadoSelect.value);
+                    formData.append('cidade', cidadeSelect.value);
                 }
                 
                 formData.append('username', usernameInput.value);
                 formData.append('biografia', biografiaInput.value);
                 formData.append('email', emailInput.value);
-                formData.append('estado', estadoSelect.value);
-                formData.append('cidade', cidadeSelect.value);
                 
                 if (senhaInput.value) { formData.append('senha', senhaInput.value); }
                 if (fileInput.files[0]) { formData.append('foto_perfil', fileInput.files[0]); }
@@ -524,8 +534,10 @@
                 adjustUiForUserType();
                 setupEventListeners();
 
-                const promises = [loadStates(), loadUserProfile()];
+                const promises = [loadUserProfile()];
                 if (userType === 'usuario') {
+                    // Carrega dados de localização e esportes apenas para usuários
+                    promises.push(loadStates());
                     promises.push(loadSports());
                 }
 

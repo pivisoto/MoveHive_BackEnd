@@ -65,7 +65,7 @@ def meu_perfil_empresa():
     return jsonify(resposta), status
 
 
-
+# Implementado
 @usuarioEmpresa_bp.route('/EditarEmpresa', methods=['POST'])
 def editar_empresa_controller():
     try:
@@ -75,5 +75,15 @@ def editar_empresa_controller():
         resposta, status = usuarioEmpresa_service.editar_empresa(dados, foto_perfil)
         return jsonify(resposta), status
 
+    except Exception as e:
+        return jsonify({"erro": f"Erro interno no servidor: {str(e)}"}), 500
+    
+    
+# Implementado
+@usuarioEmpresa_bp.route('/ExcluirEmpresa', methods=['DELETE'])
+def excluir_empresa_controller():
+    try:
+        resposta, status = usuarioEmpresa_service.excluir_empresa()
+        return jsonify(resposta), status
     except Exception as e:
         return jsonify({"erro": f"Erro interno no servidor: {str(e)}"}), 500

@@ -1677,6 +1677,46 @@ paths:
                     example: Erro interno no servidor mensagem detalhada do erro
       security:
         - BearerAuth: []
+
+  /usuarioEmpresa/ExcluirEmpresa:
+    delete:
+      summary: Exclui o usuário empresa
+      description: Exclui o usuário empresa logado e todos os dados associados, incluindo posts, eventos, seguidores e fotos de perfil.
+      tags:
+        - UsuárioEmpresa
+      responses:
+        '200':
+          description: Usuário empresa e todos os dados associados excluídos com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Usuário empresa e todos os dados associados foram excluídos com sucesso.
+        '404':
+          description: Usuário empresa não encontrado para exclusão
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Usuário empresa não encontrado para exclusão.
+        '500':
+          description: Erro interno no servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Ocorreu um erro interno ao tentar excluir o usuário empresa mensagem detalhada do erro
+      security:
+        - BearerAuth: []
   
 # Esporte
  
