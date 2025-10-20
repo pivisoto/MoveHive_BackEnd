@@ -234,7 +234,7 @@
     </div>
 
 
-    <script>
+<script>
         document.addEventListener('DOMContentLoaded', () => {
             const token = localStorage.getItem('jwtToken');
             
@@ -271,23 +271,49 @@
             const closeFollowersModalBtn = followersModal.querySelector('.close-button');
             const followersList = document.getElementById('followers-list');
 
+            // --- NOVA FUNÇÃO: Decodifica o token JWT ---
+            function decodeJwt(token) {
+                try {
+                    const base64Url = token.split('.')[1];
+                    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                    }).join(''));
+                    return JSON.parse(jsonPayload);
+                } catch (e) {
+                    console.error("Erro ao decodificar o token:", e);
+                    return null;
+                }
+            }
+
             async function loadUserData() {
                 if (!token) {
                     profileName.textContent = "Acesso Negado";
                     return;
                 }
+
+                // --- LÓGICA MODIFICADA: Define o endpoint com base no tipo de usuário ---
+                const decodedToken = decodeJwt(token);
+                const userType = decodedToken ? decodedToken.tipo_usuario : null;
+
+                let apiEndpoint = 'http://127.0.0.1:5000/usuario/MeuPerfil'; // Padrão
+                if (userType === 'empresa') {
+                    apiEndpoint = 'http://127.0.0.1:5000/usuarioEmpresa/MeuPerfil'; // Endpoint para Empresa
+                }
+                // Fim da lógica modificada
+
                 try {
-                    const apiEndpoint = 'http://127.0.0.1:5000/usuario/MeuPerfil';
                     const response = await fetch(apiEndpoint, { headers: { 'Authorization': `Bearer ${token}` } });
                     if (!response.ok) throw new Error('Falha ao carregar perfil.');
                     const userData = await response.json();
                     
-                    // DEBUG
-                    console.log("--- API Call: /usuario/MeuPerfil ---");
-                    console.log("Endpoint:", apiEndpoint);
+                    console.log(`--- API Call: ${apiEndpoint} ---`);
                     console.log("Dados Retornados:", userData);
                     
-                    populateProfileData(userData);
+                    // Passa o tipo de usuário para a função de preenchimento
+                    populateProfileData(userData, userType); 
+                    
+                    // Carrega os posts (assumindo que o endpoint de posts é o mesmo para ambos)
                     await loadPosts(userData);
                     arePostsLoaded = true;
 
@@ -297,60 +323,81 @@
                 }
             }
 
-            function populateProfileData(userData) {
+            // --- FUNÇÃO MODIFICADA: Aceita 'userType' para ajustar a UI ---
+            function populateProfileData(userData, userType) {
                 profilePic.src = userData.foto_perfil || '';
                 profileName.textContent = userData.nome_completo || 'Nome não definido';
                 profileUsername.textContent = `@${userData.username || 'username'}`;
                 profileBio.textContent = userData.biografia || 'Nenhuma biografia informada.';
                 profileFollowersCount.textContent = userData.seguidores_count !== undefined ? userData.seguidores_count : '0';
                 profileFollowingCount.textContent = userData.seguindo_count !== undefined ? userData.seguindo_count : '0';
-                profilePointsCount.textContent = userData.pontos ? Math.round(userData.pontos) : '0';
                 
                 if (userData.cidade && userData.estado) {
                     profileLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${userData.cidade}, ${userData.estado}`;
                     profileLocation.style.display = 'block';
                 }
 
-                const postsCount = userData.post_criados ? userData.post_criados.length : 0;
-                const treinosCount = userData.treinos_id ? userData.treinos_id.length : 0;
-                const eventosCount = (userData.eventos_criados ? userData.eventos_criados.length : 0) + (userData.eventos_participando ? userData.eventos_participando.length : 0);
+                // --- Lógica de UI baseada no tipo de usuário ---
+                if (userType === 'empresa') {
+                    // Esconde seções que não se aplicam à empresa
+                    document.querySelector('.profile-points-highlight').style.display = 'none';
+                    document.getElementById('profile-sports-section').style.display = 'none';
+                    document.querySelector('.tab-item[data-tab="treinos"]').style.display = 'none';
 
-                document.querySelector('.tab-item[data-tab="posts"]').innerHTML = `<i class="fas fa-image"></i> Posts (${postsCount})`;
-                document.querySelector('.tab-item[data-tab="treinos"]').innerHTML = `<i class="fas fa-dumbbell"></i> Treinos (${treinosCount})`;
-                document.querySelector('.tab-item[data-tab="eventos"]').innerHTML = `<i class="fas fa-trophy"></i> Eventos (${eventosCount})`;
-                
-                const sportIcons = {
-                    'futebol': 'fas fa-futbol', 'basquete': 'fas fa-basketball-ball', 'volei': 'fas fa-volleyball-ball',
-                    'tenis': 'fas fa-table-tennis', 'corrida': 'fas fa-running', 'natacao': 'fas fa-swimmer',
-                    'ciclismo': 'fas fa-biking', 'musculacao': 'fas fa-dumbbell', 'yoga': 'fas fa-praying-hands', 'default': 'fas fa-medal'
-                };
+                    // Usa os totais pré-calculados da API para empresa
+                    const postsCount = userData.total_posts || 0;
+                    const eventosCount = userData.total_eventos || 0;
+                    
+                    document.querySelector('.tab-item[data-tab="posts"]').innerHTML = `<i class="fas fa-image"></i> Posts (${postsCount})`;
+                    document.querySelector('.tab-item[data-tab="eventos"]').innerHTML = `<i class="fas fa-trophy"></i> Eventos (${eventosCount})`;
 
-                const sports = userData.esportes_praticados;
-                sportsList.innerHTML = '';
-                if (sports && typeof sports === 'object' && Object.keys(sports).length > 0) {
-                    sportsSection.style.display = 'block';
-                    for (const sport in sports) {
-                        const level = sports[sport];
-                        const sportKey = sport.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                        const iconClass = sportIcons[sportKey] || sportIcons['default'];
-                        const listItem = document.createElement('li');
-                        listItem.innerHTML = `<i class="${iconClass}"></i> <span>${sport.charAt(0).toUpperCase() + sport.slice(1)} (${level.charAt(0).toUpperCase() + level.slice(1)})</span>`;
-                        sportsList.appendChild(listItem);
+                } else {
+                    // Lógica original para usuário padrão
+                    profilePointsCount.textContent = userData.pontos ? Math.round(userData.pontos) : '0';
+
+                    const postsCount = userData.post_criados ? userData.post_criados.length : 0;
+                    const treinosCount = userData.treinos_id ? userData.treinos_id.length : 0;
+                    const eventosCount = (userData.eventos_criados ? userData.eventos_criados.length : 0) + (userData.eventos_participando ? userData.eventos_participando.length : 0);
+
+                    document.querySelector('.tab-item[data-tab="posts"]').innerHTML = `<i class="fas fa-image"></i> Posts (${postsCount})`;
+                    document.querySelector('.tab-item[data-tab="treinos"]').innerHTML = `<i class="fas fa-dumbbell"></i> Treinos (${treinosCount})`;
+                    document.querySelector('.tab-item[data-tab="eventos"]').innerHTML = `<i class="fas fa-trophy"></i> Eventos (${eventosCount})`;
+                    
+                    const sportIcons = {
+                        'futebol': 'fas fa-futbol', 'basquete': 'fas fa-basketball-ball', 'volei': 'fas fa-volleyball-ball',
+                        'tenis': 'fas fa-table-tennis', 'corrida': 'fas fa-running', 'natacao': 'fas fa-swimmer',
+                        'ciclismo': 'fas fa-biking', 'musculacao': 'fas fa-dumbbell', 'yoga': 'fas fa-praying-hands', 'default': 'fas fa-medal'
+                    };
+
+                    const sports = userData.esportes_praticados;
+                    sportsList.innerHTML = '';
+                    if (sports && typeof sports === 'object' && Object.keys(sports).length > 0) {
+                        sportsSection.style.display = 'block';
+                        for (const sport in sports) {
+                            const level = sports[sport];
+                            const sportKey = sport.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                            const iconClass = sportIcons[sportKey] || sportIcons['default'];
+                            const listItem = document.createElement('li');
+                            listItem.innerHTML = `<i class="${iconClass}"></i> <span>${sport.charAt(0).toUpperCase() + sport.slice(1)} (${level.charAt(0).toUpperCase() + level.slice(1)})</span>`;
+                            sportsList.appendChild(listItem);
+                        }
                     }
                 }
             }
+            
+            // O restante do seu código JavaScript permanece o mesmo
+            // (loadPosts, loadTreinos, loadEventos, modais, etc...)
 
             async function loadPosts(authorData) {
                 postsContent.innerHTML = '<p class="loading-indicator">Carregando posts...</p>';
                 try {
+                    // Este endpoint pode precisar ser ajustado se empresas tiverem uma rota diferente
                     const apiEndpoint = 'http://127.0.0.1:5000/postagem/ListarPostagens';
                     const response = await fetch(apiEndpoint, { headers: { 'Authorization': `Bearer ${token}` } });
                     if (!response.ok) throw new Error('Falha ao carregar postagens.');
                     const posts = await response.json();
                     
-                    // DEBUG
                     console.log("--- API Call: /postagem/ListarPostagens ---");
-                    console.log("Endpoint:", apiEndpoint);
                     console.log("Dados Retornados:", posts);
 
                     postsContent.innerHTML = ''; 
@@ -373,9 +420,7 @@
                     if (!response.ok) throw new Error('Falha ao carregar treinos.');
                     const treinos = await response.json();
                     
-                    // DEBUG
                     console.log("--- API Call: /treino/ListarTreino ---");
-                    console.log("Endpoint:", apiEndpoint);
                     console.log("Dados Retornados:", treinos);
 
                     treinosContent.innerHTML = ''; 
@@ -399,9 +444,7 @@
                     if (!response.ok) throw new Error('Falha ao carregar eventos.');
                     const eventos = await response.json();
 
-                    // DEBUG
                     console.log("--- API Call: /evento/meusEventos ---");
-                    console.log("Endpoint:", apiEndpoint);
                     console.log("Dados Retornados:", eventos);
                     
                     eventosContent.innerHTML = ''; 
@@ -422,6 +465,7 @@
                 followersModal.style.display = 'flex';
 
                 try {
+                    // Este endpoint pode precisar ser ajustado se empresas tiverem uma rota diferente
                     const apiEndpoint = 'http://127.0.0.1:5000/usuario/usuariosSeguidores';
                     const response = await fetch(apiEndpoint, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -430,9 +474,7 @@
                     
                     const data = await response.json();
                     
-                    // DEBUG
                     console.log("--- API Call: /usuario/usuariosSeguidores ---");
-                    console.log("Endpoint:", apiEndpoint);
                     console.log("Dados Retornados:", data);
 
                     const users = data.seguidores;
@@ -464,6 +506,7 @@
                 followingModal.style.display = 'flex'; 
 
                 try {
+                     // Este endpoint pode precisar ser ajustado se empresas tiverem uma rota diferente
                     const apiEndpoint = 'http://127.0.0.1:5000/usuario/usuariosSeguidos';
                     const response = await fetch(apiEndpoint, {
                         headers: { 'Authorization': `Bearer ${token}` }
@@ -472,9 +515,7 @@
                     
                     const data = await response.json();
                     
-                    // DEBUG
                     console.log("--- API Call: /usuario/usuariosSeguidos ---");
-                    console.log("Endpoint:", apiEndpoint);
                     console.log("Dados Retornados:", data);
                     
                     const users = data.usuarios_seguindo;
