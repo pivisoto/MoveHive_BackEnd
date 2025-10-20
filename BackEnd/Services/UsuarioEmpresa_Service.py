@@ -1,5 +1,6 @@
 from datetime import date, datetime,  timedelta, timezone
 from email import utils
+import time
 import bcrypt
 from firebase_admin import firestore, credentials, storage
 from flask import g, jsonify
@@ -141,6 +142,7 @@ def listar_empresas_sem_filtro():
         return {'erro': str(e)}, 500
     
 
+# Implementado
 @token_required
 def meuPerfilEmpresa():
     try:
@@ -178,3 +180,72 @@ def meuPerfilEmpresa():
     except Exception as e:
         print(f"Erro ao buscar perfil da empresa {g.user_id}: {e}")
         return jsonify({'erro': 'Ocorreu um erro interno ao processar o perfil da empresa.'}), 500
+
+
+
+@token_required
+def editar_empresa(dados, foto_perfil=None):
+    usuario_id = g.user_id
+    usuario_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+
+    try:
+        usuario_doc = usuario_ref.get()
+        if not usuario_doc.exists:
+            return {"erro": "Usuário empresa não encontrado."}, 404
+    except Exception as e:
+        return {"erro": f"Erro ao acessar o banco de dados: {str(e)}"}, 500
+
+    updates = {}
+
+    for campo, valor in dados.items():
+        if valor is None or valor == '':
+            continue
+
+        try:
+            if campo == 'username':
+                empresas_com_mesmo_username = db.collection('UsuariosEmpresa').where('username', '==', valor).limit(1).get()
+                if len(empresas_com_mesmo_username) > 0 and empresas_com_mesmo_username[0].id != usuario_id:
+                    return {"erro": f"O username '{valor}' já está em uso."}, 409
+                updates[campo] = valor
+
+            elif campo == 'email':
+                empresas_com_mesmo_email = db.collection('UsuariosEmpresa').where('email', '==', valor).limit(1).get()
+                if len(empresas_com_mesmo_email) > 0 and empresas_com_mesmo_email[0].id != usuario_id:
+                    return {"erro": f"O email '{valor}' já está em uso."}, 409
+                updates[campo] = valor
+
+            elif campo == 'senha':
+                senha_hash = bcrypt.hashpw(valor.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+                updates[campo] = senha_hash
+
+            elif campo in ['nome', 'biografia', 'setor']:
+                updates[campo] = str(valor)
+
+            elif campo == 'cnpj':
+                validar_cnpj(campo)
+                updates[campo] = str(valor)
+
+        except Exception as e:
+            return {"erro": f"Ocorreu um erro ao processar o campo '{campo}': {str(e)}"}, 500
+
+    # Upload da foto de perfil
+    if foto_perfil:
+        try:
+            caminho = f"UsuariosEmpresa/{usuario_id}/Fotos/foto_perfil.jpg"
+            blob = bucket.blob(caminho)
+            foto_perfil.seek(0)
+            blob.upload_from_file(foto_perfil, content_type=foto_perfil.content_type)
+            blob.make_public()
+            timestamp = int(time.time())
+            updates['foto_perfil'] = f"{blob.public_url}?v={timestamp}"
+        except Exception as e:
+            return {"erro": f"Erro ao fazer upload da imagem: {str(e)}"}, 500
+
+    if not updates:
+        return {"mensagem": "Nenhuma alteração foi feita."}, 200
+
+    try:
+        usuario_ref.update(updates)
+        return {"mensagem": "Usuário empresa atualizado com sucesso."}, 200
+    except Exception as e:
+        return {"erro": f"Erro ao atualizar o usuário empresa no banco de dados: {str(e)}"}, 500

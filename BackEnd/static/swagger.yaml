@@ -1588,6 +1588,95 @@ paths:
                   erro:
                     type: string
                     example: "Ocorreu um erro interno ao processar o perfil da empresa."
+
+  /usuarioEmpresa/EditarEmpresa:
+    post:
+      summary: Edita os dados de uma empresa
+      description: Atualiza informações do usuário empresa logado, incluindo dados como username, email, senha, nome, biografia, setor, CNPJ e foto de perfil.
+      tags:
+        - UsuárioEmpresa
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  description: Novo username da empresa (opcional)
+                  example: minhaempresa
+                email:
+                  type: string
+                  description: Novo email da empresa (opcional)
+                  example: empresa@gmail.com
+                senha:
+                  type: string
+                  description: Nova senha da empresa (opcional)
+                  example: novaSenha123
+                nome:
+                  type: string
+                  description: Nome da empresa (opcional)
+                  example: Empresa XYZ
+                biografia:
+                  type: string
+                  description: Biografia da empresa (opcional)
+                  example: "Somos líderes no mercado de tecnologia."
+                setor:
+                  type: string
+                  description: Setor de atuação da empresa (opcional)
+                  example: Tecnologia
+                cnpj:
+                  type: string
+                  description: CNPJ da empresa (opcional)
+                  example: 33.096.646/0001-73
+                foto_perfil:
+                  type: string
+                  format: binary
+                  description: Arquivo de imagem para atualizar a foto de perfil (opcional)
+      responses:
+        '200':
+          description: Usuário empresa atualizado com sucesso ou nenhuma alteração feita
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  mensagem:
+                    type: string
+                    example: Usuário empresa atualizado com sucesso.
+        '404':
+          description: Usuário empresa não encontrado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Usuário empresa não encontrado.
+        '409':
+          description: Conflito de dados (username ou email já existe)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: O username 'minhaempresa' já está em uso.
+        '500':
+          description: Erro interno no servidor
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  erro:
+                    type: string
+                    example: Erro interno no servidor mensagem detalhada do erro
+      security:
+        - BearerAuth: []
   
 # Esporte
  

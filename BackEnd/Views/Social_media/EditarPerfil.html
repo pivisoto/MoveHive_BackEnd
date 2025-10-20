@@ -6,7 +6,7 @@
     <title>Editar Perfil - Feed Claro</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
-        /* --- ESTILOS VISUAIS (sem alterações) --- */
+        /* --- ESTILOS VISUAIS --- */
         :root {
             --primary-color: #f0f2f5;
             --secondary-color: #ffffff;
@@ -78,17 +78,16 @@
         .modal-btn-cancel { background-color: #f0f2f5; color: #333; }
         .modal-btn-cancel:hover { background-color: #e1e3e6; }
         
-        /* --- ESTILOS DA SEÇÃO DE ESPORTES (sem alterações) --- */
-        .sports-manager { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
-        #sports-list { margin-bottom: 20px; }
-        .sport-item { display: flex; justify-content: space-between; align-items: center; background-color: var(--primary-color); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; }
-        .sport-item span { font-weight: 500; }
-        .sport-item .level { color: #777; font-size: 0.9rem; margin-left: 10px; text-transform: capitalize; }
-        .sport-item button { background: none; border: none; color: var(--delete-color); cursor: pointer; font-size: 1.2rem; padding: 5px; line-height: 1; }
-        .add-sport-controls { display: flex; gap: 10px; align-items: stretch; }
-        .add-sport-controls select { flex: 1; }
-        .add-sport-btn { padding: 0 18px; background-color: var(--tiktok-icon-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
-        .add-sport-btn:hover { background-color: #555; }
+        .list-manager { margin-top: 30px; padding-top: 20px; border-top: 1px solid var(--border-color); }
+        .item-list { margin-bottom: 20px; }
+        .list-item { display: flex; justify-content: space-between; align-items: center; background-color: var(--primary-color); padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; }
+        .list-item span { font-weight: 500; }
+        .list-item .level { color: #777; font-size: 0.9rem; margin-left: 10px; text-transform: capitalize; }
+        .list-item button { background: none; border: none; color: var(--delete-color); cursor: pointer; font-size: 1.2rem; padding: 5px; line-height: 1; }
+        .add-item-controls { display: flex; gap: 10px; align-items: stretch; }
+        .add-item-controls select { flex: 1; }
+        .add-item-btn { padding: 0 18px; background-color: var(--tiktok-icon-color); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1.1rem; display: flex; align-items: center; justify-content: center; }
+        .add-item-btn:hover { background-color: #555; }
     </style>
 </head>
 <body>
@@ -111,18 +110,26 @@
                 </div>
                 <div class="form-group"><label for="nome_completo">Nome Completo</label><input type="text" id="nome_completo" name="nome_completo" placeholder="Carregando..."></div>
                 <div class="form-group"><label for="username">Nome de Usuário</label><input type="text" id="username" name="username" placeholder="Carregando..."></div>
+                
+                <!-- Campos específicos para Empresa -->
+                <div class="form-group" id="cnpj-group" style="display: none;"><label for="cnpj">CNPJ</label><input type="text" id="cnpj" name="cnpj" placeholder="Digite o CNPJ da empresa"></div>
+                <div class="form-group" id="setor-group" style="display: none;"><label for="setor">Setor de Atuação</label><input type="text" id="setor" name="setor" placeholder="Ex: Varejo Esportivo"></div>
+
                 <div class="form-group"><label for="biografia">Biografia</label><textarea id="biografia" name="biografia" placeholder="Carregando..."></textarea></div>
                 <div class="form-group"><label for="email">E-mail</label><input type="email" id="email" name="email" placeholder="Carregando..."></div>
                 <div class="form-row"><div class="form-group"><label for="estado">Estado</label><select id="estado" name="estado"><option value="">Carregando estados...</option></select></div><div class="form-group"><label for="cidade">Cidade</label><select id="cidade" name="cidade" disabled><option value="">Selecione um estado primeiro</option></select></div></div>
-                <div class="form-group"><label for="data_nascimento">Data de Nascimento</label><input type="date" id="data_nascimento" name="data_nascimento"></div>
                 
-                <div class="sports-manager">
+                <!-- Campo específico para Usuário -->
+                <div class="form-group" id="data-nascimento-group"><label for="data_nascimento">Data de Nascimento</label><input type="date" id="data_nascimento" name="data_nascimento"></div>
+                
+                <!-- Gerenciador de Esportes para Usuários -->
+                <div class="list-manager" id="sports-manager" style="display: none;">
                     <label style="margin-bottom: 15px;">Esportes Praticados</label>
-                    <div id="sports-list"></div>
-                    <div class="add-sport-controls">
+                    <div id="sports-list" class="item-list"></div>
+                    <div class="add-item-controls">
                         <select id="new-sport-name-select"><option value="">Carregando esportes...</option></select>
-                        <select id="new-sport-level-select"><option value="Amador">Amador</option><option value="Iniciante">Iniciante</option><option value="profissional">Profissional</option></select>
-                        <button type="button" id="add-sport-btn" class="add-sport-btn"><i class="fas fa-plus"></i></button>
+                        <select id="new-sport-level-select"><option value="Amador">Amador</option><option value="Iniciante">Iniciante</option><option value="Profissional">Profissional</option></select>
+                        <button type="button" id="add-sport-btn" class="add-item-btn"><i class="fas fa-plus"></i></button>
                     </div>
                 </div>
 
@@ -146,7 +153,7 @@
             const API_BASE_URL = 'http://127.0.0.1:5000';
             const IBGE_API_URL = 'https://servicodados.ibge.gov.br/api/v1/localidades';
 
-            // Seletores
+            // Seletores do formulário
             const form = document.getElementById('edit-profile-form');
             const profilePicPreview = document.getElementById('profile-pic-preview');
             const fileInput = document.getElementById('foto_perfil_input');
@@ -156,28 +163,36 @@
             const emailInput = document.getElementById('email');
             const estadoSelect = document.getElementById('estado');
             const cidadeSelect = document.getElementById('cidade');
-            const dataNascimentoInput = document.getElementById('data_nascimento');
             const senhaInput = document.getElementById('senha');
             const confirmarSenhaInput = document.getElementById('confirmar_senha');
             const passwordErrorMsg = document.getElementById('password-match-error');
             const mainSaveBtn = document.getElementById('main-save-btn');
             const headerSaveBtn = document.getElementById('header-save-btn');
+            
+            // Seletores específicos de tipo de usuário
+            const cnpjInput = document.getElementById('cnpj');
+            const cnpjGroup = document.getElementById('cnpj-group');
+            const setorInput = document.getElementById('setor');
+            const setorGroup = document.getElementById('setor-group');
+            const dataNascimentoInput = document.getElementById('data_nascimento');
+            const dataNascimentoGroup = document.getElementById('data-nascimento-group');
+
+            // Seletores de Modal e Exclusão
             const deleteAccountBtn = document.getElementById('delete-account-btn');
             const deleteConfirmModal = document.getElementById('delete-confirm-modal');
             const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
             const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-            const sportsManagerSection = document.querySelector('.sports-manager');
-            const dataNascimentoGroup = dataNascimentoInput.closest('.form-group');
             
-            // Seletores para Esportes
+            // Seletores para Esportes (Usuário)
+            const sportsManagerSection = document.getElementById('sports-manager');
             const sportsListContainer = document.getElementById('sports-list');
             const newSportNameSelect = document.getElementById('new-sport-name-select');
             const newSportLevelSelect = document.getElementById('new-sport-level-select');
             const addSportBtn = document.getElementById('add-sport-btn');
             
             let userSports = {};
-            let userType = 'usuario'; // Padrão 'usuario'.
-            let apiEndpoints = {}; // Objeto para armazenar os endpoints corretos.
+            let userType = 'usuario'; // Padrão
+            let apiEndpoints = {};
 
             // ======================================================= //
             // --- LÓGICA DE USUÁRIO E INICIALIZAÇÃO               --- //
@@ -201,10 +216,10 @@
                 if (type === 'empresa') {
                     apiEndpoints = {
                         getProfile: `${API_BASE_URL}/usuarioEmpresa/MeuPerfil`,
-                        updateProfile: `${API_BASE_URL}/usuarioEmpresa/EditarUsuario`, 
+                        updateProfile: `${API_BASE_URL}/usuarioEmpresa/EditarEmpresa`,
                         deleteAccount: `${API_BASE_URL}/usuarioEmpresa/ExcluirUsuario`
                     };
-                } else { // Padrão para 'usuario'
+                } else {
                     apiEndpoints = {
                         getProfile: `${API_BASE_URL}/usuario/MeuPerfil`,
                         updateProfile: `${API_BASE_URL}/usuario/EditarUsuario`,
@@ -212,13 +227,22 @@
                     };
                 }
             }
-
-            function adjustUiForCompany() {
-                document.querySelector('label[for="nome_completo"]').textContent = 'Nome da Empresa';
-                document.querySelector('label[for="biografia"]').textContent = 'Sobre a Empresa';
-                
-                if (sportsManagerSection) sportsManagerSection.style.display = 'none';
-                if (dataNascimentoGroup) dataNascimentoGroup.style.display = 'none';
+            
+            // Ajusta a UI com base no tipo de usuário
+            function adjustUiForUserType() {
+                if (userType === 'empresa') {
+                    document.querySelector('label[for="nome_completo"]').textContent = 'Nome da Empresa';
+                    document.querySelector('label[for="biografia"]').textContent = 'Sobre a Empresa';
+                    cnpjGroup.style.display = 'block';
+                    setorGroup.style.display = 'block';
+                    dataNascimentoGroup.style.display = 'none';
+                    sportsManagerSection.style.display = 'none';
+                } else { // usuário
+                    cnpjGroup.style.display = 'none';
+                    setorGroup.style.display = 'none';
+                    dataNascimentoGroup.style.display = 'block';
+                    sportsManagerSection.style.display = 'block';
+                }
             }
 
             // --- FUNÇÕES DE API ---
@@ -300,7 +324,6 @@
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     const userData = await response.json();
-                    console.log(userData)
                     if (!response.ok) throw new Error(userData.erro || `Erro: ${response.statusText}`);
                     await populateForm(userData);
                 } catch (error) {
@@ -311,12 +334,15 @@
 
             async function populateForm(data) {
                 profilePicPreview.src = data.foto_perfil || 'default-avatar.png';
-                nomeCompletoInput.value = data.nome_completo || ''; 
+                nomeCompletoInput.value = data.nome_completo || data.nome || ''; 
                 usernameInput.value = data.username || '';
                 biografiaInput.value = data.biografia || '';
                 emailInput.value = data.email || '';
                 
-                if (userType === 'usuario') {
+                if (userType === 'empresa') {
+                    cnpjInput.value = data.cnpj || ''; 
+                    setorInput.value = data.setor || ''; // Preenche o campo de setor único
+                } else { // Usuário
                     if (data.data_nascimento) {
                         const birthDate = new Date(data.data_nascimento);
                         dataNascimentoInput.value = `${birthDate.getUTCFullYear()}-${String(birthDate.getUTCMonth() + 1).padStart(2, '0')}-${String(birthDate.getUTCDate()).padStart(2, '0')}`;
@@ -334,7 +360,7 @@
                 }
             }
             
-            // --- FUNÇÕES PARA GERENCIAR ESPORTES NA INTERFACE ---
+            // --- FUNÇÕES PARA GERENCIAR ESPORTES (USUÁRIO) ---
             function renderSportsList() {
                 sportsListContainer.innerHTML = '';
                 if (Object.keys(userSports).length === 0) {
@@ -344,7 +370,7 @@
                 for (const sportName in userSports) {
                     const level = userSports[sportName];
                     const sportItem = document.createElement('div');
-                    sportItem.className = 'sport-item';
+                    sportItem.className = 'list-item';
                     sportItem.innerHTML = `<div><span>${sportName}</span><span class="level">(${level})</span></div><button type="button" class="remove-sport-btn" data-sport="${sportName}" title="Remover esporte">&times;</button>`;
                     sportsListContainer.appendChild(sportItem);
                 }
@@ -377,27 +403,34 @@
                 setButtonsLoading(true);
 
                 const formData = new FormData();
-                formData.append('nome_completo', nomeCompletoInput.value);
+                const updateConfig = {
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                };
+
+                if (userType === 'empresa') {
+                    updateConfig.method = 'POST';
+                    formData.append('nome', nomeCompletoInput.value);
+                    formData.append('cnpj', cnpjInput.value);
+                    formData.append('setor', setorInput.value); // Envia o valor do campo de setor
+                } else { // Usuário
+                    updateConfig.method = 'PUT';
+                    formData.append('nome_completo', nomeCompletoInput.value);
+                    formData.append('data_nascimento', dataNascimentoInput.value);
+                    formData.append('esportes_praticados', JSON.stringify(userSports));
+                }
+                
                 formData.append('username', usernameInput.value);
                 formData.append('biografia', biografiaInput.value);
                 formData.append('email', emailInput.value);
                 formData.append('estado', estadoSelect.value);
                 formData.append('cidade', cidadeSelect.value);
                 
-                if (userType === 'usuario') {
-                    formData.append('data_nascimento', dataNascimentoInput.value);
-                    formData.append('esportes_praticados', JSON.stringify(userSports));
-                }
-
                 if (senhaInput.value) { formData.append('senha', senhaInput.value); }
                 if (fileInput.files[0]) { formData.append('foto_perfil', fileInput.files[0]); }
                 
                 try {
-                    const response = await fetch(apiEndpoints.updateProfile, {
-                        method: 'PUT',
-                        headers: { 'Authorization': `Bearer ${token}` },
-                        body: formData
-                    });
+                    const response = await fetch(apiEndpoints.updateProfile, updateConfig);
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.erro || 'Ocorreu um erro ao salvar.');
                     alert(result.mensagem || 'Perfil atualizado com sucesso!');
@@ -465,7 +498,9 @@
                 estadoSelect.addEventListener('change', () => loadCities(estadoSelect.value));
                 senhaInput.addEventListener('input', validatePasswordsOnInput);
                 confirmarSenhaInput.addEventListener('input', validatePasswordsOnInput);
+                
                 addSportBtn.addEventListener('click', handleAddSport);
+
                 deleteAccountBtn.addEventListener('click', () => deleteConfirmModal.classList.add('show'));
                 cancelDeleteBtn.addEventListener('click', () => deleteConfirmModal.classList.remove('show'));
                 confirmDeleteBtn.addEventListener('click', handleDeleteAccount);
@@ -482,15 +517,11 @@
                 const userData = decodeJwt(token);
                 if (userData && userData.tipo_usuario) {
                     userType = userData.tipo_usuario;
-                    console.log(`Tipo de usuário detectado: ${userType}`);
                 }
+                console.log(`Tipo de usuário detectado: ${userType}`);
 
                 setApiEndpoints(userType);
-
-                if (userType === 'empresa') {
-                    adjustUiForCompany();
-                }
-                
+                adjustUiForUserType();
                 setupEventListeners();
 
                 const promises = [loadStates(), loadUserProfile()];
@@ -499,7 +530,6 @@
                 }
 
                 await Promise.all(promises);
-
                 console.log("Página carregada e pronta.");
             }
 
