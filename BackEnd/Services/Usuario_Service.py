@@ -381,30 +381,41 @@ def seguir_usuario(seguido_id):
         if seguido_id == usuario_id:
             return {'erro': 'Você não pode seguir a si mesmo'}, 400
 
+        # Buscar o usuário que está seguindo
         usuario_ref = db.collection('Usuarios').document(usuario_id)
-        seguido_ref = db.collection('Usuarios').document(seguido_id)
-
         usuario_doc = usuario_ref.get()
+
+        if not usuario_doc.exists:
+            usuario_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+            usuario_doc = usuario_ref.get()
+            if not usuario_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        # Buscar o usuário/empresa a ser seguido
+        seguido_ref = db.collection('Usuarios').document(seguido_id)
         seguido_doc = seguido_ref.get()
+        if not seguido_doc.exists:
+            seguido_ref = db.collection('UsuariosEmpresa').document(seguido_id)
+            seguido_doc = seguido_ref.get()
+            if not seguido_doc.exists:
+                return {'erro': 'Usuário ou empresa a seguir não encontrado'}, 404
 
-        if not usuario_ref.get().exists or not seguido_ref.get().exists:
-            return {'erro': 'Usuário(s) não encontrado(s)'}, 404
-
+        # Atualizar listas
         usuario_ref.update({
             'seguindo': firestore.ArrayUnion([seguido_id])
         })
-
         seguido_ref.update({
             'seguidores': firestore.ArrayUnion([usuario_id])
         })
 
         usuario_nome = usuario_doc.to_dict().get('username', 'Alguém')
 
+        # Criar notificação
         criar_notificacao(
             usuario_destino_id=seguido_id,
             tipo="seguindo",
             referencia_id=usuario_id,
-            mensagem= f"{usuario_nome} começou a te seguir."
+            mensagem=f"{usuario_nome} começou a te seguir."
         )
 
         return {'mensagem': 'Usuário seguido com sucesso!'}, 200
@@ -421,16 +432,28 @@ def deixar_de_seguir_usuario(seguido_id):
         if seguido_id == usuario_id:
             return {'erro': 'Você não pode deixar de seguir a si mesmo'}, 400
 
+        # Buscar o usuário que está deixando de seguir
         usuario_ref = db.collection('Usuarios').document(usuario_id)
+        usuario_doc = usuario_ref.get()
+        if not usuario_doc.exists:
+            usuario_ref = db.collection('UsuariosEmpresa').document(usuario_id)
+            usuario_doc = usuario_ref.get()
+            if not usuario_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        # Buscar o usuário/empresa a ser deixado de seguir
         seguido_ref = db.collection('Usuarios').document(seguido_id)
+        seguido_doc = seguido_ref.get()
+        if not seguido_doc.exists:
+            seguido_ref = db.collection('UsuariosEmpresa').document(seguido_id)
+            seguido_doc = seguido_ref.get()
+            if not seguido_doc.exists:
+                return {'erro': 'Usuário ou empresa não encontrado para deixar de seguir'}, 404
 
-        if not usuario_ref.get().exists or not seguido_ref.get().exists:
-            return {'erro': 'Usuário(s) não encontrado(s)'}, 404
-
+        # Atualizar listas
         usuario_ref.update({
             'seguindo': firestore.ArrayRemove([seguido_id])
         })
-
         seguido_ref.update({
             'seguidores': firestore.ArrayRemove([usuario_id])
         })
@@ -439,6 +462,7 @@ def deixar_de_seguir_usuario(seguido_id):
 
     except Exception as e:
         return {'erro': str(e)}, 500
+
 
 # Implementado
 @token_required
@@ -562,27 +586,39 @@ def listar_usuarios_com_filtro():
 def listar_usuarios_seguindo():
     try:
         usuario_logado_id = g.user_id
+
+        # Tenta buscar em Usuarios
         usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
         usuario_logado_doc = usuario_logado_ref.get()
 
+        # Se não existe, tenta UsuariosEmpresa
         if not usuario_logado_doc.exists:
-            return {'erro': 'Usuário autenticado não encontrado'}, 404
+            usuario_logado_ref = db.collection('UsuariosEmpresa').document(usuario_logado_id)
+            usuario_logado_doc = usuario_logado_ref.get()
+            if not usuario_logado_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
 
         lista_seguindo = usuario_logado_doc.to_dict().get('seguindo', [])
-
         usuarios_seguindo = []
+
         for user_id in lista_seguindo:
+            # Tenta buscar em Usuarios
             user_doc = db.collection('Usuarios').document(user_id).get()
             if not user_doc.exists:
-                continue  # pula caso o usuário não exista mais
+                # Tenta buscar em UsuariosEmpresa
+                user_doc = db.collection('UsuariosEmpresa').document(user_id).get()
+                if not user_doc.exists:
+                    continue  # pula caso não exista
 
             dados = user_doc.to_dict()
             usuarios_seguindo.append({
                 'id': user_id,
                 'username': dados.get('username'),
-                'nome_completo': dados.get('nome_completo'),
+                'nome': dados.get('nome'),
                 'foto_perfil': dados.get('foto_perfil'),
                 'biografia': dados.get('biografia', ''),
+                'setor': dados.get('setor', ''),  # campo empresa, vazio se for usuário normal
+                'cnpj': dados.get('cnpj', ''),
                 'cidade': dados.get('cidade', ''),
                 'estado': dados.get('estado', ''),
                 'esportes_praticados': dados.get('esportes_praticados', {})
@@ -594,29 +630,40 @@ def listar_usuarios_seguindo():
         print(f"Erro em listar_usuarios_seguindo: {e}")
         return {'erro': str(e)}, 500
     
+
+
 # Implementado
 @token_required
 def listar_seguidores():
     try:
         usuario_logado_id = g.user_id
+
+        # Tenta buscar em Usuarios
         usuario_logado_ref = db.collection('Usuarios').document(usuario_logado_id)
         usuario_logado_doc = usuario_logado_ref.get()
-
         if not usuario_logado_doc.exists:
-            return {'erro': 'Usuário autenticado não encontrado'}, 404
+            usuario_logado_ref = db.collection('UsuariosEmpresa').document(usuario_logado_id)
+            usuario_logado_doc = usuario_logado_ref.get()
+            if not usuario_logado_doc.exists:
+                return {'erro': 'Usuário autenticado não encontrado'}, 404
 
-        # Busca todos os usuários que seguem o usuário logado
-        query = db.collection('Usuarios').where('seguindo', 'array_contains', usuario_logado_id).stream()
+        # Buscar seguidores em Usuarios
+        query_usuarios = db.collection('Usuarios').where('seguindo', 'array_contains', usuario_logado_id).stream()
+        # Buscar seguidores em UsuariosEmpresa
+        query_empresas = db.collection('UsuariosEmpresa').where('seguindo', 'array_contains', usuario_logado_id).stream()
 
         seguidores = []
-        for user_doc in query:
+
+        for user_doc in list(query_usuarios) + list(query_empresas):
             dados = user_doc.to_dict()
             seguidores.append({
                 'id': user_doc.id,
                 'username': dados.get('username'),
-                'nome_completo': dados.get('nome_completo'),
+                'nome': dados.get('nome'),
                 'foto_perfil': dados.get('foto_perfil'),
                 'biografia': dados.get('biografia', ''),
+                'setor': dados.get('setor', ''),
+                'cnpj': dados.get('cnpj', ''),
                 'cidade': dados.get('cidade', ''),
                 'estado': dados.get('estado', ''),
                 'esportes_praticados': dados.get('esportes_praticados', {})
