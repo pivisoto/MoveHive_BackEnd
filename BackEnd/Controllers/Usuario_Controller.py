@@ -148,6 +148,19 @@ def ranking_usuarios_seguindo():
     return usuario_service.competicao_usuarios_seguindo()
 
 # Implementado
+@usuario_bp.route('/usuariosSeguindoTerceiros/<string:usuario_id>', methods=['GET'])
+def listar_usuarios_seguidos_terceiros(usuario_id):
+    resposta, status = usuario_service.listar_seguindo_terceiros(usuario_procurado_id=usuario_id)
+    return jsonify(resposta), status
+
+# Implementado
+@usuario_bp.route('/usuariosSeguidoresTerceiros/<string:usuario_id>', methods=['GET'])
+def listar_usuarios_seguidores_terceiros(usuario_id):
+    resposta, status = usuario_service.listar_seguidores_terceiros(usuario_procurado_id=usuario_id)
+    return jsonify(resposta), status
+
+
+# Implementado
 @usuario_bp.route('/esqueciSenha', methods=['POST'])
 def esqueci_senha():
     try:

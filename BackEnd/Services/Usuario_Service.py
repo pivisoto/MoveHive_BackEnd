@@ -680,6 +680,79 @@ def listar_seguidores():
         print(f"Erro em listar_seguidores: {e}")
         return {'erro': str(e)}, 500
 
+
+# Implementado
+@token_required
+def listar_seguindo_terceiros(usuario_procurado_id):
+    try:
+        usuario_procurado_ref = db.collection('Usuarios').document(usuario_procurado_id)
+        usuario_procurado_doc = usuario_procurado_ref.get()
+
+        if not usuario_procurado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        lista_seguindo = usuario_procurado_doc.to_dict().get('seguindo', [])
+
+        usuarios_seguindo = []
+        for user_id in lista_seguindo:
+            user_doc = db.collection('Usuarios').document(user_id).get()
+            if not user_doc.exists:
+                continue  # pula caso o usuário não exista mais
+
+            dados = user_doc.to_dict()
+            usuarios_seguindo.append({
+                'id': user_id,
+                'username': dados.get('username'),
+                'nome_completo': dados.get('nome_completo'),
+                'foto_perfil': dados.get('foto_perfil'),
+                'biografia': dados.get('biografia', ''),
+                'cidade': dados.get('cidade', ''),
+                'estado': dados.get('estado', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {})
+            })
+
+        return {'usuarios_seguindo': usuarios_seguindo}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_usuarios_seguindo: {e}")
+        return {'erro': str(e)}, 500
+
+#Implementado
+@token_required
+def listar_seguidores_terceiros(usuario_procurado_id):
+    try:
+        usuario_procurado_ref = db.collection('Usuarios').document(usuario_procurado_id)
+        usuario_procurado_doc = usuario_procurado_ref.get()
+
+        if not usuario_procurado_doc.exists:
+            return {'erro': 'Usuário autenticado não encontrado'}, 404
+
+        lista_seguindo = usuario_procurado_doc.to_dict().get('seguidores', [])
+
+        usuarios_seguindo = []
+        for user_id in lista_seguindo:
+            user_doc = db.collection('Usuarios').document(user_id).get()
+            if not user_doc.exists:
+                continue  # pula caso o usuário não exista mais
+
+            dados = user_doc.to_dict()
+            usuarios_seguindo.append({
+                'id': user_id,
+                'username': dados.get('username'),
+                'nome_completo': dados.get('nome_completo'),
+                'foto_perfil': dados.get('foto_perfil'),
+                'biografia': dados.get('biografia', ''),
+                'cidade': dados.get('cidade', ''),
+                'estado': dados.get('estado', ''),
+                'esportes_praticados': dados.get('esportes_praticados', {})
+            })
+
+        return {'usuarios_seguindo': usuarios_seguindo}, 200
+
+    except Exception as e:
+        print(f"Erro em listar_usuarios_seguindo: {e}")
+        return {'erro': str(e)}, 500
+    
 # Implementado
 @token_required
 def competicao_usuarios_todos():

@@ -653,6 +653,137 @@ paths:
                     type: string
                     example: "Descrição do erro interno"
 
+  /usuario/usuariosSeguindoTerceiros/{usuario_id}:
+      get:
+      summary: Listar usuários seguidos por um terceiro
+      description: >
+        Retorna a lista de usuários que um terceiro usuário (identificado por `usuario_id`)
+        está seguindo.  
+        Esse endpoint permite visualizar quem um determinado usuário segue,
+        sem ser necessário estar autenticado como ele.
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          description: ID do usuário cujo perfil será consultado
+          schema:
+            type: string
+            example: "u123abc"
+      responses:
+        '200':
+          description: Lista de usuários seguidos retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuarios_seguindo:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "user456"
+                        username:
+                          type: string
+                          example: "joaosilva"
+                        nome_completo:
+                          type: string
+                          example: "João da Silva"
+                        foto_perfil:
+                          type: string
+                          example: "https://exemplo.com/foto.jpg"
+                        biografia:
+                          type: string
+                          example: "Apaixonado por esportes e tecnologia"
+                        cidade:
+                          type: string
+                          example: "São Paulo"
+                        estado:
+                          type: string
+                          example: "SP"
+                        esportes_praticados:
+                          type: object
+                          example:
+                            futebol: true
+                            corrida: false
+        '404':
+          description: Usuário não encontrado
+        '401':
+          description: Não autorizado - Token JWT ausente ou inválido
+        '500':
+          description: Erro interno do servidor
+
+  /usuario/usuariosSeguidoresTerceiros/{usuario_id}:
+    get:
+      summary: Listar seguidores de um terceiro
+      description: >
+        Retorna a lista de usuários que seguem um terceiro usuário (identificado por `usuario_id`).  
+        Esse endpoint permite visualizar quem segue um determinado usuário,
+        sem ser necessário estar autenticado como ele.
+      tags:
+        - Usuários
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: usuario_id
+          in: path
+          required: true
+          description: ID do usuário cujo perfil será consultado
+          schema:
+            type: string
+            example: "u123abc"
+      responses:
+        '200':
+          description: Lista de seguidores retornada com sucesso
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  usuarios_seguindo:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: "user789"
+                        username:
+                          type: string
+                          example: "mariarodrigues"
+                        nome_completo:
+                          type: string
+                          example: "Maria Rodrigues"
+                        foto_perfil:
+                          type: string
+                          example: "https://exemplo.com/foto_maria.jpg"
+                        biografia:
+                          type: string
+                          example: "Ciclista amadora e amante da natureza"
+                        cidade:
+                          type: string
+                          example: "Rio de Janeiro"
+                        estado:
+                          type: string
+                          example: "RJ"
+                        esportes_praticados:
+                          type: object
+                          example:
+                            ciclismo: true
+                            natação: true
+        '404':
+          description: Usuário não encontrado
+        '401':
+          description: Não autorizado - Token JWT ausente ou inválido
+        '500':
+          description: Erro interno do servidor
+
   /usuario/rankingTodos:
     get:
       summary: Lista o ranking de usuários
